@@ -6,4 +6,6 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   layout
+   fits_format
    module
