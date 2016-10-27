@@ -14,7 +14,7 @@ default_calibrated_transform_parameters = {
     'baseline_adu': 6000.0,
     'drift_adu': 10.0,
     'smear_ratio': 9.79541e-6,  # Derived from Hemiola.fpe
-    'clip_level_adu': 60000,
+    'clip_level_adu': FPE_MAX_ADU,  # recent tests suggest we'll hit ADC ceiling before anything else clips
     'start_of_line_ringing': numpy.zeros(534),  # TODO: Read this from a file
     'pattern_noise': numpy.zeros((2078, 534))  # TODO: Read this from a file
 }
@@ -191,7 +191,7 @@ def write_calibrated_fits(output_file, raw_transform):
         .writeto(output_file)
 
 
-def convert_slice_electrons_to_adu(compression, number_of_exposures, video_scale, image_slice):
+def convert_slice_electrons_to_adu(compression, number_of_exposures, video_scale, baseline_adu, image_slice):
     """
     TODO
 
@@ -202,6 +202,8 @@ def convert_slice_electrons_to_adu(compression, number_of_exposures, video_scale
     :type number_of_exposures: int
     :param video_scale:
     :type video_scale: float
+    :param baseline_adu:
+    :type float
     :param image_slice:
     :type image_slice: :py:class:`~httm.Slice`
     :rtype: :py:class:`~httm.Slice`
@@ -209,9 +211,10 @@ def convert_slice_electrons_to_adu(compression, number_of_exposures, video_scale
     assert image_slice.units == "electrons", "units must be electrons"
     compression_per_adu = compression / (number_of_exposures * FPE_MAX_ADU)  # type: float
     compression_per_electron = compression_per_adu / video_scale  # type: float
+    exposure_baseline = baseline_adu * number_of_exposures
 
     def transform_electron_to_adu(electron):
-        return electron / (video_scale * (1.0 + compression_per_electron * electron))
+        return exposure_baseline + electron / (video_scale * (1.0 + compression_per_electron * electron))
 
     return Slice(smear_rows=transform_electron_to_adu(image_slice.smear_rows),
                  top_dark_pixel_rows=transform_electron_to_adu(image_slice.top_dark_pixel_rows),
