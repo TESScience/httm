@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from setuptools import setup
+from glob import glob
 
 VERSION = '0.1.0'
 
@@ -10,5 +11,6 @@ setup(name='httm',
       author='Matthew Wampler-Doty',
       author_email='matthew.wampler.doty@gmail.com',
       packages=['httm'],
-      install_requires=['numpy', 'astropy==1.1.2']
+      install_requires=['numpy', 'astropy==1.1.2'],
+      scripts=glob('scripts/*'),
       )

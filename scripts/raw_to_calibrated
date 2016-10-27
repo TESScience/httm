@@ -1,0 +1,19 @@
+#!/usr/bin/env python2.7
+import argparse
+import sys
+
+from httm import raw_transform_from_file, write_calibrated_fits
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description='Transform a RAW FITS file into a Calibrated FITS file')
+
+    parser.add_argument('--slices', '-s', dest='slices', action='store', type=int, default=4,
+                        help="The number of slices in the RAW FITS file")
+    parser.add_argument('input', nargs='?', type=argparse.FileType('r'), default=sys.stdin,
+                        help="The name of the RAW FITS file to use as input (defaults to STDIN)")
+    parser.add_argument('output', nargs='?', type=argparse.FileType('w'), default=sys.stdout,
+                        help="The name of the Calibrated FITS file to use as output (defaults to STDOUT)")
+
+    args = parser.parse_args()
+    write_calibrated_fits(args.output, raw_transform_from_file(args.input))
