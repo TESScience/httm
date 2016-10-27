@@ -162,6 +162,15 @@ class CalibratedTransformation(namedtuple('CalibratedTransformation',
 
 
 def write_calibrated_fits(output_file, raw_transform):
+    """
+    Write a completed :py:class:`~httm.RAWTransformation` to a calibrated FITS file
+
+    :param output_file:
+    :type output_file: str
+    :param raw_transform:
+    :type raw_transform: :py:class:`~httm.RAWTransformation`
+    :return: NoneType
+    """
     from astropy.io.fits import HDUList, PrimaryHDU
     from numpy import hstack
     print raw_transform
@@ -173,6 +182,15 @@ def write_calibrated_fits(output_file, raw_transform):
 
 
 def write_raw_fits(output_file, calibrated_transform):
+    """
+    Write a completed :py:class:`~httm.CalibratedTransformation` to a (simulated) raw FITS file
+
+    :param output_file:
+    :type output_file: str
+    :param calibrated_transform:
+    :type calibrated_transform: :py:class:`~httm.CalibratedTransformation`
+    :return: NoneType
+    """
     from astropy.io.fits import HDUList, PrimaryHDU
     from numpy import hstack
     # noinspection PyTypeChecker
@@ -200,7 +218,6 @@ def make_slice_from_calibrated_data(image_pixels, index):
 def calibrated_transform_from_file(input_file, number_of_slices=4, **kwargs):
     """
     Construct a :py:class:`~httm.CalibratedTransformation` from a file or file name
-
 
     :param input_file: The file or file name to input
     :param number_of_slices: The numbers of slices
