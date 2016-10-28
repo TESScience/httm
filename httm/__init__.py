@@ -1,184 +1,29 @@
-# See https://docs.python.org/2/library/collections.html#collections.namedtuple for details
-from collections import namedtuple
+"""
+`httm` contains top level transformations for
+converting calibrates or raw TESS full Frame FITS images between one another.
 
+
+"""
+
+
+# See https://docs.python.org/2/library/collections.html#collections.namedtuple for details
 import numpy
 
 # The maximum number of Analogue to Digital Converter Units a pixel can contain
+from httm.data_structures import Slice, CalibratedTransformation, CalibratedTransformParameters, FITSMetaData, \
+    RAWTransformation, RAWTransformParameters
+
 FPE_MAX_ADU = 65535
-
-default_calibrated_transform_parameters = {
-    'video_scales': (5.5, 5.5, 5.5, 5.5),  # electrons/ADU
-    'number_of_slices': 4,  # number of slices to use in transformation, either 1 or 4
-    'compression': 0.01,
-    'undershoot': 0.001,
-    'baseline_adu': 6000.0,
-    'drift_adu': 10.0,
-    'smear_ratio': 9.79541e-6,  # Derived from Hemiola.fpe
-    'clip_level_adu': FPE_MAX_ADU,  # recent tests suggest we'll hit ADC ceiling before anything else clips
-    'start_of_line_ringing': numpy.zeros(534),  # TODO: Read this from a file
-    'pattern_noise': numpy.zeros((2078, 534))  # TODO: Read this from a file
-}
-
-default_raw_transform_parameters = {
-    k: default_calibrated_transform_parameters[k]
-    for k in [
-        'video_scales',
-        'number_of_slices',
-        'compression',
-        'undershoot',
-        'smear_ratio',
-        'clip_level_adu',
-        'pattern_noise'
-    ]}
-
-
-# noinspection PyUnresolvedReferences
-class CalibratedTransformParameters(
-    namedtuple('CalibratedTransformParameters',
-               default_calibrated_transform_parameters.keys())):
-    __doc__ = """
-    Transformation parameters for converting a calibrated FITS image into an uncalibrated FITS image.
-
-    :param video_scales: The video scaling constants, for converting back and forth between\
-     *Analogue to Digital Converter Units* (ADU) to electron counts.\
-      These have units of electrons per ADU. Default: `{video_scales}`
-    :type video_scales: tuple of :py:class:`float` objects, must have one for each slice
-    :param number_of_slices: The number of slices to make in the resulting uncalibrated image.\
-     Default: `{number_of_slices}`
-    :type number_of_slices: int
-    :param compression: The compression factor. Default: `{compression}`
-    :type compression: float
-    :param undershoot: The undershoot factor. Default: `{undershoot}`
-    :type undershoot: float
-    :param baseline_adu: The baseline adu factor. Default: `{baseline_adu}`
-    :type baseline_adu: float
-    :param drift_adu: The drift ADU factor. Default: `{drift_adu}`
-    :type drift_adu: float
-    :param smear_ratio: The smear ratio. Default: `{smear_ratio}`
-    :type smear_ratio: float
-    :param clip_level_adu: The clip level ADU. Default: `{clip_level_adu}`
-    :type clip_level_adu: int
-    :param start_of_line_ringing: The start of line ringing vector. Default: Read from **TODO**
-    :type start_of_line_ringing: :py:class:`numpy.ndarray`
-    :param pattern_noise: The pattern noise. Default: Read from **TODO**
-    :type pattern_noise: :py:class:`numpy.ndarray`
-    """.format(**default_calibrated_transform_parameters)
-    __slots__ = ()
-
-
-CalibratedTransformParameters.__new__.__defaults__ = tuple(default_calibrated_transform_parameters.values())
-
-
-# noinspection PyUnresolvedReferences
-class RAWTransformParameters(
-    namedtuple('RAWTransformParameters',
-               default_raw_transform_parameters.keys())):
-    """
-    Transformation parameters for converting a calibrated FITS image into an uncalibrated FITS image.
-
-    :param video_scales:
-    :param number_of_slices:
-    :param compression:
-    :param undershoot:
-    :param smear_ratio:
-    :param clip_level_adu:
-    :param pattern_noise:
-    """
-    __slots__ = ()
-
-
-RAWTransformParameters.__new__.__defaults__ = tuple(default_raw_transform_parameters.values())
-
-
-# noinspection PyUnresolvedReferences
-class FITSMetaData(
-    namedtuple('FITSMetaData',
-               ['origin_file_name', 'header'])):
-    """
-    Meta data associated with data taken from a FITS file.
-
-    :param origin_file_name: The original file name where the data was taken from
-    :type origin_file_name: str
-    :param header: The header of the FITS file where the data was taken from
-    :type header: :py:class:`pyfits.Header`
-    """
-    __slots__ = ()
-
-
-# noinspection PyUnresolvedReferences
-class Slice(
-    namedtuple('Slice',
-               ['smear_rows',
-                'top_dark_pixel_rows',
-                'left_dark_pixel_columns',
-                'right_dark_pixel_columns',
-                'index',
-                'units',
-                'image_pixels'])):
-    __doc__ = """
-    A slice from a CCD. Includes all data associated with the slice in question
-    from various parts of the raw CCD image.
-
-    :param smear_rows:
-    :param top_dark_pixel_rows:
-    :param left_dark_pixel_columns:
-    :param right_dark_pixel_columns:
-    :param index: The index of the slice in the CCD
-    :param units: Can be either `electrons` or `ADU`
-    :type units: str
-    :param image_pixels: The image data in the pixel
-    """
-    __slots__ = ()
-
-
-Slice.__new__.__defaults__ = (None,) * len(Slice._fields)
-
-
-# noinspection PyUnresolvedReferences
-class RAWTransformation(
-    namedtuple('RAWTransformation',
-               ['slices',
-                'fits_metadata',
-                'parameters'])):
-    """
-    An immutable object for managing a transformation from a raw FITS image into a calibrated image.
-
-    :param slices: The slices of the image
-    :type slices: list of :py:class:`~httm.Slice` objects
-    :param fits_metadata: Meta data associated with the image
-    :type fits_metadata: :py:class:`~httm.FITSMetaData`
-    :param parameters: The parameters of the transformation
-    :type parameters: :py:class:`~httm.RAWTransformParameters`
-    """
-    __slots__ = ()
-
-
-# noinspection PyUnresolvedReferences
-class CalibratedTransformation(
-    namedtuple('CalibratedTransformation',
-               ['slices',
-                'fits_metadata',
-                'parameters'])):
-    """
-    An immutable object for managing a transformation from a calibrated FITS image into a (simulated) raw image.
-
-    :param slices: The slices of the image
-    :type slices: tuple of :py:class:`~httm.Slice` objects
-    :param fits_metadata: Meta data associated with the image
-    :type fits_metadata: :py:class:`~httm.FITSMetaData`
-    :param parameters: The parameters of the transformation
-    :type parameters: :py:class:`~httm.CalibratedTransformParameters`
-    """
 
 
 def write_calibrated_fits(output_file, raw_transform):
     """
-    Write a completed :py:class:`~httm.RAWTransformation` to a calibrated FITS file
+    Write a completed :py:class:`~httm.data_structures.RAWTransformation` to a calibrated FITS file
 
     :param output_file:
     :type output_file: str
     :param raw_transform:
-    :type raw_transform: :py:class:`~httm.RAWTransformation`
+    :type raw_transform: :py:class:`~httm.data_structures.RAWTransformation`
     :rtype: NoneType
     """
     from astropy.io.fits import HDUList, PrimaryHDU
@@ -203,10 +48,10 @@ def convert_slice_electrons_to_adu(compression, number_of_exposures, video_scale
     :param video_scale:
     :type video_scale: float
     :param baseline_adu:
-    :type float
+    :type baseline_adu: float
     :param image_slice:
-    :type image_slice: :py:class:`~httm.Slice`
-    :rtype: :py:class:`~httm.Slice`
+    :type image_slice: :py:class:`~httm.data_structures.Slice`
+    :rtype: :py:class:`~httm.data_structures.Slice`
     """
     assert image_slice.units == "electrons", "units must be electrons"
     compression_per_adu = compression / (number_of_exposures * FPE_MAX_ADU)  # type: float
@@ -234,9 +79,10 @@ def convert_slice_adu_to_electrons(compression, number_of_exposures, video_scale
     :param number_of_exposures:
     :type number_of_exposures: int
     :param video_scale:
+    :type video_scale: float
     :param image_slice:
-    :type image_slice: :py:class:`~httm.Slice`
-    :rtype: :py:class:`~httm.Slice`
+    :type image_slice: :py:class:`~httm.data_structures.Slice`
+    :rtype: :py:class:`~httm.data_structures.Slice`
     """
     assert image_slice.units == "ADU", "units must be ADU"
     compression_per_adu = compression / (number_of_exposures * FPE_MAX_ADU)  # type: float
@@ -257,12 +103,12 @@ def convert_slice_adu_to_electrons(compression, number_of_exposures, video_scale
 # noinspection PyProtectedMember
 def convert_electrons_to_adu(calibrated_transformation):
     """
-    Converts a :py:class:`~httm.CalibratedTransformation` from having electrons
+    Converts a :py:class:`~httm.data_structures.CalibratedTransformation` from having electrons
     to *Analogue to Digital Converter Units* (ADU).
 
     :param calibrated_transformation: Should have electrons for units
-    :type calibrated_transformation: :py:class:`~httm.CalibratedTransformation`
-    :rtype: :py:class:`~httm.CalibratedTransformation`
+    :type calibrated_transformation: :py:class:`~httm.data_structures.CalibratedTransformation`
+    :rtype: :py:class:`~httm.data_structures.CalibratedTransformation`
     """
     video_scales = calibrated_transformation.parameters.video_scales
     image_slices = calibrated_transformation.slices
@@ -282,12 +128,12 @@ def convert_electrons_to_adu(calibrated_transformation):
 # noinspection PyProtectedMember
 def convert_adu_to_electrons(raw_transformation):
     """
-    Converts a :py:class:`~httm.RAWTransformation` from having *Analogue to Digital Converter Units* (ADU)
-    to electron counts.
+    Converts a :py:class:`~httm.data_structures.RAWTransformation` from
+    having *Analogue to Digital Converter Units* (ADU) to electron counts.
 
     :param raw_transformation: Should have electrons for units
-    :type raw_transformation: :py:class:`~httm.RAWTransformation`
-    :rtype: :py:class:`~httm.RAWTransformation`
+    :type raw_transformation: :py:class:`~httm.data_structures.RAWTransformation`
+    :rtype: :py:class:`~httm.data_structures.RAWTransformation`
     """
     video_scales = raw_transformation.parameters.video_scales
     image_slices = raw_transformation.slices
@@ -306,12 +152,12 @@ def convert_adu_to_electrons(raw_transformation):
 
 def write_raw_fits(output_file, calibrated_transform):
     """
-    Write a completed :py:class:`~httm.CalibratedTransformation` to a (simulated) raw FITS file
+    Write a completed :py:class:`~httm.data_structures.CalibratedTransformation` to a (simulated) raw FITS file
 
     :param output_file:
     :type output_file: str
     :param calibrated_transform:
-    :type calibrated_transform: :py:class:`~httm.CalibratedTransformation`
+    :type calibrated_transform: :py:class:`~httm.data_structures.CalibratedTransformation`
     :rtype: NoneType
     """
     from astropy.io.fits import HDUList, PrimaryHDU
@@ -331,7 +177,7 @@ def make_slice_from_calibrated_data(image_pixels, index):
     :type image_pixels: :py:class:`numpy.ndarray`
     :param index: The index of the slice to construct
     :type index: int
-    :rtype: :py:class:`~httm.Slice`
+    :rtype: :py:class:`~httm.data_structures.Slice`
     """
     return Slice(image_pixels=image_pixels,
                  index=index,
@@ -340,12 +186,12 @@ def make_slice_from_calibrated_data(image_pixels, index):
 
 def calibrated_transform_from_file(input_file, number_of_slices=4, **kwargs):
     """
-    Construct a :py:class:`~httm.CalibratedTransformation` from a file or file name
+    Construct a :py:class:`~httm.data_structures.CalibratedTransformation` from a file or file name
 
     :param input_file: The file or file name to input
     :param number_of_slices: The numbers of slices
     :type input_file: :py:class:`File` or :py:class:`str`
-    :rtype: :py:class:`~httm.CalibratedTransformation`
+    :rtype: :py:class:`~httm.data_structures.CalibratedTransformation`
     """
     from astropy.io import fits
     from numpy import hsplit
@@ -370,11 +216,13 @@ def calibrated_transform_from_file(input_file, number_of_slices=4, **kwargs):
 
 def raw_transform_from_file(input_file, number_of_slices=4, **kwargs):
     """
-    Construct a :py:class:`~httm.RAWTransformation` from a file or file name
+    Construct a :py:class:`~httm.data_structures.RAWTransformation` from a file or file name
 
+    :param number_of_slices:
+    :type number_of_slices: int
     :param input_file: The file or file name to input
     :type input_file: :py:class:`File` or :py:class:`str`
-    :rtype: :py:class:`~httm.RAWTransformation`
+    :rtype: :py:class:`~httm.data_structures.RAWTransformation`
     """
     from astropy.io import fits
     from numpy import hsplit, vsplit
