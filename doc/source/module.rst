@@ -7,6 +7,7 @@ The python module `httm` has the following submodules
    :maxdepth: 2
 
    module/data_structures
+   module/transformations
 
 .. automodule:: httm
    :members:
