@@ -1,5 +1,87 @@
 import numpy
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
+
+parameters = OrderedDict([
+    ('number_of_slices', {
+        'type': 'int',
+        'documentation': 'The number of slices to use in the transformation, either `1` or `4`',
+        'default': 4,
+    }),
+    ('video_scales', {
+        'type': 'tuple of :py:class:`float` objects, must have one for each slice',
+        'documentation': 'The video scaling constants, for converting back and forth between '
+                         '*Analogue to Digital Converter Units* (ADU) to electron counts.'
+                         'These have units of electrons per ADU.',
+        'default': (5.5, 5.5, 5.5, 5.5),
+    }),
+    ('compression', {
+        'type': 'float',
+        'documentation': 'TODO: This needs a description',
+        'default': 0.01,
+    }),
+    ('undershoot', {
+        'type': 'float',
+        'documentation': 'TODO: This needs a description',
+        'default': 0.001,
+    }),
+    ('baseline_adu', {
+        'type': 'float',
+        'documentation': 'TODO: This needs a description',
+        'default': 6000.0,
+    }),
+    ('drift_adu', {
+        'type': 'float',
+        'documentation': 'TODO: This needs a description',
+        'default': 10.0,
+    }),
+    ('smear_ratio', {
+        'type': 'float',
+        'documentation': 'TODO: This needs a description. Mention how default is derived from `Hemiola.fpe`',
+        'default': 9.79541e-06
+    }),
+    ('clip_level_adu', {
+        'type': 'int',
+        'documentation': 'TODO: This needs a description',
+        'default': 60000,
+    }),
+    ('start_of_line_ringing', {
+        'type': ':py:class:`numpy.ndarray`',
+        'documentation': 'TODO: This needs a description',
+        'default': 'TODO',
+    }),
+    ('pattern_noise', {
+        'type': ':py:class:`numpy.ndarray`',
+        'documentation': 'TODO: This needs a description',
+        'default': 'TODO',
+    })
+])
+
+calibrated_transform_parameters = parameters
+raw_transform_parameters = OrderedDict((k, parameters[k])
+                                       for k in ['number_of_slices',
+                                                 'video_scales',
+                                                 'compression',
+                                                 'undershoot',
+                                                 'smear_ratio',
+                                                 'clip_level_adu',
+                                                 'pattern_noise'])
+
+
+def document_parameters(parameter_dictionary):
+    """
+    Construct a documentation string for dictionary of parameters
+
+    :param parameter_dictionary: An ordered dictionary of parameters,\
+    where each entry contains a `type`, documentation string and default value.
+    :type parameter_dictionary: :py:class:`collections.OrderedDict`
+    :rtype: str
+    """
+    return '\n'.join([":param {parameter}: {documentation}\n"
+                      ":type {parameter}: {type}".format(parameter=parameter,
+                                                         documentation=data['documentation'],
+                                                         type=data['type'])
+                      for parameter, data in parameter_dictionary.iteritems()])
+
 
 default_calibrated_transform_parameters = {
     'video_scales': (5.5, 5.5, 5.5, 5.5),  # electrons/ADU
@@ -28,63 +110,39 @@ default_raw_transform_parameters = {
 
 
 # noinspection PyUnresolvedReferences
-class CalibratedTransformParameters(
-    namedtuple('CalibratedTransformParameters',
-               default_calibrated_transform_parameters.keys())):
-    """
-    Transformation parameters for converting a calibrated FITS image into an uncalibrated FITS image.
+class CalibratedTransformParameters(namedtuple('CalibratedTransformParameters',
+                                               calibrated_transform_parameters.keys())):
+    __doc__ = """
+Transformation parameters for converting a calibrated FITS image into an uncalibrated FITS image.
 
-    :param video_scales: The video scaling constants, for converting back and forth between\
-     *Analogue to Digital Converter Units* (ADU) to electron counts.\
-      These have units of electrons per ADU.
-    :type video_scales: tuple of :py:class:`float` objects, must have one for each slice
-    :param number_of_slices: The number of slices to make in the resulting uncalibrated image.
-    :type number_of_slices: int
-    :param compression: The compression factor.
-    :type compression: float
-    :param undershoot: The undershoot factor.
-    :type undershoot: float
-    :param baseline_adu: The baseline adu factor.
-    :type baseline_adu: float
-    :param drift_adu: The drift ADU factor.
-    :type drift_adu: float
-    :param smear_ratio: The smear ratio.
-    :type smear_ratio: float
-    :param clip_level_adu: The clip level ADU.
-    :type clip_level_adu: int
-    :param start_of_line_ringing: The start of line ringing vector. Default: Read from **TODO**
-    :type start_of_line_ringing: :py:class:`numpy.ndarray`
-    :param pattern_noise: The pattern noise. Default: Read from **TODO**
-    :type pattern_noise: :py:class:`numpy.ndarray`
-    """
+See :py:func:`~httm.calibrated_transform_from_file` for default parameter values.
+
+{parameter_documentation}
+""".format(parameter_documentation=document_parameters(calibrated_transform_parameters))
     __slots__ = ()
 
 
-CalibratedTransformParameters.__new__.__defaults__ = tuple(default_calibrated_transform_parameters.values())
+# noinspection PyTypeChecker
+CalibratedTransformParameters.__new__.__defaults__ = tuple(
+    parameter_info['default'] for parameter_info in calibrated_transform_parameters.values())
 
 
 # noinspection PyUnresolvedReferences
 class RAWTransformParameters(
     namedtuple('RAWTransformParameters',
                default_raw_transform_parameters.keys())):
-    """
-    Transformation parameters for converting a calibrated FITS image into an uncalibrated FITS image.
+    __doc__ = """
+Transformation parameters for converting a calibrated FITS image into an uncalibrated FITS image.
 
-    :param video_scales:
-    :param number_of_slices:
-    :param compression:
-    :param undershoot:
-    :param smear_ratio:
-    :param clip_level_adu:
-    :param pattern_noise:
-    """
+{parameter_documentation}
+""".format(parameter_documentation=document_parameters(raw_transform_parameters))
     __slots__ = ()
 
 
 RAWTransformParameters.__new__.__defaults__ = tuple(default_raw_transform_parameters.values())
 
 
-# noinspection PyUnresolvedReferences
+# noinspection PyUnresolvedReferences,PyClassHasNoInit
 class FITSMetaData(
     namedtuple('FITSMetaData',
                ['origin_file_name', 'header'])):
@@ -99,7 +157,7 @@ class FITSMetaData(
     __slots__ = ()
 
 
-# noinspection PyUnresolvedReferences
+# noinspection PyUnresolvedReferences,PyClassHasNoInit
 class Slice(
     namedtuple('Slice',
                ['smear_rows',
@@ -109,7 +167,7 @@ class Slice(
                 'index',
                 'units',
                 'image_pixels'])):
-    __doc__ = """
+    """
     A slice from a CCD. Includes all data associated with the slice in question
     from various parts of the raw CCD image.
 
@@ -125,10 +183,11 @@ class Slice(
     __slots__ = ()
 
 
+# noinspection PyProtectedMember
 Slice.__new__.__defaults__ = (None,) * len(Slice._fields)
 
 
-# noinspection PyUnresolvedReferences
+# noinspection PyUnresolvedReferences,PyClassHasNoInit
 class RAWTransformation(
     namedtuple('RAWTransformation',
                ['slices',
@@ -138,16 +197,16 @@ class RAWTransformation(
     An immutable object for managing a transformation from a raw FITS image into a calibrated image.
 
     :param slices: The slices of the image
-    :type slices: list of :py:class:`~httm.Slice` objects
+    :type slices: list of :py:class:`~httm.data_structures.Slice` objects
     :param fits_metadata: Meta data associated with the image
-    :type fits_metadata: :py:class:`~httm.FITSMetaData`
+    :type fits_metadata: :py:class:`~httm.data_structures.FITSMetaData`
     :param parameters: The parameters of the transformation
-    :type parameters: :py:class:`~httm.RAWTransformParameters`
+    :type parameters: :py:class:`~httm.data_structures.RAWTransformParameters`
     """
     __slots__ = ()
 
 
-# noinspection PyUnresolvedReferences
+# noinspection PyUnresolvedReferences,PyClassHasNoInit
 class CalibratedTransformation(
     namedtuple('CalibratedTransformation',
                ['slices',
@@ -157,9 +216,9 @@ class CalibratedTransformation(
     An immutable object for managing a transformation from a calibrated FITS image into a (simulated) raw image.
 
     :param slices: The slices of the image
-    :type slices: tuple of :py:class:`~httm.Slice` objects
+    :type slices: tuple of :py:class:`~httm.data_structures.Slice` objects
     :param fits_metadata: Meta data associated with the image
-    :type fits_metadata: :py:class:`~httm.FITSMetaData`
+    :type fits_metadata: :py:class:`~httm.data_structures.FITSMetaData`
     :param parameters: The parameters of the transformation
-    :type parameters: :py:class:`~httm.CalibratedTransformParameters`
+    :type parameters: :py:class:`~httm.data_structures.CalibratedTransformParameters`
     """
