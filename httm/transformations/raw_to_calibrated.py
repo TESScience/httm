@@ -51,13 +51,9 @@ def convert_slice_adu_to_electrons(compression, number_of_exposures, video_scale
     def transform_adu_to_electron(adu):
         return adu / (-1.0 / video_scale + compression_per_electron * adu)
 
-    return Slice(smear_rows=transform_adu_to_electron(image_slice.smear_rows),
-                 top_dark_pixel_rows=transform_adu_to_electron(image_slice.top_dark_pixel_rows),
-                 left_dark_pixel_columns=transform_adu_to_electron(image_slice.left_dark_pixel_columns),
-                 right_dark_pixel_columns=transform_adu_to_electron(image_slice.right_dark_pixel_columns),
-                 index=image_slice.index,
+    return Slice(index=image_slice.index,
                  units="electrons",
-                 image_pixels=transform_adu_to_electron(image_slice.image_pixels))
+                 pixels=transform_adu_to_electron(image_slice.pixels))
 
 
 # noinspection PyProtectedMember

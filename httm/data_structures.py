@@ -160,13 +160,9 @@ class FITSMetaData(
 # noinspection PyUnresolvedReferences,PyClassHasNoInit
 class Slice(
     namedtuple('Slice',
-               ['smear_rows',
-                'top_dark_pixel_rows',
-                'left_dark_pixel_columns',
-                'right_dark_pixel_columns',
-                'index',
+               ['index',
                 'units',
-                'image_pixels'])):
+                'pixels'])):
     """
     A slice from a CCD. Includes all data associated with the slice in question
     from various parts of the raw CCD image.
@@ -178,7 +174,7 @@ class Slice(
     :param index: The index of the slice in the CCD
     :param units: Can be either `electrons` or `ADU`
     :type units: str
-    :param image_pixels: The image data in the pixel
+    :param pixels: The image data in the pixel
     """
     __slots__ = ()
 

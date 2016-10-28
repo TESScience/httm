@@ -26,7 +26,7 @@ def write_calibrated_fits(output_file, raw_transform):
     print raw_transform
     # noinspection PyTypeChecker
     HDUList(PrimaryHDU(header=raw_transform.fits_metadata.header,
-                       data=hstack([calibrated_slice.image_pixels
+                       data=hstack([calibrated_slice.pixels
                                     for calibrated_slice in raw_transform.slices]))) \
         .writeto(output_file)
 
@@ -45,22 +45,26 @@ def write_raw_fits(output_file, calibrated_transform):
     from numpy import hstack
     # noinspection PyTypeChecker
     HDUList(PrimaryHDU(header=calibrated_transform.fits_metadata.header,
-                       data=hstack([raw_slice.image_pixels
+                       data=hstack([raw_slice.pixels
                                     for raw_slice in calibrated_transform.slices]))) \
         .writeto(output_file)
 
 
-def make_slice_from_calibrated_data(image_pixels, index):
+def make_slice_from_calibrated_data(pixels, index):
     """
     Construct a slice from an array of calibrated pixel data given a specified index
 
-    :param image_pixels: Image pixels from the calibrated data
-    :type image_pixels: :py:class:`numpy.ndarray`
+    :param pixels: Image pixels from the calibrated data
+    :type pixels: :py:class:`numpy.ndarray`
     :param index: The index of the slice to construct
     :type index: int
     :rtype: :py:class:`~httm.data_structures.Slice`
     """
-    return Slice(image_pixels=image_pixels,
+    # TODO: Add in smear and dark pixels
+    image_smear_and_dark_pixels = numpy.hstack([pixels, numpy.zeros((pixels.shape[0], 20))])
+    row_count = image_smear_and_dark_pixels.shape[1]
+    dark_pixel_columns = numpy.zeros((11, row_count))
+    return Slice(pixels=numpy.vstack([dark_pixel_columns, image_smear_and_dark_pixels, dark_pixel_columns]),
                  index=index,
                  units='electrons')
 
@@ -119,20 +123,14 @@ Construct a :py:class:`~httm.data_structures.CalibratedTransformation` from a fi
 """.format(parameter_documentation=document_parameters(calibrated_transform_parameters))
 
 
-def make_raw_pixel_slice(
-        image_pixels,
+def make_slice_from_raw_data(
+        image_and_smear_pixels,
         index,
         left_dark_pixel_columns,
-        right_dark_pixel_columns,
-        top_dark_pixel_rows,
-        smear_rows):
+        right_dark_pixel_columns):
     return Slice(
-        image_pixels=image_pixels,
+        pixels=numpy.vstack([left_dark_pixel_columns, image_and_smear_pixels, right_dark_pixel_columns]),
         index=index,
-        left_dark_pixel_columns=left_dark_pixel_columns,
-        right_dark_pixel_columns=right_dark_pixel_columns,
-        top_dark_pixel_rows=top_dark_pixel_rows,
-        smear_rows=smear_rows,
         units='hdu')
 
 
@@ -157,20 +155,16 @@ def raw_transform_from_file(
     if hasattr(input_file, 'name'):
         origin_file_name = input_file.name
 
-    sliced_image_pixels = hsplit(header_data_unit_list[0].data[20:, 44:-44], number_of_slices)
+    sliced_image_smear_and_dark_pixels = hsplit(header_data_unit_list[0].data[:, 44:-44], number_of_slices)
     sliced_left_dark_pixels = vsplit(header_data_unit_list[0].data[:, :44], number_of_slices)
     sliced_right_dark_pixels = vsplit(header_data_unit_list[0].data[:, -44:], number_of_slices)
-    sliced_top_dark_pixels = hsplit(header_data_unit_list[0].data[:10, 44:-44], number_of_slices)
-    sliced_smear_rows = hsplit(header_data_unit_list[0].data[10:20, 44:-44], number_of_slices)
 
     return RAWTransformation(
-        slices=map(make_raw_pixel_slice,
-                   sliced_image_pixels,
+        slices=map(make_slice_from_raw_data,
+                   sliced_image_smear_and_dark_pixels,
                    range(number_of_slices),
                    sliced_left_dark_pixels,
-                   sliced_right_dark_pixels,
-                   sliced_top_dark_pixels,
-                   sliced_smear_rows),
+                   sliced_right_dark_pixels),
         fits_metadata=FITSMetaData(origin_file_name=origin_file_name,
                                    header=header_data_unit_list[0].header),
         parameters=RAWTransformParameters(
