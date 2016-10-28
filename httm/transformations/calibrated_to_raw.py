@@ -5,6 +5,50 @@ for writing to a raw FITS file.
 
 import numpy
 
+def add_smear( data, smear_ratio, smear_row_count ):
+    """
+    STUB.
+
+    :param data:
+    :param smear_ratio:
+    :param smear_row_count:
+    :return:
+    """
+
+    return data
+
+def add_shot_noise( data ):
+    """
+    STUB. Currently done by SPyFFI.
+
+    :param data:
+    :return:
+    """
+
+    return data
+
+def do_blooming( data, full_well, nreads):
+    """
+    STUB. Currently done by SPyFFI
+
+    :param data:
+    :param full_well:
+    :param nreads:
+    :return:
+    """
+
+    return data
+
+def add_readout_noise( data, readout_noise, nreads ):
+    """
+    STUB. Currently done by SPyFFI.
+
+    :param data:
+    :param readout_noise:
+    :return:
+    """
+
+    return data
 
 def simulate_undershoot(row, undershoot):
     """
