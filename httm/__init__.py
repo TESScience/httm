@@ -7,8 +7,8 @@ or raw TESS full Frame FITS images between one another.
 import numpy
 
 from httm.data_structures import Slice, CalibratedTransformation, CalibratedTransformParameters, FITSMetaData, \
-    RAWTransformation, RAWTransformParameters, document_parameters, calibrated_transform_parameters, \
-    raw_transform_parameters
+    RAWTransformation, RAWTransformParameters, document_parameters, calibrated_transformation_parameters, \
+    raw_transformation_parameters
 
 
 def write_calibrated_fits(output_file, raw_transform):
@@ -71,16 +71,16 @@ def make_slice_from_calibrated_data(pixels, index):
 
 def calibrated_transform_from_file(
         input_file,
-        number_of_slices=calibrated_transform_parameters['number_of_slices']['default'],
-        video_scales=calibrated_transform_parameters['video_scales']['default'],
-        compression=calibrated_transform_parameters['compression']['default'],
-        undershoot=calibrated_transform_parameters['undershoot']['default'],
-        baseline_adu=calibrated_transform_parameters['baseline_adu']['default'],
-        drift_adu=calibrated_transform_parameters['drift_adu']['default'],
-        smear_ratio=calibrated_transform_parameters['smear_ratio']['default'],
-        clip_level_adu=calibrated_transform_parameters['clip_level_adu']['default'],
-        start_of_line_ringing=calibrated_transform_parameters['start_of_line_ringing']['default'],
-        pattern_noise=calibrated_transform_parameters['pattern_noise']['default']):
+        number_of_slices=calibrated_transformation_parameters['number_of_slices']['default'],
+        video_scales=calibrated_transformation_parameters['video_scales']['default'],
+        compression=calibrated_transformation_parameters['compression']['default'],
+        undershoot=calibrated_transformation_parameters['undershoot']['default'],
+        baseline_adu=calibrated_transformation_parameters['baseline_adu']['default'],
+        drift_adu=calibrated_transformation_parameters['drift_adu']['default'],
+        smear_ratio=calibrated_transformation_parameters['smear_ratio']['default'],
+        clip_level_adu=calibrated_transformation_parameters['clip_level_adu']['default'],
+        start_of_line_ringing=calibrated_transformation_parameters['start_of_line_ringing']['default'],
+        pattern_noise=calibrated_transformation_parameters['pattern_noise']['default']):
     from astropy.io import fits
     from numpy import hsplit
     header_data_unit_list = fits.open(input_file)
@@ -120,7 +120,7 @@ Construct a :py:class:`~httm.data_structures.CalibratedTransformation` from a fi
 :type input_file: :py:class:`file` or :py:class:`str`
 {parameter_documentation}
 :rtype: :py:class:`~httm.data_structures.CalibratedTransformation`
-""".format(parameter_documentation=document_parameters(calibrated_transform_parameters))
+""".format(parameter_documentation=document_parameters(calibrated_transformation_parameters))
 
 
 def make_slice_from_raw_data(
@@ -136,13 +136,13 @@ def make_slice_from_raw_data(
 
 def raw_transform_from_file(
         input_file,
-        number_of_slices=calibrated_transform_parameters['number_of_slices']['default'],
-        video_scales=calibrated_transform_parameters['video_scales']['default'],
-        compression=calibrated_transform_parameters['compression']['default'],
-        undershoot=calibrated_transform_parameters['undershoot']['default'],
-        smear_ratio=calibrated_transform_parameters['smear_ratio']['default'],
-        clip_level_adu=calibrated_transform_parameters['clip_level_adu']['default'],
-        pattern_noise=calibrated_transform_parameters['pattern_noise']['default']):
+        number_of_slices=calibrated_transformation_parameters['number_of_slices']['default'],
+        video_scales=calibrated_transformation_parameters['video_scales']['default'],
+        compression=calibrated_transformation_parameters['compression']['default'],
+        undershoot=calibrated_transformation_parameters['undershoot']['default'],
+        smear_ratio=calibrated_transformation_parameters['smear_ratio']['default'],
+        clip_level_adu=calibrated_transformation_parameters['clip_level_adu']['default'],
+        pattern_noise=calibrated_transformation_parameters['pattern_noise']['default']):
     from astropy.io import fits
     from numpy import hsplit, vsplit
     header_data_unit_list = fits.open(input_file)
@@ -185,4 +185,4 @@ Construct a :py:class:`~httm.data_structures.RAWTransformation` from a file or f
 :type input_file: :py:class:`File` or :py:class:`str`
 {parameter_documentation}
 :rtype: :py:class:`~httm.data_structures.RAWTransformation`
-""".format(parameter_documentation=document_parameters(raw_transform_parameters))
+""".format(parameter_documentation=document_parameters(raw_transformation_parameters))

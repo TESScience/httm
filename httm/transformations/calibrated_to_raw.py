@@ -31,7 +31,7 @@ def add_shot_noise(image_slice):
     return image_slice
 
 
-def do_blooming(image_slice, full_well, nreads):
+def simulate_blooming(image_slice, full_well, nreads):
     """
     TODO. Currently done by SPyFFI
 
@@ -43,15 +43,23 @@ def do_blooming(image_slice, full_well, nreads):
     return image_slice
 
 
-def add_readout_noise(image_slice, readout_noise, nreads):
+def add_readout_noise_to_slice(image_slice, readout_noise, nreads):
     """
     TODO. Currently done by SPyFFI.
 
+    Adds a Gaussian random _readout_ noise to every pixel.
+    The average value :math:`\\mu` of the noise is `0`.
+    The variance :math:`\\sigma^2` is :math:`\\mathtt{readout\_noise}^2 \times \\mathtt{nreads}`
+
     :param image_slice:
+    :type image_slice: :py:class:`~httm.data_structures.Slice`
     :param readout_noise:
+    :type readout_noise: float
+    :param nreads:
+    :type nreads: int
     :rtype:
     """
-    return image_slice
+    return image_slice._replace(pixels=image_slice.pixels)
 
 
 # TODO: make this work on slices
