@@ -9,16 +9,20 @@ parameters = OrderedDict([
     ('video_scales', {
         'type': 'tuple of :py:class:`float` objects, must have one for each slice',
         'documentation': 'The video scaling constants, for converting back and forth between '
-                         '*Analogue to Digital Converter Units* (ADU) to electron counts.'
+                         '*Analogue to Digital Converter Units* (ADU) to electron counts. '
                          'These have units of electrons per ADU.',
         'default': (5.5, 5.5, 5.5, 5.5),
     }),
     ('readout_noise', {
         'type': 'tuple of :py:class:`float` objects, must have one for each slice',
-        'documentation': 'The video scaling constants, for converting back and forth between '
-                         '*Analogue to Digital Converter Units* (ADU) to electron counts.'
-                         'These have units of electrons per ADU.',
-        'default': (5.5, 5.5, 5.5, 5.5),
+        'documentation': 'The video readout noise standard deviation in electrons. '
+                         'Corresponds to fluctuations in electron counts for completely dark pixel data.',
+        'default': (9.5, 9.5, 9.5, 9.5),
+    }),
+    ('full_well', {
+        'type': 'float',
+        'documentation': 'The expected maximum number of electrons before a pixel blooms.',
+        'default': 200000.0,
     }),
     ('compression', {
         'type': 'float',
@@ -97,6 +101,16 @@ calibrated_transformation_flags = OrderedDict([
         'type': 'boolean',
         'documentation': 'Indicates whether *undershoot* is present',
         'default': False,
+    }),
+    ('pattern_noise', {
+        'type': 'boolean',
+        'documentation': 'Indicates whether *pattern noise* is present',
+        'default': False,
+    }),
+    ('start_of_line_ringing', {
+        'type': 'boolean',
+        'documentation': 'Indicates whether *start of line ringing* is present',
+        'default': False,
     })
 ])
 
@@ -109,6 +123,16 @@ raw_transformation_flags = OrderedDict([
     ('undershoot', {
         'type': 'boolean',
         'documentation': calibrated_transformation_flags['undershoot']['documentation'],
+        'default': True,
+    }),
+    ('pattern_noise', {
+        'type': 'boolean',
+        'documentation': calibrated_transformation_flags['pattern_noise']['documentation'],
+        'default': True,
+    }),
+    ('start_of_line_ringing', {
+        'type': 'boolean',
+        'documentation': calibrated_transformation_flags['start_of_line_ringing']['documentation'],
         'default': True,
     })
 ])

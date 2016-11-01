@@ -7,8 +7,16 @@ import numpy
 from constants import FPE_MAX_ADU
 from ..data_structures import Slice, RAWTransformation
 
+def remove_start_of_line_ringing_from_slice(image_slice):
+    pass
 
-def remove_undershoot(row, undershoot):
+def remove_smear_from_slice(image_slice):
+    pass
+
+def remove_pattern_noise_from_slice(pattern_noise, image_slice):
+    pass
+
+def remove_undershoot_from_row(row, undershoot):
     # type: (numpy.ndarray, float) -> numpy.ndarray
     """
     Remove undershoot from one row.

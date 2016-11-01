@@ -8,6 +8,11 @@ import numpy
 from constants import FPE_MAX_ADU
 from ..data_structures import Slice
 
+def add_start_of_line_ringing_to_slice( start_of_line_ringing, image_slice):
+    pass
+
+def add_pattern_noise_to_slice( pattern_noise, image_slice):
+    pass
 
 def introduce_smear_rows_to_slice(image_slice, smear_ratio):
     """
@@ -31,7 +36,7 @@ def add_shot_noise(image_slice):
     return image_slice
 
 
-def simulate_blooming(image_slice, full_well, nreads):
+def simulate_blooming_on_slice(full_well, nreads, image_slice):
     """
     TODO. Currently done by SPyFFI
 
@@ -43,7 +48,7 @@ def simulate_blooming(image_slice, full_well, nreads):
     return image_slice
 
 
-def add_readout_noise_to_slice(image_slice, readout_noise, nreads):
+def add_readout_noise_to_slice(readout_noise, nreads, image_slice):
     """
     TODO. Currently done by SPyFFI.
 
@@ -59,7 +64,10 @@ def add_readout_noise_to_slice(image_slice, readout_noise, nreads):
     :type nreads: int
     :rtype:
     """
-    return image_slice._replace(pixels=image_slice.pixels)
+    from numpy.random import normal
+    return image_slice._replace(
+        pixels=image_slice.pixels + normal(loc=0.0, scale=readout_noise * numpy.sqrt(nreads),
+                                           size=image_slice.pixels.size))
 
 
 # TODO: make this work on slices
