@@ -155,10 +155,10 @@ def document_parameters(parameter_dictionary):
 
 
 # noinspection PyUnresolvedReferences
-class CalibratedTransformationParameters(namedtuple('CalibratedTransformationParameters',
-                                                    calibrated_transformation_parameters.keys())):
+class CalibratedConverterParameters(namedtuple('CalibratedConverterParameters',
+                                               calibrated_transformation_parameters.keys())):
     __doc__ = """
-Transformation parameters for converting a calibrated FITS image into an uncalibrated FITS image.
+Converter parameters for converting a calibrated FITS image into an uncalibrated FITS image.
 
 See :py:func:`~httm.calibrated_transform_from_file` for default parameter values.
 
@@ -168,45 +168,45 @@ See :py:func:`~httm.calibrated_transform_from_file` for default parameter values
 
 
 # noinspection PyTypeChecker
-CalibratedTransformationParameters.__new__.__defaults__ = tuple(
+CalibratedConverterParameters.__new__.__defaults__ = tuple(
     parameter_info['default'] for parameter_info in calibrated_transformation_parameters.values())
 
 
 # noinspection PyUnresolvedReferences
-class RAWTransformationParameters(
-    namedtuple('RAWTransformationParameters',
-               default_raw_transform_parameters.keys())):
+class RAWConverterParameters(
+    namedtuple('RAWConverterParameters',
+               raw_transformation_parameters.keys())):
     __doc__ = """
-Transformation parameters for converting a calibrated FITS image into an uncalibrated FITS image.
+Converter parameters for converting a calibrated FITS image into an uncalibrated FITS image.
 
 {parameter_documentation}
 """.format(parameter_documentation=document_parameters(raw_transformation_parameters))
     __slots__ = ()
 
 
-RAWTransformationParameters.__new__.__defaults__ = tuple(
+RAWConverterParameters.__new__.__defaults__ = tuple(
     parameter_info['default'] for parameter_info in raw_transformation_parameters.values())
 
 
 # noinspection PyClassHasNoInit
-class CalibratedTransformationFlags(
-    namedtuple('RawTransformationFlags',
-               raw_transformation_flags.keys())):
+class CalibratedConverterFlags(
+    namedtuple('CalibratedConverterFlags',
+               calibrated_transformation_flags.keys())):
     __doc__ = """
 Flags indicating which raw transformations have been performed.
 
 {parameter_documentation}
-""".format(parameter_documentation=document_parameters(raw_transformation_flags))
+""".format(parameter_documentation=document_parameters(calibrated_transformation_flags))
     __slots__ = ()
 
 
-CalibratedTransformationFlags.__new__.__defaults__ = tuple(
+CalibratedConverterFlags.__new__.__defaults__ = tuple(
     parameter_info['default'] for parameter_info in calibrated_transformation_flags.values())
 
 
 # noinspection PyClassHasNoInit
-class RawTransformationFlags(
-    namedtuple('RawTransformationFlags',
+class RawConverterFlags(
+    namedtuple('RawConverterFlags',
                raw_transformation_flags.keys())):
     __doc__ = """
 Flags indicating which raw transformations have been performed.
@@ -216,7 +216,7 @@ Flags indicating which raw transformations have been performed.
     __slots__ = ()
 
 
-RawTransformationFlags.__new__.__defaults__ = tuple(
+RawConverterFlags.__new__.__defaults__ = tuple(
     parameter_info['default'] for parameter_info in raw_transformation_flags.values())
 
 
@@ -260,8 +260,8 @@ Slice.__new__.__defaults__ = (None,) * len(Slice._fields)
 
 
 # noinspection PyUnresolvedReferences,PyClassHasNoInit
-class CalibratedTransformation(
-    namedtuple('CalibratedTransformation',
+class CalibratedConverter(
+    namedtuple('CalibratedConverter',
                ['slices',
                 'fits_metadata',
                 'parameters',
@@ -274,15 +274,15 @@ class CalibratedTransformation(
     :param fits_metadata: Meta data associated with the image
     :type fits_metadata: :py:class:`~httm.data_structures.FITSMetaData`
     :param parameters: The parameters of the transformation
-    :type parameters: :py:class:`~httm.data_structures.CalibratedTransformationParameters`
+    :type parameters: :py:class:`~httm.data_structures.CalibratedConverterParameters`
     :param flags: Flags indicating the state of the transformation
-    :type flags: :py:class:`~httm.data_structures.CalibratedTransformationFlags`
+    :type flags: :py:class:`~httm.data_structures.CalibratedConverterFlags`
     """
 
 
 # noinspection PyUnresolvedReferences,PyClassHasNoInit
-class RAWTransformation(
-    namedtuple('RAWTransformation',
+class RAWConverter(
+    namedtuple('RAWConverter',
                ['slices',
                 'fits_metadata',
                 'parameters',
@@ -295,8 +295,8 @@ class RAWTransformation(
     :param fits_metadata: Meta data associated with the image
     :type fits_metadata: :py:class:`~httm.data_structures.FITSMetaData`
     :param parameters: The parameters of the transformation
-    :type parameters: :py:class:`~httm.data_structures.RAWTransformationParameters`
+    :type parameters: :py:class:`~httm.data_structures.RAWConverterParameters`
     :param flags: Flags indicating the state of the transformation
-    :type flags: :py:class:`~httm.data_structures.RawTransformationFlags`
+    :type flags: :py:class:`~httm.data_structures.RawConverterFlags`
     """
     __slots__ = ()

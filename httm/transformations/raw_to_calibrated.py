@@ -1,20 +1,27 @@
 """
-Transformation functions for processing a :py:class:`~httm.data_structures.RAWTransformation` so that it is suitable
+Transformation functions for processing a :py:class:`~httm.data_structures.RAWConverter` so that it is suitable
 for writing to a calibrated FITS file.
 """
 import numpy
 
 from constants import FPE_MAX_ADU
-from ..data_structures import Slice, RAWTransformation
+from ..data_structures import Slice, RAWConverter
+
 
 def remove_start_of_line_ringing_from_slice(image_slice):
+    # type: (Slice) -> Slice
     pass
+
 
 def remove_smear_from_slice(image_slice):
+    # type: (Slice) -> Slice
     pass
 
+
 def remove_pattern_noise_from_slice(pattern_noise, image_slice):
+    # type: (numpy.ndarray, Slice) -> Slice
     pass
+
 
 def remove_undershoot_from_row(row, undershoot):
     # type: (numpy.ndarray, float) -> numpy.ndarray
@@ -57,6 +64,7 @@ def convert_slice_adu_to_electrons(compression, number_of_exposures, video_scale
     compression_per_electron = compression_per_adu / video_scale  # type: float
 
     def transform_adu_to_electron(adu):
+        # type: (float) -> float
         return adu / (-1.0 / video_scale + compression_per_electron * adu)
 
     return Slice(index=image_slice.index,
@@ -66,14 +74,14 @@ def convert_slice_adu_to_electrons(compression, number_of_exposures, video_scale
 
 # noinspection PyProtectedMember
 def convert_adu_to_electrons(raw_transformation):
-    # type: (RAWTransformation) -> RAWTransformation
+    # type: (RAWConverter) -> RAWConverter
     """
-    Converts a :py:class:`~httm.data_structures.RAWTransformation` from
+    Converts a :py:class:`~httm.data_structures.RAWConverter` from
     having *Analogue to Digital Converter Units* (ADU) to electron counts.
 
     :param raw_transformation: Should have electrons for units
-    :type raw_transformation: :py:class:`~httm.data_structures.RAWTransformation`
-    :rtype: :py:class:`~httm.data_structures.RAWTransformation`
+    :type raw_transformation: :py:class:`~httm.data_structures.RAWConverter`
+    :rtype: :py:class:`~httm.data_structures.RAWConverter`
     """
     video_scales = raw_transformation.parameters.video_scales
     image_slices = raw_transformation.slices

@@ -6,20 +6,20 @@ or raw TESS full Frame FITS images between one another.
 # See https://docs.python.org/2/library/collections.html#collections.namedtuple for details
 import numpy
 
-from httm.data_structures import Slice, CalibratedTransformation, CalibratedTransformParameters, FITSMetaData, \
-    RAWTransformation, RAWTransformParameters, document_parameters, calibrated_transformation_parameters, \
+from httm.data_structures import Slice, CalibratedConverter, CalibratedConverterParameters, FITSMetaData, \
+    RAWConverter, RAWConverterParameters, document_parameters, calibrated_transformation_parameters, \
     raw_transformation_parameters
 
 
 def write_calibrated_fits(output_file, raw_transform):
-    # type: (str, RAWTransformation) -> NoneType
+    # type: (str, RAWConverter) -> NoneType
     """
-    Write a completed :py:class:`~httm.data_structures.RAWTransformation` to a calibrated FITS file
+    Write a completed :py:class:`~httm.data_structures.RAWConverter` to a calibrated FITS file
 
     :param output_file:
     :type output_file: str
     :param raw_transform:
-    :type raw_transform: :py:class:`~httm.data_structures.RAWTransformation`
+    :type raw_transform: :py:class:`~httm.data_structures.RAWConverter`
     """
     from astropy.io.fits import HDUList, PrimaryHDU
     from numpy import hstack
@@ -32,13 +32,14 @@ def write_calibrated_fits(output_file, raw_transform):
 
 
 def write_raw_fits(output_file, calibrated_transform):
+    # type: (str, CalibratedConverter) -> CalibratedConverter
     """
-    Write a completed :py:class:`~httm.data_structures.CalibratedTransformation` to a (simulated) raw FITS file
+    Write a completed :py:class:`~httm.data_structures.CalibratedConverter` to a (simulated) raw FITS file
 
     :param output_file:
     :type output_file: str
     :param calibrated_transform:
-    :type calibrated_transform: :py:class:`~httm.data_structures.CalibratedTransformation`
+    :type calibrated_transform: :py:class:`~httm.data_structures.CalibratedConverter`
     :rtype: NoneType
     """
     from astropy.io.fits import HDUList, PrimaryHDU
@@ -51,6 +52,7 @@ def write_raw_fits(output_file, calibrated_transform):
 
 
 def make_slice_from_calibrated_data(pixels, index):
+    # type: (numpy.ndarry, int) -> Slice
     """
     Construct a slice from an array of calibrated pixel data given a specified index
 
@@ -69,7 +71,7 @@ def make_slice_from_calibrated_data(pixels, index):
                  units='electrons')
 
 
-def calibrated_transform_from_file(
+def calibrated_transformation_from_file(
         input_file,
         number_of_slices=calibrated_transformation_parameters['number_of_slices']['default'],
         video_scales=calibrated_transformation_parameters['video_scales']['default'],
@@ -92,14 +94,14 @@ def calibrated_transform_from_file(
         origin_file_name = input_file
     if hasattr(input_file, 'name'):
         origin_file_name = input_file.name
-    return CalibratedTransformation(
+    return CalibratedConverter(
         slices=map(lambda pixel_data, index:
                    make_slice_from_calibrated_data(pixel_data, index),
                    hsplit(header_data_unit_list[0].data, number_of_slices),
                    range(number_of_slices)),
         fits_metadata=FITSMetaData(origin_file_name=origin_file_name,
                                    header=header_data_unit_list[0].header),
-        parameters=CalibratedTransformParameters(
+        parameters=CalibratedConverterParameters(
             video_scales=video_scales,
             number_of_slices=number_of_slices,
             compression=compression,
@@ -113,13 +115,13 @@ def calibrated_transform_from_file(
         ))
 
 
-calibrated_transform_from_file.__doc__ = """
-Construct a :py:class:`~httm.data_structures.CalibratedTransformation` from a file or file name
+calibrated_transformation_from_file.__doc__ = """
+Construct a :py:class:`~httm.data_structures.CalibratedConverter` from a file or file name
 
 :param input_file: The file or file name to input
 :type input_file: :py:class:`file` or :py:class:`str`
 {parameter_documentation}
-:rtype: :py:class:`~httm.data_structures.CalibratedTransformation`
+:rtype: :py:class:`~httm.data_structures.CalibratedConverter`
 """.format(parameter_documentation=document_parameters(calibrated_transformation_parameters))
 
 
@@ -134,10 +136,11 @@ def make_slice_from_raw_data(
         units='hdu')
 
 
-def raw_transform_from_file(
+def raw_transformation_from_file(
         input_file,
         number_of_slices=calibrated_transformation_parameters['number_of_slices']['default'],
         video_scales=calibrated_transformation_parameters['video_scales']['default'],
+        full_well=calibrated_transformation_parameters['full_well']['default'],
         compression=calibrated_transformation_parameters['compression']['default'],
         undershoot=calibrated_transformation_parameters['undershoot']['default'],
         smear_ratio=calibrated_transformation_parameters['smear_ratio']['default'],
@@ -159,7 +162,7 @@ def raw_transform_from_file(
     sliced_left_dark_pixels = vsplit(header_data_unit_list[0].data[:, :44], number_of_slices)
     sliced_right_dark_pixels = vsplit(header_data_unit_list[0].data[:, -44:], number_of_slices)
 
-    return RAWTransformation(
+    return RAWConverter(
         slices=map(make_slice_from_raw_data,
                    sliced_image_smear_and_dark_pixels,
                    range(number_of_slices),
@@ -167,9 +170,10 @@ def raw_transform_from_file(
                    sliced_right_dark_pixels),
         fits_metadata=FITSMetaData(origin_file_name=origin_file_name,
                                    header=header_data_unit_list[0].header),
-        parameters=RAWTransformParameters(
+        parameters=RAWConverterParameters(
             video_scales=video_scales,
             number_of_slices=number_of_slices,
+            full_well=full_well,
             compression=compression,
             undershoot=undershoot,
             smear_ratio=smear_ratio,
@@ -178,11 +182,11 @@ def raw_transform_from_file(
         ))
 
 
-raw_transform_from_file.__doc__ = """
-Construct a :py:class:`~httm.data_structures.RAWTransformation` from a file or file name
+raw_transformation_from_file.__doc__ = """
+Construct a :py:class:`~httm.data_structures.RAWConverter` from a file or file name
 
 :param input_file: The file or file name to input
 :type input_file: :py:class:`File` or :py:class:`str`
 {parameter_documentation}
-:rtype: :py:class:`~httm.data_structures.RAWTransformation`
+:rtype: :py:class:`~httm.data_structures.RAWConverter`
 """.format(parameter_documentation=document_parameters(raw_transformation_parameters))
