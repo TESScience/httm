@@ -144,7 +144,7 @@ def raw_transform_from_file(
         clip_level_adu=calibrated_transformation_parameters['clip_level_adu']['default'],
         pattern_noise=calibrated_transformation_parameters['pattern_noise']['default']):
     from astropy.io import fits
-    from numpy import hsplit, vsplit
+    from numpy import hsplit, fliplr
     header_data_unit_list = fits.open(input_file)
     assert len(header_data_unit_list) == 1, "Only a single image per FITS file is supported"
     assert header_data_unit_list[0].data.shape[1] % number_of_slices == 0, \
@@ -156,8 +156,10 @@ def raw_transform_from_file(
         origin_file_name = input_file.name
 
     sliced_image_smear_and_dark_pixels = hsplit(header_data_unit_list[0].data[:, 44:-44], number_of_slices)
-    sliced_left_dark_pixels = vsplit(header_data_unit_list[0].data[:, :44], number_of_slices)
-    sliced_right_dark_pixels = vsplit(header_data_unit_list[0].data[:, -44:], number_of_slices)
+    sliced_image_smear_and_dark_pixels[1] = fliplr(sliced_image_smear_and_dark_pixels[1])
+    sliced_image_smear_and_dark_pixels[3] = fliplr(sliced_image_smear_and_dark_pixels[3])
+    sliced_left_dark_pixels = hsplit(header_data_unit_list[0].data[:, :44], number_of_slices)
+    sliced_right_dark_pixels = hsplit(header_data_unit_list[0].data[:, -44:], number_of_slices)
 
     return RAWTransformation(
         slices=map(make_slice_from_raw_data,
