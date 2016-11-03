@@ -147,10 +147,12 @@ def document_parameters(parameter_dictionary):
     :type parameter_dictionary: :py:class:`collections.OrderedDict`
     :rtype: str
     """
-    return '\n'.join([":param {parameter}: {documentation}\n"
-                      ":type {parameter}: {type}".format(parameter=parameter,
-                                                         documentation=data['documentation'],
-                                                         type=data['type'])
+    return '\n'.join([":param {parameter}: {documentation}. Default: `{default}`\n"
+                      ":type {parameter}: {type}"
+                     .format(parameter=parameter,
+                             documentation=data['documentation'].rstrip(". "),
+                             default=data['default'],
+                             type=data['type'])
                       for parameter, data in parameter_dictionary.iteritems()])
 
 

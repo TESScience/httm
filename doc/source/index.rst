@@ -8,4 +8,5 @@ Contents:
 
    layout
    fits_format
+   plugins
    module

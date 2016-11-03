@@ -32,7 +32,7 @@ def write_calibrated_fits(output_file, raw_transform):
 
 
 def write_raw_fits(output_file, calibrated_transform):
-    # type: (str, CalibratedConverter) -> CalibratedConverter
+    # type: (str, CalibratedConverter) -> NoneType
     """
     Write a completed :py:class:`~httm.data_structures.CalibratedConverter` to a (simulated) raw FITS file
 
@@ -130,6 +130,11 @@ def make_slice_from_raw_data(
         index,
         left_dark_pixel_columns,
         right_dark_pixel_columns):
+    # type: (numpy.ndarray, int, numpy.ndarray, numpy.ndarray) -> Slice
+    print "image_and_smear dimentions", image_and_smear_pixels.shape
+    print "Index", index
+    print "left dark pixels dimensions", left_dark_pixel_columns.shape
+    print "right dark pixels columns", right_dark_pixel_columns.shape
     return Slice(
         pixels=numpy.vstack([left_dark_pixel_columns, image_and_smear_pixels, right_dark_pixel_columns]),
         index=index,
@@ -158,9 +163,9 @@ def raw_transformation_from_file(
     if hasattr(input_file, 'name'):
         origin_file_name = input_file.name
 
-    sliced_image_smear_and_dark_pixels = hsplit(header_data_unit_list[0].data[:, 44:-44], number_of_slices)
-    sliced_left_dark_pixels = vsplit(header_data_unit_list[0].data[:, :44], number_of_slices)
-    sliced_right_dark_pixels = vsplit(header_data_unit_list[0].data[:, -44:], number_of_slices)
+    sliced_image_smear_and_dark_pixels = vsplit(header_data_unit_list[0].data[:, 44:-44], number_of_slices)
+    sliced_left_dark_pixels = hsplit(header_data_unit_list[0].data[:, :44], number_of_slices)
+    sliced_right_dark_pixels = hsplit(header_data_unit_list[0].data[:, -44:], number_of_slices)
 
     return RAWConverter(
         slices=map(make_slice_from_raw_data,

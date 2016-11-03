@@ -229,8 +229,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'HotTubTimeMachine.tex', u'Hot Tub Time Machine Documentation',
-     u'Matthew Wampler-Doty', 'manual'),
+    (master_doc, 'HTTM.tex', u'The Official HTTM Documentation',
+     u'Matthew Wampler-Doty and John Doty', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

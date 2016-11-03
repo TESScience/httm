@@ -1,7 +1,5 @@
-Hot Tub Time Machine (`httm`) Python Module Documentation
-=========================================================
-
-The python module `httm` has the following submodules
+Python Module Documentation
+===========================
 
 .. toctree::
    :maxdepth: 2

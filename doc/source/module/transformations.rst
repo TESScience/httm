@@ -1,8 +1,6 @@
 Data Transformations
 ====================
 
-The python module `httm.transformations` has the following submodules
-
 .. toctree::
    :maxdepth: 2
 
