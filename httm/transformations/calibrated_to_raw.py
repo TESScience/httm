@@ -12,56 +12,80 @@ from ..data_structures import Slice
 def add_start_of_line_ringing_to_slice(start_of_line_ringing, image_slice):
     # type: (numpy.ndarray, Slice) -> Slice
     """
-    TODO.
+    Add a fixed pattern to each row of a slice.
 
     :param start_of_line_ringing:
-    :type start_of_line_ringing: :py:class:`numpy.ndarray`
+    :type start_of_line_ringing: row: :py:class:`numpy.ndarray`
     :param image_slice:
-    :type image_slice: Slice
-    :rtype: Slice
+    :type image_slice: :py:class:`~httm.data_structures.Slice`
+    :rtype:  :py:class:`~httm.data_structures.Slice`
     """
-    pass
+    # noinspection PyProtectedMember
+    return image_slice._replace(
+        pixels=image_slice.pixels + start_of_line_ringing)
 
 
 def add_pattern_noise_to_slice(pattern_noise, image_slice):
     # type: (numpy.ndarray, Slice) -> Slice
     """
-    TODO.
+    Add a fixed pattern to a slice.
 
     :param pattern_noise:
     :type pattern_noise: :py:class:`numpy.ndarray`
     :param image_slice:
-    :type image_slice: Slice
-    :rtype: Slice
+    :type image_slice: :py:class:`~httm.data_structures.Slice`
+    :rtype:  :py:class:`~httm.data_structures.Slice`
     """
-    pass
+    # noinspection PyProtectedMember
+    return image_slice._replace(
+        pixels=image_slice.pixels + pattern_noise)
 
 
 def introduce_smear_rows_to_slice(smear_ratio, image_slice):
     # type: (float, Slice) -> Slice
     """
-    TODO.
+    Estimate smear by averaging rows in the image pixels and then multiplying by smear_ratio.
+    For most of the frame cycle, the pixel effectively sits in the imaging area of the CCD, collecting
+    photons from a particular point on the sky for the exposure time. During readout, the pixel moves
+    quickly through the imaging area, exposed to each point on the sky along a column for a short time,
+    the parallel clock period. smear_ratio is the ratio of exposure time to parallel clock period.
 
+    This function first adds up all of the rows in the image pixel subarray of the slice. It multiplies
+    by smear_ratio to estimate a smear row. It then replaces the smear rows in the slice with the estimated
+    smear row, and adds the estimated smear row to each image row.
+
+    :param image_slice:
+    :type image_slice: :py:class:`~httm.data_structures.Slice`
     :param smear_ratio:
     :type smear_ratio: float
-    :param image_slice:
-    :type image_slice: Slice
-    :rtype: Slice
+    :rtype: :py:class:`~httm.data_structures.Slice`
     """
-    # TODO crash if smear rows are not zero
-    return image_slice
+    # TODO crash if smear rows already introduced
+
+    working_pixels = image_slice.pixels
+    image_pixels = working_pixels[0:2058, 11:523]
+    estimated_smear = smear_ratio * numpy.sum(image_pixels, 0)
+    working_pixels[2058:2068, 11:523] = estimated_smear
+    working_pixels[0:2058, 11:523] += estimated_smear
+    # noinspection PyProtectedMember
+    return image_slice._replace(pixels=working_pixels)
 
 
 def add_shot_noise(image_slice):
     # type: (Slice) -> Slice
     """
-    TODO. Currently done by SPyFFI.
+    The process of making photoelectrons from light follows Poisson statistics.
+    For large expectation values, which we have, the Poisson distribution is very close to Gaussian.
+    The standard deviation is the square root of the expected number of electrons.
+    This added noise is known as _shot noise_.
 
     :param image_slice:
-    :type image_slice: Slice
-    :rtype: Slice
+    :type image_slice: :py:class:`~httm.data_structures.Slice`
+    :rtype: :py:class:`~httm.data_structures.Slice`
     """
-    return image_slice
+    # noinspection PyProtectedMember
+    return image_slice._replace(
+        pixels=numpy.random.normal(loc=image_slice.pixels, scale=numpy.sqrt(image_slice.pixels)))
 
 
 def simulate_blooming_on_slice(full_well, nreads, image_slice):
@@ -71,17 +95,15 @@ def simulate_blooming_on_slice(full_well, nreads, image_slice):
     :param image_slice:
     :param full_well:
     :param nreads:
-    :type nreads: int
-    :rtype: Slice
+    :rtype: :py:class:`~httm.data_structures.Slice`
     """
     return image_slice
 
 
 def add_readout_noise_to_slice(readout_noise, nreads, image_slice):
     """
-    TODO. Currently done by SPyFFI.
-
     Adds a Gaussian random _readout_ noise to every pixel.
+    This noise comes from the charge sense transistor and the signal processing electronics.
     The average value :math:`\\mu` of the noise is `0`.
     The variance :math:`\\sigma^2` is :math:`\\mathtt{readout\_noise}^2 \times \\mathtt{nreads}`
 
@@ -91,7 +113,7 @@ def add_readout_noise_to_slice(readout_noise, nreads, image_slice):
     :type readout_noise: float
     :param nreads:
     :type nreads: int
-    :rtype: Slice
+    :rtype: :py:class:`~httm.data_structures.Slice`
     """
     from numpy.random import normal
     # noinspection PyProtectedMember
@@ -100,8 +122,8 @@ def add_readout_noise_to_slice(readout_noise, nreads, image_slice):
                                            size=image_slice.pixels.size))
 
 
-# TODO: make this work on slices
-def simulate_undershoot(row, undershoot):
+# noinspection PyProtectedMember
+def simulate_undershoot(undershoot, image_slice):
     """
     When you have a bright pixel, the pixel to the right of it will appear dimmer.  This is _undershoot_.
 
@@ -111,14 +133,18 @@ def simulate_undershoot(row, undershoot):
     yielding an output row of the same length. The convolution is non-cyclic: the input row is implicitly
     padded with zero at the start to make this true.
 
-    :param row: Full slice image row including all pixels dark and illuminated. Units: electrons
-    :type row: :py:class:`numpy.ndarray`
     :param undershoot: Undershoot parameter from parameter structure, typically `~0.001`, dimensionless
     :type undershoot: float
-    :rtype: :py:class:`numpy.ndarray`
+    :param image_slice:
+    :type image_slice: :py:class:`~httm.data_structures.Slice`
+    :rtype: :py:class:`~httm.data_structures.Slice`
     """
     kernel = numpy.array([1.0, -undershoot])
-    return numpy.convolve(row, kernel, mode='same')
+
+    def convolve_row(row):
+        return numpy.convolve(row, kernel, mode='same')
+
+    return image_slice._replace(pixels=numpy.apply_along_axis(convolve_row, 1, image_slice.pixels))
 
 
 def convert_slice_electrons_to_adu(compression, number_of_exposures, video_scale, baseline_adu, image_slice):
@@ -152,7 +178,6 @@ def convert_slice_electrons_to_adu(compression, number_of_exposures, video_scale
                  pixels=transform_electron_to_adu(image_slice.pixels))
 
 
-# noinspection PyProtectedMember
 def convert_electrons_to_adu(calibrated_transformation):
     # type: (CalibratedConverter) -> CalibratedConverter
     """
@@ -169,6 +194,7 @@ def convert_electrons_to_adu(calibrated_transformation):
     compression = calibrated_transformation.parameters.compression
     baseline_adu = calibrated_transformation.parameters.baseline_adu
     assert len(video_scales) == len(image_slices), "Video scales do not match image slices"
+    # noinspection PyProtectedMember
     return calibrated_transformation._replace(
         slices=tuple(
             convert_slice_electrons_to_adu(compression, number_of_exposures, video_scale, image_slice, baseline_adu)
