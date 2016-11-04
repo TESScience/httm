@@ -7,33 +7,15 @@ or raw TESS full frame FITS images between one another.
 """
 
 import numpy
+import time
 
 from data_structures import Slice, CalibratedConverter, CalibratedConverterParameters, FITSMetaData, \
     RAWConverter, RAWConverterParameters, document_parameters, calibrated_converter_parameters, \
     raw_converter_parameters, CalibratedConverterFlags, RawConverterFlags, calibrated_converter_flags
 
 
-def write_calibrated_fits(output_file, raw_transform):
-    # type: (str, RAWConverter) -> NoneType
-    """
-    Write a completed :py:class:`~httm.data_structures.RAWConverter` to a calibrated FITS file
-
-    :param output_file:
-    :type output_file: str
-    :param raw_transform:
-    :type raw_transform: :py:class:`~httm.data_structures.RAWConverter`
-    """
-    from astropy.io.fits import HDUList, PrimaryHDU
-    from numpy import hstack
-    print raw_transform
-    # noinspection PyTypeChecker
-    HDUList(PrimaryHDU(header=raw_transform.fits_metadata.header,
-                       data=hstack([calibrated_slice.pixels
-                                    for calibrated_slice in raw_transform.slices]))) \
-        .writeto(output_file)
-
-
-def write_raw_fits(output_file, calibrated_transform):
+# TODO: Deal with raw converter
+def write_fits(output_file, calibrated_transform):
     # type: (str, CalibratedConverter) -> NoneType
     """
     Write a completed :py:class:`~httm.data_structures.CalibratedConverter` to a (simulated) raw FITS file
@@ -67,14 +49,15 @@ def make_slice_from_calibrated_data(pixels, index):
     :rtype: :py:class:`~httm.data_structures.Slice`
     """
     # TODO: Add in smear and dark pixels
-    image_smear_and_dark_pixels = numpy.hstack([pixels, numpy.zeros((pixels.shape[0], 20))])
-    row_count = image_smear_and_dark_pixels.shape[1]
-    dark_pixel_columns = numpy.zeros((11, row_count))
-    return Slice(pixels=numpy.vstack([dark_pixel_columns, image_smear_and_dark_pixels, dark_pixel_columns]),
+    image_smear_and_dark_pixels = numpy.vstack([pixels, numpy.zeros((20, pixels.shape[1]))])
+    row_count = image_smear_and_dark_pixels.shape[0]
+    dark_pixel_columns = numpy.zeros((row_count, 11))
+    return Slice(pixels=numpy.hstack([dark_pixel_columns, image_smear_and_dark_pixels, dark_pixel_columns]),
                  index=index,
                  units='electrons')
 
 
+# TODO: Random seed
 def calibrated_converter_flags_from_file(input_file):
     """
     Construct a :py:class:`~httm.data_structures.CalibratedConverterFlags`
@@ -108,6 +91,11 @@ def calibrated_converter_from_file(
         number_of_slices=calibrated_converter_parameters['number_of_slices']['default'],
         video_scales=calibrated_converter_parameters['video_scales']['default'],
         readout_noise=calibrated_converter_parameters['readout_noise']['default'],
+        left_dark_pixel_columns=calibrated_converter_parameters['left_dark_pixel_columns']['default'],
+        right_dark_pixel_columns=calibrated_converter_parameters['right_dark_pixel_columns']['default'],
+        top_dark_pixel_rows=calibrated_converter_parameters['top_dark_pixel_rows']['default'],
+        smear_rows=calibrated_converter_parameters['smear_rows']['default'],
+        random_seed=calibrated_converter_parameters['random_seed']['default'],
         full_well=calibrated_converter_parameters['full_well']['default'],
         compression=calibrated_converter_parameters['compression']['default'],
         undershoot=calibrated_converter_parameters['undershoot']['default'],
@@ -117,6 +105,7 @@ def calibrated_converter_from_file(
         clip_level_adu=calibrated_converter_parameters['clip_level_adu']['default'],
         start_of_line_ringing=calibrated_converter_parameters['start_of_line_ringing']['default'],
         pattern_noise=calibrated_converter_parameters['pattern_noise']['default'],
+        blooming_threshold=calibrated_converter_parameters['blooming_threshold']['default'],
 ):
     from astropy.io import fits
     from numpy import hsplit
@@ -140,6 +129,11 @@ def calibrated_converter_from_file(
             number_of_slices=number_of_slices,
             video_scales=video_scales,
             readout_noise=readout_noise,
+            left_dark_pixel_columns=left_dark_pixel_columns,
+            right_dark_pixel_columns=right_dark_pixel_columns,
+            top_dark_pixel_rows=top_dark_pixel_rows,
+            smear_rows=smear_rows,
+            random_seed=random_seed,
             full_well=full_well,
             compression=compression,
             undershoot=undershoot,
@@ -149,6 +143,7 @@ def calibrated_converter_from_file(
             clip_level_adu=clip_level_adu,
             start_of_line_ringing=start_of_line_ringing,
             pattern_noise=pattern_noise,
+            blooming_threshold=blooming_threshold,
         ),
         flags=calibrated_converter_flags_from_file(input_file),
     )
@@ -188,7 +183,7 @@ def make_slice_from_raw_data(
     :rtype: :py:class:`~httm.data_structures.Slice`
     """
     return Slice(
-        pixels=numpy.vstack([left_dark_pixel_columns, image_and_smear_pixels, right_dark_pixel_columns]),
+        pixels=numpy.hstack([left_dark_pixel_columns, image_and_smear_pixels, right_dark_pixel_columns]),
         index=index,
         units='adu')
 
@@ -197,11 +192,8 @@ def raw_converter_from_file(
         input_file,
         number_of_slices=calibrated_converter_parameters['number_of_slices']['default'],
         video_scales=calibrated_converter_parameters['video_scales']['default'],
-        full_well=calibrated_converter_parameters['full_well']['default'],
         compression=calibrated_converter_parameters['compression']['default'],
         undershoot=calibrated_converter_parameters['undershoot']['default'],
-        smear_ratio=calibrated_converter_parameters['smear_ratio']['default'],
-        clip_level_adu=calibrated_converter_parameters['clip_level_adu']['default'],
         pattern_noise=calibrated_converter_parameters['pattern_noise']['default']):
     from astropy.io import fits
     from numpy import hsplit, fliplr
@@ -216,8 +208,13 @@ def raw_converter_from_file(
         origin_file_name = input_file.name
 
     sliced_image_smear_and_dark_pixels = hsplit(header_data_unit_list[0].data[:, 44:-44], number_of_slices)
-    sliced_image_smear_and_dark_pixels[1] = fliplr(sliced_image_smear_and_dark_pixels[1])
-    sliced_image_smear_and_dark_pixels[3] = fliplr(sliced_image_smear_and_dark_pixels[3])
+
+    # TODO: Document this in layout.rst
+    # Rows in odd numbered slices have to be reversed
+    for i in range(1, number_of_slices, 2):
+        sliced_image_smear_and_dark_pixels[i] = fliplr(sliced_image_smear_and_dark_pixels[i])
+
+    # Note that left and right dark pixels do not need to be reversed
     sliced_left_dark_pixels = hsplit(header_data_unit_list[0].data[:, :44], number_of_slices)
     sliced_right_dark_pixels = hsplit(header_data_unit_list[0].data[:, -44:], number_of_slices)
 
@@ -232,11 +229,8 @@ def raw_converter_from_file(
         parameters=RAWConverterParameters(
             video_scales=video_scales,
             number_of_slices=number_of_slices,
-            full_well=full_well,
             compression=compression,
             undershoot=undershoot,
-            smear_ratio=smear_ratio,
-            clip_level_adu=clip_level_adu,
             pattern_noise=pattern_noise,
         ),
         flags=RawConverterFlags(),

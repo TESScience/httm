@@ -27,10 +27,40 @@ parameters = OrderedDict([
                          'dark pixel data.',
         'default': (9.5, 9.5, 9.5, 9.5),
     }),
+    ('left_dark_pixel_columns', {
+        'type': 'int',
+        'documentation': 'TODO',
+        'default': 11,
+    }),
+    ('right_dark_pixel_columns', {
+        'type': 'int',
+        'documentation': 'TODO',
+        'default': 11,
+    }),
+    ('top_dark_pixel_rows', {
+        'type': 'int',
+        'documentation': 'TODO',
+        'default': 10,
+    }),
+    ('smear_rows', {
+        'type': 'int',
+        'documentation': 'TODO',
+        'default': 10,
+    }),
+    ('random_seed', {
+        'type': 'int',
+        'documentation': 'The seed value to hand to the random number generator',
+        'default': None
+    }),
     ('full_well', {
         'type': 'float',
-        'documentation': 'The expected maximum number of electrons before a pixel blooms.',
+        'documentation': 'The expected maximum number of electrons that a pixel can hold.',
         'default': 200000.0,
+    }),
+    ('blooming_threshold', {
+        'type': 'float',
+        'documentation': 'The expected maximum number of electrons before a pixel blooms.',
+        'default': 150000.0,
     }),
     ('compression', {
         'type': 'float',
@@ -81,8 +111,6 @@ raw_converter_parameters = OrderedDict((k, parameters[k])
                                                  'video_scales',
                                                  'compression',
                                                  'undershoot',
-                                                 'smear_ratio',
-                                                 'clip_level_adu',
                                                  'pattern_noise'])
 
 calibrated_converter_flags = OrderedDict([
