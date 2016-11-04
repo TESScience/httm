@@ -1,14 +1,16 @@
 """
-`httm` contains top level transformations for converting calibrates
-or raw TESS full Frame FITS images between one another.
+``httm``
+========
+
+This module contains top level transformations for converting calibrated
+or raw TESS full frame FITS images between one another.
 """
 
-# See https://docs.python.org/2/library/collections.html#collections.namedtuple for details
 import numpy
 
-from httm.data_structures import Slice, CalibratedConverter, CalibratedConverterParameters, FITSMetaData, \
-    RAWConverter, RAWConverterParameters, document_parameters, calibrated_transformation_parameters, \
-    raw_transformation_parameters
+from data_structures import Slice, CalibratedConverter, CalibratedConverterParameters, FITSMetaData, \
+    RAWConverter, RAWConverterParameters, document_parameters, calibrated_converter_parameters, \
+    raw_converter_parameters, CalibratedConverterFlags, RawConverterFlags, calibrated_converter_flags
 
 
 def write_calibrated_fits(output_file, raw_transform):
@@ -54,11 +56,13 @@ def write_raw_fits(output_file, calibrated_transform):
 def make_slice_from_calibrated_data(pixels, index):
     # type: (numpy.ndarray, int) -> Slice
     """
-    Construct a slice from an array of calibrated pixel data given a specified index
+    Construct a slice from an array of calibrated pixel data given a specified index.
 
-    :param pixels: Image pixels from the calibrated data
+    Result is in *electron* counts.
+
+    :param pixels: Image pixels from the calibrated data.
     :type pixels: :py:class:`numpy.ndarray`
-    :param index: The index of the slice to construct
+    :param index: The index of the slice to construct.
     :type index: int
     :rtype: :py:class:`~httm.data_structures.Slice`
     """
@@ -71,18 +75,49 @@ def make_slice_from_calibrated_data(pixels, index):
                  units='electrons')
 
 
-def calibrated_transformation_from_file(
+def calibrated_converter_flags_from_file(input_file):
+    """
+    Construct a :py:class:`~httm.data_structures.CalibratedConverterFlags`
+    from a file or file name.
+
+    :param input_file: The file or file name to input
+    :type input_file: :py:class:`file` or :py:class:`str`
+    :rtype: :py:class:`~httm.data_structures.CalibratedConverter`
+    """
+    # TODO try to read these from file
+    smeared = calibrated_converter_flags['smeared']['default']
+    readout_noise_added = calibrated_converter_flags['readout_noise_added']['default']
+    shot_noise_added = calibrated_converter_flags['shot_noise_added']['default']
+    blooming_simulated = calibrated_converter_flags['blooming_simulated']['default']
+    undershoot = calibrated_converter_flags['undershoot']['default']
+    pattern_noise = calibrated_converter_flags['pattern_noise']['default']
+    start_of_line_ringing = calibrated_converter_flags['start_of_line_ringing']['default']
+    return CalibratedConverterFlags(
+        smeared=smeared,
+        readout_noise_added=readout_noise_added,
+        shot_noise_added=shot_noise_added,
+        blooming_simulated=blooming_simulated,
+        undershoot=undershoot,
+        pattern_noise=pattern_noise,
+        start_of_line_ringing=start_of_line_ringing,
+    )
+
+
+def calibrated_converter_from_file(
         input_file,
-        number_of_slices=calibrated_transformation_parameters['number_of_slices']['default'],
-        video_scales=calibrated_transformation_parameters['video_scales']['default'],
-        compression=calibrated_transformation_parameters['compression']['default'],
-        undershoot=calibrated_transformation_parameters['undershoot']['default'],
-        baseline_adu=calibrated_transformation_parameters['baseline_adu']['default'],
-        drift_adu=calibrated_transformation_parameters['drift_adu']['default'],
-        smear_ratio=calibrated_transformation_parameters['smear_ratio']['default'],
-        clip_level_adu=calibrated_transformation_parameters['clip_level_adu']['default'],
-        start_of_line_ringing=calibrated_transformation_parameters['start_of_line_ringing']['default'],
-        pattern_noise=calibrated_transformation_parameters['pattern_noise']['default']):
+        number_of_slices=calibrated_converter_parameters['number_of_slices']['default'],
+        video_scales=calibrated_converter_parameters['video_scales']['default'],
+        readout_noise=calibrated_converter_parameters['readout_noise']['default'],
+        full_well=calibrated_converter_parameters['full_well']['default'],
+        compression=calibrated_converter_parameters['compression']['default'],
+        undershoot=calibrated_converter_parameters['undershoot']['default'],
+        baseline_adu=calibrated_converter_parameters['baseline_adu']['default'],
+        drift_adu=calibrated_converter_parameters['drift_adu']['default'],
+        smear_ratio=calibrated_converter_parameters['smear_ratio']['default'],
+        clip_level_adu=calibrated_converter_parameters['clip_level_adu']['default'],
+        start_of_line_ringing=calibrated_converter_parameters['start_of_line_ringing']['default'],
+        pattern_noise=calibrated_converter_parameters['pattern_noise']['default'],
+):
     from astropy.io import fits
     from numpy import hsplit
     header_data_unit_list = fits.open(input_file)
@@ -102,8 +137,10 @@ def calibrated_transformation_from_file(
         fits_metadata=FITSMetaData(origin_file_name=origin_file_name,
                                    header=header_data_unit_list[0].header),
         parameters=CalibratedConverterParameters(
-            video_scales=video_scales,
             number_of_slices=number_of_slices,
+            video_scales=video_scales,
+            readout_noise=readout_noise,
+            full_well=full_well,
             compression=compression,
             undershoot=undershoot,
             baseline_adu=baseline_adu,
@@ -112,17 +149,19 @@ def calibrated_transformation_from_file(
             clip_level_adu=clip_level_adu,
             start_of_line_ringing=start_of_line_ringing,
             pattern_noise=pattern_noise,
-        ))
+        ),
+        flags=calibrated_converter_flags_from_file(input_file),
+    )
 
 
-calibrated_transformation_from_file.__doc__ = """
+calibrated_converter_from_file.__doc__ = """
 Construct a :py:class:`~httm.data_structures.CalibratedConverter` from a file or file name
 
 :param input_file: The file or file name to input
 :type input_file: :py:class:`file` or :py:class:`str`
 {parameter_documentation}
 :rtype: :py:class:`~httm.data_structures.CalibratedConverter`
-""".format(parameter_documentation=document_parameters(calibrated_transformation_parameters))
+""".format(parameter_documentation=document_parameters(calibrated_converter_parameters))
 
 
 def make_slice_from_raw_data(
@@ -131,26 +170,39 @@ def make_slice_from_raw_data(
         left_dark_pixel_columns,
         right_dark_pixel_columns):
     # type: (numpy.ndarray, int, numpy.ndarray, numpy.ndarray) -> Slice
-    print "image_and_smear dimentions", image_and_smear_pixels.shape
-    print "Index", index
-    print "left dark pixels dimensions", left_dark_pixel_columns.shape
-    print "right dark pixels columns", right_dark_pixel_columns.shape
+    """
+    Construct a slice from raw pixel data given a specified index.
+
+    Result is in *Analogue to Digital Converter Units* (ADU).
+
+    :param image_and_smear_pixels: Image pixels from the calibrated data.
+    :type image_and_smear_pixels: :py:class:`numpy.ndarray`
+    :param index: The index of the slice to construct.
+    :type index: int
+    :param left_dark_pixel_columns: The leftmost columns are dark pixels, to be placed on the \
+    left of the slice.
+    :type left_dark_pixel_columns: :py:class:`numpy.ndarray`
+    :param right_dark_pixel_columns: The rightmost columns are dark pixels, to be placed on the \
+    right of the slice.
+    :type right_dark_pixel_columns: :py:class:`numpy.ndarray`
+    :rtype: :py:class:`~httm.data_structures.Slice`
+    """
     return Slice(
         pixels=numpy.vstack([left_dark_pixel_columns, image_and_smear_pixels, right_dark_pixel_columns]),
         index=index,
-        units='hdu')
+        units='adu')
 
 
-def raw_transformation_from_file(
+def raw_converter_from_file(
         input_file,
-        number_of_slices=calibrated_transformation_parameters['number_of_slices']['default'],
-        video_scales=calibrated_transformation_parameters['video_scales']['default'],
-        full_well=calibrated_transformation_parameters['full_well']['default'],
-        compression=calibrated_transformation_parameters['compression']['default'],
-        undershoot=calibrated_transformation_parameters['undershoot']['default'],
-        smear_ratio=calibrated_transformation_parameters['smear_ratio']['default'],
-        clip_level_adu=calibrated_transformation_parameters['clip_level_adu']['default'],
-        pattern_noise=calibrated_transformation_parameters['pattern_noise']['default']):
+        number_of_slices=calibrated_converter_parameters['number_of_slices']['default'],
+        video_scales=calibrated_converter_parameters['video_scales']['default'],
+        full_well=calibrated_converter_parameters['full_well']['default'],
+        compression=calibrated_converter_parameters['compression']['default'],
+        undershoot=calibrated_converter_parameters['undershoot']['default'],
+        smear_ratio=calibrated_converter_parameters['smear_ratio']['default'],
+        clip_level_adu=calibrated_converter_parameters['clip_level_adu']['default'],
+        pattern_noise=calibrated_converter_parameters['pattern_noise']['default']):
     from astropy.io import fits
     from numpy import hsplit, fliplr
     header_data_unit_list = fits.open(input_file)
@@ -186,14 +238,16 @@ def raw_transformation_from_file(
             smear_ratio=smear_ratio,
             clip_level_adu=clip_level_adu,
             pattern_noise=pattern_noise,
-        ))
+        ),
+        flags=RawConverterFlags(),
+    )
 
 
-raw_transformation_from_file.__doc__ = """
+raw_converter_from_file.__doc__ = """
 Construct a :py:class:`~httm.data_structures.RAWConverter` from a file or file name
 
 :param input_file: The file or file name to input
 :type input_file: :py:class:`File` or :py:class:`str`
 {parameter_documentation}
 :rtype: :py:class:`~httm.data_structures.RAWConverter`
-""".format(parameter_documentation=document_parameters(raw_transformation_parameters))
+""".format(parameter_documentation=document_parameters(raw_converter_parameters))

@@ -1,6 +1,10 @@
 """
-Transformation functions for processing a :py:class:`~httm.data_structures.RAWConverter` so that it is suitable
-for writing to a calibrated FITS file.
+``httm.transformations.raw_to_calibrated``
+==========================================
+
+This module contains transformation functions for processing
+a :py:class:`~httm.data_structures.RAWConverter` so that it is suitable for
+writing to a calibrated FITS file.
 """
 import numpy
 

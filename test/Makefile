@@ -13,7 +13,8 @@ all: install
 install: $(VIRTUAL_ENV)
 	@echo y | $(PIP) uninstall httm &> /dev/null || true
 	@$(PIP) install -r requirements.txt --quiet
-	(cd .. ; $(PYTHON) setup.py install)
+	@(cd .. ; $(PYTHON) setup.py install > /dev/null)
+	@echo Installation Complete
 
 documentation: $(HTML_DOCUMENTATION)
 

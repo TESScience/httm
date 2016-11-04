@@ -1,6 +1,10 @@
 """
-Transformation functions for processing a :py:class:`~httm.data_structures.RAWConverter` so that it is suitable
-for writing to a raw FITS file.
+``httm.transformations.calibrated_to_raw``
+==========================================
+
+This module contains transformation functions for processing a
+:py:class:`~httm.data_structures.RAWConverter` so that it is suitable for writing to a raw FITS file.
+
 """
 
 import numpy
@@ -77,7 +81,7 @@ def add_shot_noise(image_slice):
     The process of making photoelectrons from light follows Poisson statistics.
     For large expectation values, which we have, the Poisson distribution is very close to Gaussian.
     The standard deviation is the square root of the expected number of electrons.
-    This added noise is known as _shot noise_.
+    This added noise is known as *shot noise*.
 
     :param image_slice:
     :type image_slice: :py:class:`~httm.data_structures.Slice`

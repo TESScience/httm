@@ -1,9 +1,16 @@
+"""
+``httm.data_structures``
+========================
+
+This module contains data structures used throughout ``httm``.
+"""
+
 from collections import namedtuple, OrderedDict
 
 parameters = OrderedDict([
     ('number_of_slices', {
         'type': 'int',
-        'documentation': 'The number of slices to use in the transformation, either `1` or `4`',
+        'documentation': 'The number of slices to use in the transformation, either ``1`` or ``4``',
         'default': 4,
     }),
     ('video_scales', {
@@ -16,7 +23,8 @@ parameters = OrderedDict([
     ('readout_noise', {
         'type': 'tuple of :py:class:`float` objects, must have one for each slice',
         'documentation': 'The video readout noise standard deviation in electrons. '
-                         'Corresponds to fluctuations in electron counts for completely dark pixel data.',
+                         'Corresponds to fluctuations in electron counts for completely '
+                         'dark pixel data.',
         'default': (9.5, 9.5, 9.5, 9.5),
     }),
     ('full_well', {
@@ -46,7 +54,8 @@ parameters = OrderedDict([
     }),
     ('smear_ratio', {
         'type': 'float',
-        'documentation': 'TODO: This needs a description. Mention how default is derived from `Hemiola.fpe`',
+        'documentation': 'TODO: This needs a description. '
+                         'Mention how default is derived from ``Hemiola.fpe``',
         'default': 9.79541e-06
     }),
     ('clip_level_adu', {
@@ -66,50 +75,50 @@ parameters = OrderedDict([
     })
 ])
 
-calibrated_transformation_parameters = parameters
-raw_transformation_parameters = OrderedDict((k, parameters[k])
-                                            for k in ['number_of_slices',
-                                                      'video_scales',
-                                                      'compression',
-                                                      'undershoot',
-                                                      'smear_ratio',
-                                                      'clip_level_adu',
-                                                      'pattern_noise'])
+calibrated_converter_parameters = parameters
+raw_converter_parameters = OrderedDict((k, parameters[k])
+                                       for k in ['number_of_slices',
+                                                 'video_scales',
+                                                 'compression',
+                                                 'undershoot',
+                                                 'smear_ratio',
+                                                 'clip_level_adu',
+                                                 'pattern_noise'])
 
-calibrated_transformation_flags = OrderedDict([
+calibrated_converter_flags = OrderedDict([
     ('smeared', {
         'type': 'boolean',
-        'documentation': 'Indicates whether there is data in the smear rows',
+        'documentation': 'Indicates whether there is data in the smear rows.',
         'default': False,
     }),
     ('readout_noise_added', {
         'type': 'boolean',
-        'documentation': 'Indicates whether *readout noise* has been added',
+        'documentation': 'Indicates whether *readout noise* has been added.',
         'default': False,
     }),
     ('shot_noise_added', {
         'type': 'boolean',
-        'documentation': 'Indicates whether *shot noise* has been added',
+        'documentation': 'Indicates whether *shot noise* has been added.',
         'default': False,
     }),
     ('blooming_simulated', {
         'type': 'boolean',
-        'documentation': 'Indicates whether *blooming* has been simulated',
+        'documentation': 'Indicates whether *blooming* has been simulated.',
         'default': False,
     }),
     ('undershoot', {
         'type': 'boolean',
-        'documentation': 'Indicates whether *undershoot* is present',
+        'documentation': 'Indicates whether *undershoot* is present.',
         'default': False,
     }),
     ('pattern_noise', {
         'type': 'boolean',
-        'documentation': 'Indicates whether *pattern noise* is present',
+        'documentation': 'Indicates whether *pattern noise* is present.',
         'default': False,
     }),
     ('start_of_line_ringing', {
         'type': 'boolean',
-        'documentation': 'Indicates whether *start of line ringing* is present',
+        'documentation': 'Indicates whether *start of line ringing* is present.',
         'default': False,
     })
 ])
@@ -117,22 +126,22 @@ calibrated_transformation_flags = OrderedDict([
 raw_transformation_flags = OrderedDict([
     ('smeared', {
         'type': 'boolean',
-        'documentation': calibrated_transformation_flags['smeared']['documentation'],
+        'documentation': calibrated_converter_flags['smeared']['documentation'],
         'default': True,
     }),
     ('undershoot', {
         'type': 'boolean',
-        'documentation': calibrated_transformation_flags['undershoot']['documentation'],
+        'documentation': calibrated_converter_flags['undershoot']['documentation'],
         'default': True,
     }),
     ('pattern_noise', {
         'type': 'boolean',
-        'documentation': calibrated_transformation_flags['pattern_noise']['documentation'],
+        'documentation': calibrated_converter_flags['pattern_noise']['documentation'],
         'default': True,
     }),
     ('start_of_line_ringing', {
         'type': 'boolean',
-        'documentation': calibrated_transformation_flags['start_of_line_ringing']['documentation'],
+        'documentation': calibrated_converter_flags['start_of_line_ringing']['documentation'],
         'default': True,
     })
 ])
@@ -143,11 +152,11 @@ def document_parameters(parameter_dictionary):
     Construct a documentation string for dictionary of parameters
 
     :param parameter_dictionary: An ordered dictionary of parameters,\
-    where each entry contains a `type`, documentation string and default value.
+    where each entry contains a ``type``, ``documentation`` string, and ``default`` value.
     :type parameter_dictionary: :py:class:`collections.OrderedDict`
     :rtype: str
     """
-    return '\n'.join([":param {parameter}: {documentation}. Default: `{default}`\n"
+    return '\n'.join([":param {parameter}: {documentation}. Default: ``{default}``\n"
                       ":type {parameter}: {type}"
                      .format(parameter=parameter,
                              documentation=data['documentation'].rstrip(". "),
@@ -158,54 +167,45 @@ def document_parameters(parameter_dictionary):
 
 # noinspection PyUnresolvedReferences
 class CalibratedConverterParameters(namedtuple('CalibratedConverterParameters',
-                                               calibrated_transformation_parameters.keys())):
+                                               calibrated_converter_parameters.keys())):
     __doc__ = """
 Converter parameters for converting a calibrated FITS image into an uncalibrated FITS image.
 
-See :py:func:`~httm.calibrated_transform_from_file` for default parameter values.
+Constructed using the parameters handed to :py:func:`~httm.calibrated_transform_from_file`.
 
 {parameter_documentation}
-""".format(parameter_documentation=document_parameters(calibrated_transformation_parameters))
+""".format(parameter_documentation=document_parameters(calibrated_converter_parameters))
     __slots__ = ()
-
-
-# noinspection PyTypeChecker
-CalibratedConverterParameters.__new__.__defaults__ = tuple(
-    parameter_info['default'] for parameter_info in calibrated_transformation_parameters.values())
 
 
 # noinspection PyUnresolvedReferences
 class RAWConverterParameters(
     namedtuple('RAWConverterParameters',
-               raw_transformation_parameters.keys())):
+               raw_converter_parameters.keys())):
     __doc__ = """
 Converter parameters for converting a calibrated FITS image into an uncalibrated FITS image.
 
+Constructed using the parameters handed to :py:func:`~httm.raw_transform_from_file`.
+
 {parameter_documentation}
-""".format(parameter_documentation=document_parameters(raw_transformation_parameters))
+""".format(parameter_documentation=document_parameters(raw_converter_parameters))
     __slots__ = ()
 
 
-RAWConverterParameters.__new__.__defaults__ = tuple(
-    parameter_info['default'] for parameter_info in raw_transformation_parameters.values())
-
-
+# TODO derive CalibratedConverterFlags from FITS header
 # noinspection PyClassHasNoInit
 class CalibratedConverterFlags(
     namedtuple('CalibratedConverterFlags',
-               calibrated_transformation_flags.keys())):
+               calibrated_converter_flags.keys())):
     __doc__ = """
 Flags indicating which raw transformations have been performed.
 
 {parameter_documentation}
-""".format(parameter_documentation=document_parameters(calibrated_transformation_flags))
+""".format(parameter_documentation=document_parameters(calibrated_converter_flags))
     __slots__ = ()
 
 
-CalibratedConverterFlags.__new__.__defaults__ = tuple(
-    parameter_info['default'] for parameter_info in calibrated_transformation_flags.values())
-
-
+# TODO derive RawConverterFlags from FITS header
 # noinspection PyClassHasNoInit
 class RawConverterFlags(
     namedtuple('RawConverterFlags',

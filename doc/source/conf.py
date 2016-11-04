@@ -14,7 +14,9 @@
 
 import sys
 import os
-import shlex
+import re
+# noinspection PyUnresolvedReferences,PyPackageRequirements
+from sh import grep
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -55,6 +57,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Hot Tub Time Machine'
+# noinspection PyShadowingBuiltins
 copyright = u'2016, Noqsi Aerospace, Ltd.'
 author = u'Matthew Wampler-Doty and John Doty'
 
@@ -63,7 +66,11 @@ author = u'Matthew Wampler-Doty and John Doty'
 # built documents.
 #
 # The short X.Y version.
-version = '0.1.0'
+
+
+version = re.sub(r'^VERSION\s*=\s*', '',
+                 re.sub(r'(\x1b[^m]*m|\x1b\[K)', '',
+                        str(grep('VERSION\s*=\s*', '../../setup.py')))).strip().strip("'")
 # The full version, including alpha/beta/rc tags.
 release = version
 
@@ -93,7 +100,7 @@ exclude_patterns = []
 
 # If true, the current module name will be prepended to all description
 # unit titles (such as .. function::).
-# add_module_names = True
+add_module_names = False
 
 # If true, sectionauthor and moduleauthor directives will be shown in the
 # output. They are ignored by default.
