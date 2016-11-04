@@ -18,7 +18,7 @@ def add_start_of_line_ringing_to_slice(start_of_line_ringing, image_slice):
     """
     Add a fixed pattern to each row of a slice.
 
-    :param start_of_line_ringing:
+    :param start_of_line_ringing: One dimensional array of floats, representing noise in a row in a slice.
     :type start_of_line_ringing: row: :py:class:`numpy.ndarray`
     :param image_slice:
     :type image_slice: :py:class:`~httm.data_structures.Slice`
@@ -34,7 +34,7 @@ def add_pattern_noise_to_slice(pattern_noise, image_slice):
     """
     Add a fixed pattern to a slice.
 
-    :param pattern_noise:
+    :param pattern_noise: Two dimensional array of floats, representing noise in a slice.
     :type pattern_noise: :py:class:`numpy.ndarray`
     :param image_slice:
     :type image_slice: :py:class:`~httm.data_structures.Slice`
@@ -48,11 +48,14 @@ def add_pattern_noise_to_slice(pattern_noise, image_slice):
 def introduce_smear_rows_to_slice(smear_ratio, image_slice):
     # type: (float, Slice) -> Slice
     """
-    Estimate smear by averaging rows in the image pixels and then multiplying by smear_ratio.
+    TODO: Mention that this adds non-zreo smear rows
+
+
+    Estimate smear by averaging rows in the image pixels and then multiplying by ``smear_ratio``.
     For most of the frame cycle, the pixel effectively sits in the imaging area of the CCD, collecting
     photons from a particular point on the sky for the exposure time. During readout, the pixel moves
     quickly through the imaging area, exposed to each point on the sky along a column for a short time,
-    the parallel clock period. smear_ratio is the ratio of exposure time to parallel clock period.
+    the parallel clock period. The ``smear_ratio`` is the ratio of exposure time to parallel clock period.
 
     This function first adds up all of the rows in the image pixel subarray of the slice. It multiplies
     by smear_ratio to estimate a smear row. It then replaces the smear rows in the slice with the estimated
@@ -66,6 +69,8 @@ def introduce_smear_rows_to_slice(smear_ratio, image_slice):
     """
     # TODO crash if smear rows already introduced
 
+    # TODO relative coordinates
+
     working_pixels = image_slice.pixels
     image_pixels = working_pixels[0:2058, 11:523]
     estimated_smear = smear_ratio * numpy.sum(image_pixels, 0)
@@ -78,30 +83,61 @@ def introduce_smear_rows_to_slice(smear_ratio, image_slice):
 def add_shot_noise(image_slice):
     # type: (Slice) -> Slice
     """
+    Add `*shot noise* <https://en.wikipedia.org/wiki/Shot_noise>`_ to every pixel.
+    *Shot noise* is a fluctuation in electron counts.
+
     The process of making photoelectrons from light follows Poisson statistics.
-    For large expectation values, which we have, the Poisson distribution is very close to Gaussian.
+    For large expectation values (the TESS situation) the Poisson distribution is very close to Gaussian.
     The standard deviation is the square root of the expected number of electrons.
     This added noise is known as *shot noise*.
 
-    :param image_slice:
+    :param image_slice: An image slice which has electrons as its units.  Pixel data should be the *expected* electron \
+    counts for each pixel.
     :type image_slice: :py:class:`~httm.data_structures.Slice`
     :rtype: :py:class:`~httm.data_structures.Slice`
     """
+    # TODO throw if units are not electrons
     # noinspection PyProtectedMember
     return image_slice._replace(
         pixels=numpy.random.normal(loc=image_slice.pixels, scale=numpy.sqrt(image_slice.pixels)))
 
 
-def simulate_blooming_on_slice(full_well, nreads, image_slice):
+def simulate_blooming_on_slice(full_well, blooming_threshold, nreads, image_slice):
     """
     TODO. Currently done by SPyFFI
 
     :param image_slice:
     :param full_well:
+    :param blooming_threshold:
     :param nreads:
     :rtype: :py:class:`~httm.data_structures.Slice`
     """
-    return image_slice
+    # TODO crash if smear rows already introduced
+
+    # TODO check units=electrons
+
+    # TODO relative coordinates
+
+    kernel = numpy.array([0.3, 0.4, 0.3])
+
+    def diffusion_step(column):
+        clipped = numpy.clip(column, 0, nreads * blooming_threshold)
+        excess = column - clipped
+        diffused_excess = numpy.convolve(excess, kernel, mode='same')
+        return clipped + diffused_excess
+
+    def bloom_column(column):
+        column = diffusion_step(column)
+        while numpy.amax(column) > nreads * full_well:
+            column = diffusion_step(column)
+        return column
+
+    working_pixels = image_slice.pixels
+    image_pixels = working_pixels[0:2058, 11:523]
+    bloomed_pixels = numpy.apply_along_axis(bloom_column, 0, image_pixels)
+    working_pixels[0:2058, 11:523] = bloomed_pixels
+    # noinspection PyProtectedMember
+    return image_slice._replace(pixels=working_pixels)
 
 
 def add_readout_noise_to_slice(readout_noise, nreads, image_slice):
