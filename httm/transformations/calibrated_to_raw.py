@@ -2,15 +2,15 @@
 ``httm.transformations.calibrated_to_raw``
 ==========================================
 
-This module contains transformation functions for processing a
-:py:class:`~httm.data_structures.RAWConverter` so that it is suitable for writing to a raw FITS file.
+Transformation functions for processing a
+:py:class:`~httm.data_structures.raw_converter.RAWConverter` so that it is suitable for writing to a raw FITS file.
 
 """
 
 import numpy
 
 from constants import FPE_MAX_ADU
-from ..data_structures import Slice
+from ..data_structures.common import Slice
 
 
 def add_start_of_line_ringing_to_slice(start_of_line_ringing, image_slice):
@@ -21,8 +21,8 @@ def add_start_of_line_ringing_to_slice(start_of_line_ringing, image_slice):
     :param start_of_line_ringing: One dimensional array of floats, representing noise in a row in a slice.
     :type start_of_line_ringing: row: :py:class:`numpy.ndarray`
     :param image_slice:
-    :type image_slice: :py:class:`~httm.data_structures.Slice`
-    :rtype:  :py:class:`~httm.data_structures.Slice`
+    :type image_slice: :py:class:`~httm.data_structures.common.Slice`
+    :rtype:  :py:class:`~httm.data_structures.common.Slice`
     """
     # noinspection PyProtectedMember
     return image_slice._replace(
@@ -37,8 +37,8 @@ def add_pattern_noise_to_slice(pattern_noise, image_slice):
     :param pattern_noise: Two dimensional array of floats, representing noise in a slice.
     :type pattern_noise: :py:class:`numpy.ndarray`
     :param image_slice:
-    :type image_slice: :py:class:`~httm.data_structures.Slice`
-    :rtype:  :py:class:`~httm.data_structures.Slice`
+    :type image_slice: :py:class:`~httm.data_structures.common.Slice`
+    :rtype:  :py:class:`~httm.data_structures.common.Slice`
     """
     # noinspection PyProtectedMember
     return image_slice._replace(
@@ -62,10 +62,10 @@ def introduce_smear_rows_to_slice(smear_ratio, image_slice):
     smear row, and adds the estimated smear row to each image row.
 
     :param image_slice:
-    :type image_slice: :py:class:`~httm.data_structures.Slice`
+    :type image_slice: :py:class:`~httm.data_structures.common.Slice`
     :param smear_ratio:
     :type smear_ratio: float
-    :rtype: :py:class:`~httm.data_structures.Slice`
+    :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
     # TODO crash if smear rows already introduced
 
@@ -93,8 +93,8 @@ def add_shot_noise(image_slice):
 
     :param image_slice: An image slice which has electrons as its units.  Pixel data should be the *expected* electron \
     counts for each pixel.
-    :type image_slice: :py:class:`~httm.data_structures.Slice`
-    :rtype: :py:class:`~httm.data_structures.Slice`
+    :type image_slice: :py:class:`~httm.data_structures.common.Slice`
+    :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
     # TODO throw if units are not electrons
     # noinspection PyProtectedMember
@@ -110,7 +110,7 @@ def simulate_blooming_on_slice(full_well, blooming_threshold, nreads, image_slic
     :param full_well:
     :param blooming_threshold:
     :param nreads:
-    :rtype: :py:class:`~httm.data_structures.Slice`
+    :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
     # TODO crash if smear rows already introduced
 
@@ -148,12 +148,12 @@ def add_readout_noise_to_slice(readout_noise, nreads, image_slice):
     The variance :math:`\\sigma^2` is :math:`\\mathtt{readout\_noise}^2 \times \\mathtt{nreads}`
 
     :param image_slice:
-    :type image_slice: :py:class:`~httm.data_structures.Slice`
+    :type image_slice: :py:class:`~httm.data_structures.common.Slice`
     :param readout_noise:
     :type readout_noise: float
     :param nreads:
     :type nreads: int
-    :rtype: :py:class:`~httm.data_structures.Slice`
+    :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
     from numpy.random import normal
     # noinspection PyProtectedMember
@@ -176,8 +176,8 @@ def simulate_undershoot(undershoot, image_slice):
     :param undershoot: Undershoot parameter from parameter structure, typically `~0.001`, dimensionless
     :type undershoot: float
     :param image_slice:
-    :type image_slice: :py:class:`~httm.data_structures.Slice`
-    :rtype: :py:class:`~httm.data_structures.Slice`
+    :type image_slice: :py:class:`~httm.data_structures.common.Slice`
+    :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
     kernel = numpy.array([1.0, -undershoot])
 
@@ -202,8 +202,8 @@ def convert_slice_electrons_to_adu(compression, number_of_exposures, video_scale
     :param baseline_adu: TODO
     :type baseline_adu: float
     :param image_slice: TODO
-    :type image_slice: :py:class:`~httm.data_structures.Slice`
-    :rtype: :py:class:`~httm.data_structures.Slice`
+    :type image_slice: :py:class:`~httm.data_structures.common.Slice`
+    :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
     assert image_slice.units == "electrons", "units must be electrons"
     compression_per_adu = compression / (number_of_exposures * FPE_MAX_ADU)  # type: float

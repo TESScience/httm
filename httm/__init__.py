@@ -7,11 +7,13 @@ or raw TESS full frame FITS images between one another.
 """
 
 import numpy
-import time
 
-from data_structures import Slice, CalibratedConverter, CalibratedConverterParameters, FITSMetaData, \
-    RAWConverter, RAWConverterParameters, document_parameters, calibrated_converter_parameters, \
-    raw_converter_parameters, CalibratedConverterFlags, RawConverterFlags, calibrated_converter_flags
+from data_structures.calibrated_converter import calibrated_converter_parameters, CalibratedConverterParameters, \
+    calibrated_transformation_flags, CalibratedConverterFlags, CalibratedConverter
+from data_structures.documentation import document_parameters
+from data_structures.raw_converter import raw_converter_parameters, RAWConverterParameters, RawConverterFlags, \
+    RAWConverter, raw_transformation_flags
+from data_structures.common import Slice, FITSMetaData
 
 
 # TODO: Deal with raw converter
@@ -46,7 +48,7 @@ def make_slice_from_calibrated_data(pixels, index):
     :type pixels: :py:class:`numpy.ndarray`
     :param index: The index of the slice to construct.
     :type index: int
-    :rtype: :py:class:`~httm.data_structures.Slice`
+    :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
     # TODO: Add in smear and dark pixels
     image_smear_and_dark_pixels = numpy.vstack([pixels, numpy.zeros((20, pixels.shape[1]))])
@@ -57,7 +59,6 @@ def make_slice_from_calibrated_data(pixels, index):
                  units='electrons')
 
 
-# TODO: Random seed
 def calibrated_converter_flags_from_file(input_file):
     """
     Construct a :py:class:`~httm.data_structures.CalibratedConverterFlags`
@@ -68,21 +69,22 @@ def calibrated_converter_flags_from_file(input_file):
     :rtype: :py:class:`~httm.data_structures.CalibratedConverter`
     """
     # TODO try to read these from file
-    smeared = calibrated_converter_flags['smeared']['default']
-    readout_noise_added = calibrated_converter_flags['readout_noise_added']['default']
-    shot_noise_added = calibrated_converter_flags['shot_noise_added']['default']
-    blooming_simulated = calibrated_converter_flags['blooming_simulated']['default']
-    undershoot = calibrated_converter_flags['undershoot']['default']
-    pattern_noise = calibrated_converter_flags['pattern_noise']['default']
-    start_of_line_ringing = calibrated_converter_flags['start_of_line_ringing']['default']
+    smear_rows_present = calibrated_transformation_flags['smear_rows_present']['default']
+    readout_noise_added = calibrated_transformation_flags['readout_noise_added']['default']
+    shot_noise_added = calibrated_transformation_flags['shot_noise_added']['default']
+    blooming_simulated = calibrated_transformation_flags['blooming_simulated']['default']
+    undershoot_uncompensated = calibrated_transformation_flags['undershoot_uncompensated']['default']
+    pattern_noise_uncompensated = calibrated_transformation_flags['pattern_noise_uncompensated']['default']
+    start_of_line_ringing_uncompensated = calibrated_transformation_flags['start_of_line_ringing_uncompensated'][
+        'default']
     return CalibratedConverterFlags(
-        smeared=smeared,
+        smear_rows_present=smear_rows_present,
         readout_noise_added=readout_noise_added,
         shot_noise_added=shot_noise_added,
         blooming_simulated=blooming_simulated,
-        undershoot=undershoot,
-        pattern_noise=pattern_noise,
-        start_of_line_ringing=start_of_line_ringing,
+        undershoot_uncompensated=undershoot_uncompensated,
+        pattern_noise_uncompensated=pattern_noise_uncompensated,
+        start_of_line_ringing_uncompensated=start_of_line_ringing_uncompensated,
     )
 
 
@@ -180,12 +182,36 @@ def make_slice_from_raw_data(
     :param right_dark_pixel_columns: The rightmost columns are dark pixels, to be placed on the \
     right of the slice.
     :type right_dark_pixel_columns: :py:class:`numpy.ndarray`
-    :rtype: :py:class:`~httm.data_structures.Slice`
+    :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
     return Slice(
         pixels=numpy.hstack([left_dark_pixel_columns, image_and_smear_pixels, right_dark_pixel_columns]),
         index=index,
         units='adu')
+
+
+# TODO: Broken
+def raw_converter_flags_from_file(input_file):
+    """
+    Construct a :py:class:`~httm.data_structures.raw_converter.RawConverterFlags`
+    from a file or file name.
+
+    :param input_file: The file or file name to input
+    :type input_file: :py:class:`file` or :py:class:`str`
+    :rtype: :py:class:`~httm.data_structures.raw_converter.RawConverterFlags`
+    """
+    # TODO try to read these from file
+    smear_rows_present = raw_transformation_flags['smear_rows_present']['default']
+    undershoot_uncompensated = raw_transformation_flags['undershoot_uncompensated']['default']
+    pattern_noise_uncompensated = raw_transformation_flags['pattern_noise_uncompensated']['default']
+    start_of_line_ringing_uncompensated = raw_transformation_flags['start_of_line_ringing_uncompensated'][
+        'default']
+    return RawConverterFlags(
+        smear_rows_present=smear_rows_present,
+        undershoot_uncompensated=undershoot_uncompensated,
+        pattern_noise_uncompensated=pattern_noise_uncompensated,
+        start_of_line_ringing_uncompensated=start_of_line_ringing_uncompensated,
+    )
 
 
 def raw_converter_from_file(
@@ -233,15 +259,16 @@ def raw_converter_from_file(
             undershoot=undershoot,
             pattern_noise=pattern_noise,
         ),
-        flags=RawConverterFlags(),
+        # TODO: Read this from a file
+        flags=raw_converter_flags_from_file(input_file),
     )
 
 
 raw_converter_from_file.__doc__ = """
-Construct a :py:class:`~httm.data_structures.RAWConverter` from a file or file name
+Construct a :py:class:`~httm.data_structures.raw_converter.RAWConverter` from a file or file name
 
 :param input_file: The file or file name to input
 :type input_file: :py:class:`File` or :py:class:`str`
 {parameter_documentation}
-:rtype: :py:class:`~httm.data_structures.RAWConverter`
+:rtype: :py:class:`~httm.data_structures.raw_converter.RAWConverter`
 """.format(parameter_documentation=document_parameters(raw_converter_parameters))

@@ -3,13 +3,13 @@
 ==========================================
 
 This module contains transformation functions for processing
-a :py:class:`~httm.data_structures.RAWConverter` so that it is suitable for
+a :py:class:`~httm.data_structures.raw_converter.RAWConverter` so that it is suitable for
 writing to a calibrated FITS file.
 """
 import numpy
 
 from constants import FPE_MAX_ADU
-from ..data_structures import Slice, RAWConverter
+from ..data_structures.common import Slice
 
 
 def remove_start_of_line_ringing_from_slice(image_slice):
@@ -60,8 +60,8 @@ def convert_slice_adu_to_electrons(compression, number_of_exposures, video_scale
     :param video_scale: TODO
     :type video_scale: float
     :param image_slice: TODO
-    :type image_slice: :py:class:`~httm.data_structures.Slice`
-    :rtype: :py:class:`~httm.data_structures.Slice`
+    :type image_slice: :py:class:`~httm.data_structures.common.Slice`
+    :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
     assert image_slice.units == "ADU", "units must be ADU"
     compression_per_adu = compression / (number_of_exposures * FPE_MAX_ADU)  # type: float
@@ -80,12 +80,12 @@ def convert_slice_adu_to_electrons(compression, number_of_exposures, video_scale
 def convert_adu_to_electrons(raw_transformation):
     # type: (RAWConverter) -> RAWConverter
     """
-    Converts a :py:class:`~httm.data_structures.RAWConverter` from
+    Converts a :py:class:`~httm.data_structures.raw_converter.RAWConverter` from
     having *Analogue to Digital Converter Units* (ADU) to electron counts.
 
     :param raw_transformation: Should have electrons for units
-    :type raw_transformation: :py:class:`~httm.data_structures.RAWConverter`
-    :rtype: :py:class:`~httm.data_structures.RAWConverter`
+    :type raw_transformation: :py:class:`~httm.data_structures.raw_converter.RAWConverter`
+    :rtype: :py:class:`~httm.data_structures.raw_converter.RAWConverter`
     """
     video_scales = raw_transformation.parameters.video_scales
     image_slices = raw_transformation.slices
