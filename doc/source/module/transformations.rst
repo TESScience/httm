@@ -1,6 +1,8 @@
 ``httm.transformations``
 ========================
 
+Transformation functions for FITS data conversion objects.
+
 .. toctree::
    :maxdepth: 2
 

@@ -1,3 +1,4 @@
 jupyter==1.0.0
 sh==1.11
 matplotlib==1.5.3
+runipy==0.1.5

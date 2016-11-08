@@ -2,10 +2,9 @@
 import argparse
 import sys
 
-from httm import calibrated_transform_from_file, write_raw_fits
+from httm import calibrated_converter_from_file, write_fits
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(description='Transform a Calibrated FITS file into a RAW FITS file')
 
     parser.add_argument('--slices', '-s', dest='slices', action='store', type=int, default=4,
@@ -16,4 +15,4 @@ if __name__ == "__main__":
                         help="The name of the RAW FITS file to use as output (defaults to STDOUT)")
 
     args = parser.parse_args()
-    write_raw_fits(args.output, calibrated_transform_from_file(args.input))
+    write_fits(args.output, calibrated_converter_from_file(args.input))
