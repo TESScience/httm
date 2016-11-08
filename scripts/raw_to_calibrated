@@ -3,6 +3,7 @@ import argparse
 import sys
 
 from httm import raw_transform_from_file, write_calibrated_fits
+from httm.transformations.raw_to_calibrated import convert_adu_to_electrons
 
 if __name__ == "__main__":
 
@@ -16,4 +17,4 @@ if __name__ == "__main__":
                         help="The name of the Calibrated FITS file to use as output (defaults to STDOUT)")
 
     args = parser.parse_args()
-    write_calibrated_fits(args.output, raw_transform_from_file(args.input))
+    write_calibrated_fits(args.output, reduce(lambda x, t: t(x), raw_transform_from_file(args.input), [convert_adu_to_electrons]))

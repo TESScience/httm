@@ -83,7 +83,7 @@ def introduce_smear_rows_to_slice(smear_ratio, image_slice):
 def add_shot_noise(image_slice):
     # type: (Slice) -> Slice
     """
-    Add `*shot noise* <https://en.wikipedia.org/wiki/Shot_noise>`_ to every pixel.
+    Add `shot noise <https://en.wikipedia.org/wiki/Shot_noise>`_ to every pixel.
     *Shot noise* is a fluctuation in electron counts.
 
     The process of making photoelectrons from light follows Poisson statistics.
@@ -104,7 +104,25 @@ def add_shot_noise(image_slice):
 
 def simulate_blooming_on_slice(full_well, blooming_threshold, nreads, image_slice):
     """
-    TODO. Currently done by SPyFFI
+    Simulate `blooming <http://hamamatsu.magnet.fsu.edu/articles/ccdsatandblooming.html>`_ along columns
+    in the image pixel array.
+
+    Blooming is a diffusion process involving thermal excitation of electrons over the potential barriers
+    between pixels. The height of the potential barrier confining electrons to the pixel decreases with
+    increasing electron content in the pixel. The diffusion rate grows exponentially with decreasing barrier
+    height.
+
+    Here, we crudely model this process using two parameters. *blooming_threshold* is the number of electrons
+    in the pixel that suffices to drive significant diffusion. *full_well* is enough electrons to cause such
+    rapid diffusion that the pixel cannot hold more.
+
+    The function *diffusion_step* performs one step in the diffusion process,
+    spreading charge above *blooming_threshold* to adjacent pixels along a column.
+    It assumes charge that diffuses beyond the limits of the row is lost.
+
+    The function *bloom_column* applies *diffusion_step* until all pixels are below *full_well*.
+    It applies *diffusion_step* at least once to simulate the modest diffusion that may happen even if
+    no pixel in the column exceeds *full_well*.
 
     :param image_slice:
     :param full_well:
@@ -121,10 +139,10 @@ def simulate_blooming_on_slice(full_well, blooming_threshold, nreads, image_slic
     kernel = numpy.array([0.3, 0.4, 0.3])
 
     def diffusion_step(column):
-        clipped = numpy.clip(column, 0, nreads * blooming_threshold)
-        excess = column - clipped
-        diffused_excess = numpy.convolve(excess, kernel, mode='same')
-        return clipped + diffused_excess
+        diffusion_proof_part = numpy.clip(column, 0, nreads * blooming_threshold)
+        excess = column - diffusion_proof_part
+        diffused_excess = numpy.convolve(excess, kernel, mode='same')   # implicitly lose charge from top and bottom
+        return diffusion_proof_part + diffused_excess
 
     def bloom_column(column):
         column = diffusion_step(column)
@@ -142,7 +160,7 @@ def simulate_blooming_on_slice(full_well, blooming_threshold, nreads, image_slic
 
 def add_readout_noise_to_slice(readout_noise, nreads, image_slice):
     """
-    Adds a Gaussian random _readout_ noise to every pixel.
+    Adds a Gaussian random *readout* noise to every pixel.
     This noise comes from the charge sense transistor and the signal processing electronics.
     The average value :math:`\\mu` of the noise is `0`.
     The variance :math:`\\sigma^2` is :math:`\\mathtt{readout\_noise}^2 \times \\mathtt{nreads}`
