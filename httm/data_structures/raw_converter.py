@@ -31,7 +31,7 @@ class RAWConverterParameters(
     __doc__ = """
 Converter parameters for converting a calibrated FITS image into an uncalibrated FITS image.
 
-Constructed using the parameters handed to :py:func:`~httm.raw_transform_from_file`.
+Constructed using the parameters handed to :py:func:`~httm.raw_converter_from_file`.
 
 {parameter_documentation}
 """.format(parameter_documentation=document_parameters(raw_converter_parameters))
@@ -64,10 +64,10 @@ class RAWConverter(
     :param slices: The slices of the image
     :type slices: list of :py:class:`~httm.data_structures.common.Slice` objects
     :param fits_metadata: Meta data associated with the image
-    :type fits_metadata: :py:class:`~httm.data_structures.FITSMetaData`
+    :type fits_metadata: :py:class:`~httm.data_structures.common.FITSMetaData`
     :param parameters: The parameters of the transformation
     :type parameters: :py:class:`~httm.data_structures.raw_converter.RAWConverterParameters`
     :param flags: Flags indicating the state of the transformation
-    :type flags: :py:class:`~httm.data_structures.RawConverterFlags`
+    :type flags: :py:class:`~httm.data_structures.raw_converter.RawConverterFlags`
     """
     __slots__ = ()

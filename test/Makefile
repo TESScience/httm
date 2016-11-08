@@ -17,7 +17,7 @@ RUNIPY=$(VIRTUAL_ENV)/bin/runipy
 SITE_PACKAGES=$(VIRTUAL_ENV)/lib/python2.7/site-packages
 VERSION=$(shell python -c "$(shell grep '^VERSION' $(CURDIR)/../setup.py) ; print VERSION")
 INSTALL=$(SITE_PACKAGES)/SPyFFI-$(VERSION)-py2.7.egg
-TESTS=plugins-test
+TESTS=check-docstring-type-references plugins-test
 
 all: install
 
@@ -31,6 +31,16 @@ install: $(VIRTUAL_ENV)
 
 documentation:
 	make -C ../doc {latexpdf,html}
+
+check-docstring-type-references:
+	@echo -n Checking files for broken docstring references...
+	@find ../httm -name "*.py" \
+	| xargs grep \~httm \
+	| sed -e "s/.*~\(httm[^ \`]*\)\`.*/\1/" \
+	| sort \
+	| uniq \
+	| xargs $(PYTHON) scripts/python_object_exists.py
+	@echo OK
 
 test: 
 	@make $(TESTS)

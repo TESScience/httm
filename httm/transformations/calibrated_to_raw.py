@@ -221,12 +221,12 @@ def convert_slice_electrons_to_adu(compression, number_of_exposures, video_scale
 def convert_electrons_to_adu(calibrated_transformation):
     # type: (CalibratedConverter) -> CalibratedConverter
     """
-    Converts a :py:class:`~httm.data_structures.CalibratedConverter` from having electrons
+    Converts a :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` from having electrons
     to *Analogue to Digital Converter Units* (ADU).
 
     :param calibrated_transformation: Should have electrons for units
-    :type calibrated_transformation: :py:class:`~httm.data_structures.CalibratedConverter`
-    :rtype: :py:class:`~httm.data_structures.CalibratedConverter`
+    :type calibrated_transformation: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
+    :rtype: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
     """
     video_scales = calibrated_transformation.parameters.video_scales
     image_slices = calibrated_transformation.slices

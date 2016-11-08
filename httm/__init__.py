@@ -20,12 +20,12 @@ from data_structures.common import Slice, FITSMetaData
 def write_fits(output_file, calibrated_transform):
     # type: (str, CalibratedConverter) -> NoneType
     """
-    Write a completed :py:class:`~httm.data_structures.CalibratedConverter` to a (simulated) raw FITS file
+    Write a completed :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` to a (simulated) raw FITS file
 
     :param output_file:
     :type output_file: str
     :param calibrated_transform:
-    :type calibrated_transform: :py:class:`~httm.data_structures.CalibratedConverter`
+    :type calibrated_transform: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
     :rtype: NoneType
     """
     from astropy.io.fits import HDUList, PrimaryHDU
@@ -61,12 +61,12 @@ def make_slice_from_calibrated_data(pixels, index):
 
 def calibrated_converter_flags_from_file(input_file):
     """
-    Construct a :py:class:`~httm.data_structures.CalibratedConverterFlags`
+    Construct a :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverterFlags`
     from a file or file name.
 
     :param input_file: The file or file name to input
     :type input_file: :py:class:`file` or :py:class:`str`
-    :rtype: :py:class:`~httm.data_structures.CalibratedConverter`
+    :rtype: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
     """
     # TODO try to read these from file
     smear_rows_present = calibrated_transformation_flags['smear_rows_present']['default']
@@ -116,7 +116,7 @@ def calibrated_converter_from_file(
     assert header_data_unit_list[0].data.shape[1] % number_of_slices == 0, \
         "Image did not have the specified number of slices"
     origin_file_name = None
-    if isinstance(input_file, basestring):
+    if isinstance(input_file, str):
         origin_file_name = input_file
     if hasattr(input_file, 'name'):
         origin_file_name = input_file.name
@@ -152,12 +152,12 @@ def calibrated_converter_from_file(
 
 
 calibrated_converter_from_file.__doc__ = """
-Construct a :py:class:`~httm.data_structures.CalibratedConverter` from a file or file name
+Construct a :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` from a file or file name
 
 :param input_file: The file or file name to input
 :type input_file: :py:class:`file` or :py:class:`str`
 {parameter_documentation}
-:rtype: :py:class:`~httm.data_structures.CalibratedConverter`
+:rtype: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
 """.format(parameter_documentation=document_parameters(calibrated_converter_parameters))
 
 

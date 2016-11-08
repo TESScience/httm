@@ -20,7 +20,7 @@ class CalibratedConverterParameters(namedtuple('CalibratedConverterParameters',
     __doc__ = """
 Converter parameters for converting a calibrated FITS image into an uncalibrated FITS image.
 
-Constructed using the parameters handed to :py:func:`~httm.calibrated_transform_from_file`.
+Constructed using the parameters handed to :py:func:`~httm.calibrated_converter_from_file`.
 
 {parameter_documentation}
 """.format(parameter_documentation=document_parameters(calibrated_converter_parameters))
@@ -52,10 +52,10 @@ class CalibratedConverter(
     :param slices: The slices of the image
     :type slices: tuple of :py:class:`~httm.data_structures.common.Slice` objects
     :param fits_metadata: Meta data associated with the image
-    :type fits_metadata: :py:class:`~httm.data_structures.FITSMetaData`
+    :type fits_metadata: :py:class:`~httm.data_structures.common.FITSMetaData`
     :param parameters: The parameters of the transformation
-    :type parameters: :py:class:`~httm.data_structures.CalibratedConverterParameters`
+    :type parameters: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverterParameters`
     :param flags: Flags indicating the state of the transformation
-    :type flags: :py:class:`~httm.data_structures.CalibratedConverterFlags`
+    :type flags: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverterFlags`
     """
     __slots__ = ()
