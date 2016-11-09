@@ -3,7 +3,7 @@
 ==========================================
 
 Transformation functions for processing a
-:py:class:`~httm.data_structures.raw_converter.RAWConverter` so that it is suitable for writing to a raw FITS file.
+:py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` so that it is suitable for writing to a raw FITS file.
 
 """
 
@@ -86,10 +86,10 @@ def add_shot_noise(image_slice):
     Add `*shot noise* <https://en.wikipedia.org/wiki/Shot_noise>`_ to every pixel.
     *Shot noise* is a fluctuation in electron counts.
 
-    The process of making photoelectrons from light follows Poisson statistics.
-    For large expectation values (the TESS situation) the Poisson distribution is very close to Gaussian.
-    The standard deviation is the square root of the expected number of electrons.
-    This added noise is known as *shot noise*.
+    It is modeled as a Gaussian distributed error.
+
+    If the expected electron count in the pixel is :math:`n`
+    the standard deviation of the shot noise is :math:`\\sqrt{n}` and the expected value is :math:`n`.
 
     :param image_slice: An image slice which has electrons as its units.  Pixel data should be the *expected* electron \
     counts for each pixel.
@@ -218,24 +218,25 @@ def convert_slice_electrons_to_adu(compression, number_of_exposures, video_scale
                  pixels=transform_electron_to_adu(image_slice.pixels))
 
 
-def convert_electrons_to_adu(calibrated_transformation):
+def convert_electrons_to_adu(calibrated_converter):
     # type: (CalibratedConverter) -> CalibratedConverter
     """
     Converts a :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` from having electrons
     to *Analogue to Digital Converter Units* (ADU).
 
-    :param calibrated_transformation: Should have electrons for units
-    :type calibrated_transformation: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
+    :param calibrated_converter: Should have electrons for units for each of its slices
+    :type calibrated_converter: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
     :rtype: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
     """
-    video_scales = calibrated_transformation.parameters.video_scales
-    image_slices = calibrated_transformation.slices
-    number_of_exposures = calibrated_transformation.fits_metadata.header['NREADS']
-    compression = calibrated_transformation.parameters.compression
-    baseline_adu = calibrated_transformation.parameters.baseline_adu
+    video_scales = calibrated_converter.parameters.video_scales
+    image_slices = calibrated_converter.slices
+    # TODO: NREADS should be read from parameters
+    number_of_exposures = calibrated_converter.fits_metadata.header['NREADS']
+    compression = calibrated_converter.parameters.compression
+    baseline_adu = calibrated_converter.parameters.baseline_adu
     assert len(video_scales) == len(image_slices), "Video scales do not match image slices"
     # noinspection PyProtectedMember
-    return calibrated_transformation._replace(
+    return calibrated_converter._replace(
         slices=tuple(
             convert_slice_electrons_to_adu(compression, number_of_exposures, video_scale, image_slice, baseline_adu)
             for (video_scale, image_slice) in zip(video_scales, image_slices)))
