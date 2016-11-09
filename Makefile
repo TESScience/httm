@@ -3,7 +3,7 @@
 all:
 
 documentation:
-	make -C doc {html,latexpdf}
+	make -C doc {clean,html,latexpdf}
 
 test:
 	make -C test/ {install,test}
