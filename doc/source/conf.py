@@ -56,7 +56,7 @@ master_doc = 'index'
 # General information about the project.
 project = u'Hot Tub Time Machine'
 # noinspection PyShadowingBuiltins
-copyright = u'2016, Noqsi Aerospace, Ltd.'
+copyright = u'2016, Noqsi Aerospace, Ltd'
 author = u'Matthew Wampler-Doty and John Doty'
 
 # The version info for the project you're documenting, acts as replacement for
