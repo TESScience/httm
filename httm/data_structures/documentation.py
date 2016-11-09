@@ -21,4 +21,4 @@ def document_parameters(parameter_dictionary):
                              documentation=data['documentation'].rstrip(". "),
                              default=data['default'],
                              type=data['type'])
-                      for parameter, data in parameter_dictionary.iteritems()])
+                      for parameter, data in parameter_dictionary.items()])
