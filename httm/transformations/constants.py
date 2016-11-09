@@ -5,5 +5,5 @@
 This module contains constants used in transformation functions.
 """
 
-# The maximum number of Analogue to Digital Converter Units a pixel can contain
+# The maximum number of Analogue to Digital Converter Units a pixel can contain in a RAW image
 FPE_MAX_ADU = 65535
