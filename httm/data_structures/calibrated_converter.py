@@ -39,6 +39,7 @@ Flags indicating which raw transformations have been performed.
 """.format(parameter_documentation=document_parameters(calibrated_transformation_flags))
     __slots__ = ()
 
+
 # noinspection PyUnresolvedReferences,PyClassHasNoInit
 class CalibratedConverter(
     namedtuple('CalibratedConverter',
