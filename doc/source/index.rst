@@ -1,5 +1,5 @@
-Welcome to Hot Tub Time Machine's documentation!
-================================================
+HTTM: A Conversion Tool For TESS Full Frame Images
+==================================================
 
 Contents:
 
