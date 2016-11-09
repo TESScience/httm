@@ -4,9 +4,10 @@
 
 This module contains data structures for dealing with converting calibrated images to raw images.
 """
-from metadata import parameters, transformation_flags
 from collections import namedtuple, OrderedDict
+
 from documentation import document_parameters
+from metadata import parameters, transformation_flags
 
 calibrated_converter_parameters = parameters
 
