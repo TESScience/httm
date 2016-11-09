@@ -38,10 +38,10 @@ Constructed using the parameters handed to :py:func:`~httm.raw_converter_from_fi
     __slots__ = ()
 
 
-# TODO derive RawConverterFlags from FITS header
+# TODO derive RAWConverterFlags from FITS header
 # noinspection PyClassHasNoInit
-class RawConverterFlags(
-    namedtuple('RawConverterFlags',
+class RAWConverterFlags(
+    namedtuple('RAWConverterFlags',
                raw_transformation_flags.keys())):
     __doc__ = """
 Flags indicating which raw transformations have been performed.
@@ -68,6 +68,6 @@ class RAWConverter(
     :param parameters: The parameters of the transformation
     :type parameters: :py:class:`~httm.data_structures.raw_converter.RAWConverterParameters`
     :param flags: Flags indicating the state of the transformation
-    :type flags: :py:class:`~httm.data_structures.raw_converter.RawConverterFlags`
+    :type flags: :py:class:`~httm.data_structures.raw_converter.RAWConverterFlags`
     """
     __slots__ = ()
