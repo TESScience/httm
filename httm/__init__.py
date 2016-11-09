@@ -11,7 +11,7 @@ import numpy
 from data_structures.calibrated_converter import calibrated_converter_parameters, CalibratedConverterParameters, \
     calibrated_transformation_flags, CalibratedConverterFlags, CalibratedConverter
 from data_structures.documentation import document_parameters
-from data_structures.raw_converter import raw_converter_parameters, RAWConverterParameters, RawConverterFlags, \
+from data_structures.raw_converter import raw_converter_parameters, RAWConverterParameters, RAWConverterFlags, \
     RAWConverter, raw_transformation_flags
 from data_structures.common import Slice, FITSMetaData
 
@@ -193,12 +193,12 @@ def make_slice_from_raw_data(
 # TODO: Broken
 def raw_converter_flags_from_file(input_file):
     """
-    Construct a :py:class:`~httm.data_structures.raw_converter.RawConverterFlags`
+    Construct a :py:class:`~httm.data_structures.raw_converter.RAWConverterFlags`
     from a file or file name.
 
     :param input_file: The file or file name to input
     :type input_file: :py:class:`file` or :py:class:`str`
-    :rtype: :py:class:`~httm.data_structures.raw_converter.RawConverterFlags`
+    :rtype: :py:class:`~httm.data_structures.raw_converter.RAWConverterFlags`
     """
     # TODO try to read these from file
     smear_rows_present = raw_transformation_flags['smear_rows_present']['default']
@@ -206,7 +206,7 @@ def raw_converter_flags_from_file(input_file):
     pattern_noise_uncompensated = raw_transformation_flags['pattern_noise_uncompensated']['default']
     start_of_line_ringing_uncompensated = raw_transformation_flags['start_of_line_ringing_uncompensated'][
         'default']
-    return RawConverterFlags(
+    return RAWConverterFlags(
         smear_rows_present=smear_rows_present,
         undershoot_uncompensated=undershoot_uncompensated,
         pattern_noise_uncompensated=pattern_noise_uncompensated,
@@ -228,7 +228,7 @@ def raw_converter_from_file(
     assert header_data_unit_list[0].data.shape[1] % number_of_slices == 0, \
         "Image did not have the specified number of slices"
     origin_file_name = None
-    if isinstance(input_file, basestring):
+    if isinstance(input_file, str):
         origin_file_name = input_file
     if hasattr(input_file, 'name'):
         origin_file_name = input_file.name
