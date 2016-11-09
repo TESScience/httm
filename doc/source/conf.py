@@ -14,9 +14,6 @@
 
 import sys
 import os
-import re
-# noinspection PyUnresolvedReferences,PyPackageRequirements
-from sh import grep
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -67,10 +64,16 @@ author = u'Matthew Wampler-Doty and John Doty'
 #
 # The short X.Y version.
 
+def get_version():
+    "Returns the version declared at the top of setup.py"
+    import re
+    for line in open('../../setup.py'):
+        if re.match(r'VERSION\s*=\s*', line):
+            return re.sub(r'^VERSION\s*=\s*', '', 
+                          re.sub(r'(\x1b[^m]*m|\x1b\[K)', '', line)).strip().strip("'")
 
-version = re.sub(r'^VERSION\s*=\s*', '',
-                 re.sub(r'(\x1b[^m]*m|\x1b\[K)', '',
-                        str(grep('VERSION\s*=\s*', '../../setup.py')))).strip().strip("'")
+version = get_version()
+
 # The full version, including alpha/beta/rc tags.
 release = version
 
