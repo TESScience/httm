@@ -1,6 +1,9 @@
-.PHONY: all test clean
+.PHONY: all documentation test clean
 
 all:
+
+documentation:
+	make -C doc {html,latexpdf}
 
 test:
 	make -C test/ {install,test}
