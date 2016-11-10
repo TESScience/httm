@@ -14,9 +14,7 @@
 
 import sys
 import os
-import re
-# noinspection PyUnresolvedReferences,PyPackageRequirements
-from sh import grep
+import sphinx_rtd_theme
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -58,7 +56,7 @@ master_doc = 'index'
 # General information about the project.
 project = u'Hot Tub Time Machine'
 # noinspection PyShadowingBuiltins
-copyright = u'2016, Noqsi Aerospace, Ltd.'
+copyright = u'2016, Noqsi Aerospace, Ltd'
 author = u'Matthew Wampler-Doty and John Doty'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -67,10 +65,16 @@ author = u'Matthew Wampler-Doty and John Doty'
 #
 # The short X.Y version.
 
+def get_version():
+    "Returns the version declared at the top of setup.py"
+    import re
+    for line in open('../../setup.py'):
+        if re.match(r'VERSION\s*=\s*', line):
+            return re.sub(r'^VERSION\s*=\s*', '', 
+                          re.sub(r'(\x1b[^m]*m|\x1b\[K)', '', line)).strip().strip("'")
 
-version = re.sub(r'^VERSION\s*=\s*', '',
-                 re.sub(r'(\x1b[^m]*m|\x1b\[K)', '',
-                        str(grep('VERSION\s*=\s*', '../../setup.py')))).strip().strip("'")
+version = get_version()
+
 # The full version, including alpha/beta/rc tags.
 release = version
 
@@ -122,7 +126,7 @@ todo_include_todos = True
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -130,7 +134,7 @@ html_theme = 'alabaster'
 # html_theme_options = {}
 
 # Add any paths that contain custom themes here, relative to this directory.
-# html_theme_path = []
+html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
