@@ -4,6 +4,6 @@ Python Module Documentation
 .. toctree::
    :maxdepth: 2
 
-   module/top
+   module/fits
    module/data_structures
    module/transformations
