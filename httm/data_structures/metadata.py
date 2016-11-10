@@ -10,7 +10,7 @@ This module contains metadata for use in transformation functions.
 """
 
 from collections import OrderedDict
-from constants import FPE_MAX_ADU
+from ..transformations.constants import FPE_MAX_ADU
 
 
 parameters = OrderedDict([
