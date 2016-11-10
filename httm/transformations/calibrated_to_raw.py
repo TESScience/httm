@@ -18,10 +18,11 @@ def add_start_of_line_ringing_to_slice(start_of_line_ringing, image_slice):
     """
     Add a fixed pattern to each row of a slice.
 
-    :param start_of_line_ringing: One dimensional array of floats, representing noise in a row in a slice.
+    :param start_of_line_ringing: One dimensional array of floats, representing a fixed pattern \
+    disturbance in each row of a slice.
     :type start_of_line_ringing: row: :py:class:`numpy.ndarray`
-    :param image_slice:
-    :type image_slice: :py:class:`~httm.data_structures.common.Slice`
+    :param image_slice: input slice. Units: electrons
+    :type image_slice: :py:class:`~httm.data_structures.common.Slice` units: electrons
     :rtype:  :py:class:`~httm.data_structures.common.Slice`
     """
     # noinspection PyProtectedMember
@@ -34,9 +35,10 @@ def add_pattern_noise_to_slice(pattern_noise, image_slice):
     """
     Add a fixed pattern to a slice.
 
-    :param pattern_noise: Two dimensional array of floats, representing noise in a slice.
+    :param pattern_noise: Two dimensional array of floats, representing a fixed pattern \
+    disturbance in a slice.
     :type pattern_noise: :py:class:`numpy.ndarray`
-    :param image_slice:
+    :param image_slice: input slice. Units: electrons
     :type image_slice: :py:class:`~httm.data_structures.common.Slice`
     :rtype:  :py:class:`~httm.data_structures.common.Slice`
     """
@@ -48,9 +50,6 @@ def add_pattern_noise_to_slice(pattern_noise, image_slice):
 def introduce_smear_rows_to_slice(smear_ratio, image_slice):
     # type: (float, Slice) -> Slice
     """
-    TODO: Mention that this adds non-zreo smear rows
-
-
     Estimate smear by averaging rows in the image pixels and then multiplying by ``smear_ratio``.
     For most of the frame cycle, the pixel effectively sits in the imaging area of the CCD, collecting
     photons from a particular point on the sky for the exposure time. During readout, the pixel moves
@@ -60,14 +59,18 @@ def introduce_smear_rows_to_slice(smear_ratio, image_slice):
     This function first adds up all of the rows in the image pixel subarray of the slice. It multiplies
     by smear_ratio to estimate a smear row. It then replaces the smear rows in the slice with the estimated
     smear row, and adds the estimated smear row to each image row.
+    
+    The pixels in the resulting rows should all be nonzero for reasonable input data,
+    but if this transformation has not been applied, we expect zeros in those rows.
 
-    :param image_slice:
+    :param image_slice: input slice. Units: electrons
     :type image_slice: :py:class:`~httm.data_structures.common.Slice`
-    :param smear_ratio:
+    :param smear_ratio: dimensionless ratio of smear exposure to nominal exposure
     :type smear_ratio: float
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
     # TODO crash if smear rows already introduced
+    assert False, "Smear rows are already introduced (should be set to 0)"
 
     # TODO relative coordinates
 
@@ -124,10 +127,10 @@ def simulate_blooming_on_slice(full_well, blooming_threshold, nreads, image_slic
     It applies *diffusion_step* at least once to simulate the modest diffusion that may happen even if
     no pixel in the column exceeds *full_well*.
 
-    :param image_slice:
-    :param full_well:
-    :param blooming_threshold:
-    :param nreads:
+    :param image_slice: input slice. Units: electrons
+    :param full_well: maximum number of electrons in a pixel.
+    :param blooming_threshold: number of electrons in a pixel for noticeable blooming.
+    :param nreads: number of stacked images in the slice
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
     # TODO crash if smear rows already introduced
@@ -163,14 +166,14 @@ def add_readout_noise_to_slice(readout_noise, nreads, image_slice):
     Adds a Gaussian random *readout* noise to every pixel.
     This noise comes from the charge sense transistor and the signal processing electronics.
     The average value :math:`\\mu` of the noise is `0`.
-    The variance :math:`\\sigma^2` is :math:`\\mathtt{readout\_noise}^2 \times \\mathtt{nreads}`
+    The variance :math:`\\sigma^2` is :math:`\\mathtt{readout\_noise}^2 \\times \\mathtt{nreads}`
 
-    :param image_slice:
-    :type image_slice: :py:class:`~httm.data_structures.common.Slice`
-    :param readout_noise:
+    :param readout_noise: noise standard deviation for one image
     :type readout_noise: float
-    :param nreads:
+    :param nreads: number of stacked images in the slice
     :type nreads: int
+    :param image_slice: input slice
+    :type image_slice: :py:class:`~httm.data_structures.common.Slice`
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
     from numpy.random import normal
@@ -193,7 +196,7 @@ def simulate_undershoot(undershoot, image_slice):
 
     :param undershoot: Undershoot parameter from parameter structure, typically `~0.001`, dimensionless
     :type undershoot: float
-    :param image_slice:
+    :param image_slice: input slice. Units: electrons
     :type image_slice: :py:class:`~httm.data_structures.common.Slice`
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
@@ -201,25 +204,33 @@ def simulate_undershoot(undershoot, image_slice):
 
     def convolve_row(row):
         return numpy.convolve(row, kernel, mode='same')
-
+	
+    # noinspection PyProtectedMember
     return image_slice._replace(pixels=numpy.apply_along_axis(convolve_row, 1, image_slice.pixels))
 
 
-def convert_slice_electrons_to_adu(compression, number_of_exposures, video_scale, baseline_adu, image_slice):
-    # type: (float, int, float, float, Slice) -> Slice
+def convert_slice_electrons_to_adu(compression, number_of_exposures, video_scale, baseline_adu, clip_level_adu,image_slice):
+    # type: (float, int, float, float, int, Slice) -> Slice
     """
-    TODO
+    Simulate the nonlinear effects in the measurement of electrons.
+    
+    Other transformation functions handle linear and approximately linear effects. This
+    transformation is more complex and has more parameters because nonlinear effects are not
+    so easily disentangled.
 
-    :param compression: TODO
+    :param compression: The relative decrease in video gain over the total ADC range
     :type compression: float
     :param number_of_exposures: The number of exposures the image comprises.\
     This is read from the `NREADS` header of the input FITS file. TODO: Link to header description
     :type number_of_exposures: int
-    :param video_scale: TODO
+    :param video_scale: Constant for converting electron counts to \
+    *Analogue to Digital Converter Units* (ADU). Units: electrons per ADU
     :type video_scale: float
-    :param baseline_adu: TODO
+    :param baseline_adu: Analog to digital converter output for zero electrons. Units: ADU
     :type baseline_adu: float
-    :param image_slice: TODO
+    :param clip_level_adu: Maximum analog to digital converter output. Units: ADU
+    :type clip_level_adu: int
+    :param image_slice: Input slice. Units: electrons
     :type image_slice: :py:class:`~httm.data_structures.common.Slice`
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
@@ -227,9 +238,13 @@ def convert_slice_electrons_to_adu(compression, number_of_exposures, video_scale
     compression_per_adu = compression / (number_of_exposures * FPE_MAX_ADU)  # type: float
     compression_per_electron = compression_per_adu / video_scale  # type: float
     exposure_baseline = baseline_adu * number_of_exposures
+    exposure_clip_level = clip_level_adu * number_of_exposures
 
     def transform_electron_to_adu(electron):
-        return exposure_baseline + electron / (video_scale * (1.0 + compression_per_electron * electron))
+	from numpy import clip
+	return clip(
+		exposure_baseline + electron / (video_scale * (1.0 + compression_per_electron * electron)),
+	0, exposure_clip_level )
 
     return Slice(index=image_slice.index,
                  units="ADU",
@@ -252,9 +267,10 @@ def convert_electrons_to_adu(calibrated_converter):
     number_of_exposures = calibrated_converter.fits_metadata.header['NREADS']
     compression = calibrated_converter.parameters.compression
     baseline_adu = calibrated_converter.parameters.baseline_adu
+    clip_level_adu = calibrated_converter.parameters.clip_level_adu
     assert len(video_scales) == len(image_slices), "Video scales do not match image slices"
     # noinspection PyProtectedMember
     return calibrated_converter._replace(
         slices=tuple(
-            convert_slice_electrons_to_adu(compression, number_of_exposures, video_scale, image_slice, baseline_adu)
+            convert_slice_electrons_to_adu(compression, number_of_exposures, video_scale, baseline_adu, clip_level_adu, image_slice)
             for (video_scale, image_slice) in zip(video_scales, image_slices)))
