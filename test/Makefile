@@ -33,18 +33,18 @@ install: $(VIRTUAL_ENV)
 documentation:
 	make -C ../doc {latexpdf,html}
 
-# This is a generic test to make sure that references to python objects exist
+# This is a generic test to make sure that references to python objects in a particular module exist
 %-check-type-references: $(VIRTUAL_ENV)
 	@echo -n Checking files for broken docstring references for $(patsubst  %-check-type-references,%,$@)...
 	@find ../{httm,doc} -name "*.py" \
-	| xargs grep \~$(patsubst  %-check-type-references,%,$@) \
-	| sed -e "s/.*~\($(patsubst  %-check-type-references,%,$@)[^ \`]*\)\`.*/\1/" \
+	| xargs grep -E "\`[\~]?$(patsubst  %-check-type-references,%,$@)" \
+	| sed -e "s/.*\`[~]*\($(patsubst  %-check-type-references,%,$@)[^\`]*\)\`.*/\1/" \
 	| sort \
 	| uniq \
 	| xargs $(PYTHON) scripts/python_object_exists.py
 	@find ../{httm,doc} -name "*.rst" \
-	| xargs grep \~$(patsubst  %-check-type-references,%,$@) \
-	| sed -e "s/.*~\($(patsubst  %-check-type-references,%,$@)[^ \`]*\)\`.*/\1/" \
+	| xargs grep -E "\`[\~]?$(patsubst  %-check-type-references,%,$@)" \
+	| sed -e "s/.*\`[~]*\($(patsubst  %-check-type-references,%,$@)[^\`]*\)\`.*/\1/" \
 	| sort \
 	| uniq \
 	| xargs $(PYTHON) scripts/python_object_exists.py
