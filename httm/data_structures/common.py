@@ -18,7 +18,7 @@ class FITSMetaData(
     :param origin_file_name: The original file name where the data was taken from
     :type origin_file_name: str
     :param header: The header of the FITS file where the data was taken from
-    :type header: :py:class:`pyfits.Header`
+    :type header: :py:class:`astropy.io.fits.Header`
     """
     __slots__ = ()
 
