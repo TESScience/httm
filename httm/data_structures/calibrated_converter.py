@@ -4,6 +4,7 @@
 
 This module contains data structures for dealing with converting calibrated images to raw images.
 """
+
 from collections import namedtuple, OrderedDict
 
 from documentation import document_parameters
@@ -21,7 +22,8 @@ class CalibratedConverterParameters(namedtuple('CalibratedConverterParameters',
     __doc__ = """
 Converter parameters for converting a calibrated FITS image into an uncalibrated FITS image.
 
-Constructed using the parameters handed to :py:func:`~httm.calibrated_converter_from_file`.
+Constructed using :py:func:`~httm.fits_utilities.calibrated_fits.calibrated_converter_from_file` or
+:py:func:`~httm.fits_utilities.calibrated_fits.calibrated_converter_from_HDUList`.
 
 {parameter_documentation}
 """.format(parameter_documentation=document_parameters(calibrated_converter_parameters))
