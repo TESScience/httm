@@ -29,7 +29,7 @@ class RAWConverterParameters(
     namedtuple('RAWConverterParameters',
                raw_converter_parameters.keys())):
     __doc__ = """
-Converter parameters for converting a calibrated FITS image into an uncalibrated FITS image.
+Converter parameters for converting a raw FITS image into a calibrated FITS image.
 
 Constructed using :py:func:`~httm.fits_utilities.raw_fits.raw_converter_from_file` or
 :py:func:`~httm.fits_utilities.raw_fits.raw_converter_from_HDUList`.
