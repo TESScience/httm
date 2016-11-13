@@ -17,7 +17,7 @@ calibrated_transformation_flags = OrderedDict((k, dict(default=False, **transfor
 
 
 # noinspection PyUnresolvedReferences
-class CalibratedConverterParameters(namedtuple('CalibratedConverterParameters',
+class SingleCCDCalibratedConverterParameters(namedtuple('SingleCCDCalibratedConverterParameters',
                                                calibrated_converter_parameters.keys())):
     __doc__ = """
 Converter parameters for converting a calibrated FITS image into an uncalibrated FITS image.
@@ -30,10 +30,10 @@ Constructed using :py:func:`~httm.fits_utilities.calibrated_fits.calibrated_conv
     __slots__ = ()
 
 
-# TODO derive CalibratedConverterFlags from FITS header
+# TODO derive SingleCCDCalibratedConverterFlags from FITS header
 # noinspection PyClassHasNoInit
-class CalibratedConverterFlags(
-    namedtuple('CalibratedConverterFlags',
+class SingleCCDCalibratedConverterFlags(
+    namedtuple('SingleCCDCalibratedConverterFlags',
                calibrated_transformation_flags.keys())):
     __doc__ = """
 Flags indicating which raw transformations have been performed.
@@ -44,8 +44,8 @@ Flags indicating which raw transformations have been performed.
 
 
 # noinspection PyUnresolvedReferences,PyClassHasNoInit
-class CalibratedConverter(
-    namedtuple('CalibratedConverter',
+class SingleCCDCalibratedConverter(
+    namedtuple('SingleCCDCalibratedConverter',
                ['slices',
                 'fits_metadata',
                 'parameters',
@@ -58,8 +58,8 @@ class CalibratedConverter(
     :param fits_metadata: Meta data associated with the image
     :type fits_metadata: :py:class:`~httm.data_structures.common.FITSMetaData`
     :param parameters: The parameters of the transformation
-    :type parameters: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverterParameters`
+    :type parameters: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverterParameters`
     :param flags: Flags indicating the state of the transformation
-    :type flags: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverterFlags`
+    :type flags: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverterFlags`
     """
     __slots__ = ()

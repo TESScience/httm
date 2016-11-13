@@ -3,7 +3,7 @@
 ================================
 
 This module contains functions for marshalling and de-marshalling
-:py:class:`~httm.data_structures.raw_converter.RAWConverter` and the other book-keeping objects
+:py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter` and the other book-keeping objects
 it contains from a FITS file or :py:class:`astropy.io.fits.HDUList`.
 """
 
@@ -11,12 +11,12 @@ import numpy
 from astropy.io.fits import HDUList, PrimaryHDU
 
 from ..data_structures.common import Slice, FITSMetaData
-from ..data_structures.raw_converter import RAWConverterFlags, RAWConverter, raw_transformation_flags, \
-    RAWConverterParameters, raw_converter_parameters
+from ..data_structures.raw_converter import SingleCCDRawConverterFlags, SingleCCDRawConverter, raw_transformation_flags, \
+    SingleCCDRawConverterParameters, raw_converter_parameters
 
 
 def raw_converter_to_HDUList(converter):
-    # type: (RAWConverter) -> HDUList
+    # type: (SingleCCDRawConverter) -> HDUList
     # noinspection PyTypeChecker
 
     left_dark_parts = [raw_slice.pixels[:, :converter.parameters.left_dark_pixel_columns] for raw_slice in
@@ -38,12 +38,12 @@ def raw_converter_to_HDUList(converter):
 
 
 def write_RAW_fits(converter, output_file):
-    # type: (RAWConverter, str) -> NoneType
+    # type: (SingleCCDRawConverter, str) -> NoneType
     """
-    Write a completed :py:class:`~httm.data_structures.raw_converter.RAWConverter` to a (simulated) raw FITS file
+    Write a completed :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter` to a (simulated) raw FITS file
 
     :param converter:
-    :type converter: :py:class:`~httm.data_structures.raw_converter.RAWConverter`
+    :type converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     :param output_file:
     :type output_file: :py:class:`file` or :py:class:`str`
     :rtype: NoneType
@@ -53,12 +53,12 @@ def write_RAW_fits(converter, output_file):
 
 def raw_converter_flags_from_file(input_file):
     """
-    Construct a :py:class:`~httm.data_structures.raw_converter.RAWConverterFlags`
+    Construct a :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverterFlags`
     from a file or file name.
 
     :param input_file: The file or file name to input
     :type input_file: :py:class:`file` or :py:class:`str`
-    :rtype: :py:class:`~httm.data_structures.raw_converter.RAWConverterFlags`
+    :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverterFlags`
     """
     # TODO try to read these from file
     smear_rows_present = raw_transformation_flags['smear_rows_present']['default']
@@ -66,7 +66,7 @@ def raw_converter_flags_from_file(input_file):
     pattern_noise_uncompensated = raw_transformation_flags['pattern_noise_uncompensated']['default']
     start_of_line_ringing_uncompensated = raw_transformation_flags['start_of_line_ringing_uncompensated'][
         'default']
-    return RAWConverterFlags(
+    return SingleCCDRawConverterFlags(
         smear_rows_present=smear_rows_present,
         undershoot_uncompensated=undershoot_uncompensated,
         pattern_noise_uncompensated=pattern_noise_uncompensated,
@@ -91,7 +91,7 @@ def raw_converter_parameters_from_fits(input_file,
     def get_parameter(parameter_name, parameter):
         return raw_converter_parameters[parameter_name]['default'] if parameter is None else parameter
 
-    return RAWConverterParameters(
+    return SingleCCDRawConverterParameters(
         number_of_slices=get_parameter('number_of_slices', number_of_slices),
         camera_number=get_parameter('camera_number', camera_number),
         ccd_number=get_parameter('ccd_number', ccd_number),
@@ -166,7 +166,7 @@ def raw_converter_from_HDUList(header_data_unit_list,
     sliced_right_dark_pixels = hsplit(header_data_unit_list[0].data[:, -right_dark_pixel_count:],
                                       parameters.number_of_slices)
 
-    return RAWConverter(
+    return SingleCCDRawConverter(
         slices=map(make_slice_from_raw_data,
                    sliced_image_smear_and_dark_pixels,
                    range(parameters.number_of_slices),

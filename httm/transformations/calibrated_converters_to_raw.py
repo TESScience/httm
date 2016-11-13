@@ -3,7 +3,7 @@
 =====================================================
 
 Transformation functions for processing
-:py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` objects so that
+:py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter` objects so that
 they are suitable  for writing to a simulated raw FITS file.
 
 """
@@ -12,26 +12,26 @@ from ..resources import load_npz_resource
 
 
 def introduce_smear_rows(calibrated_converter):
-    # type: (CalibratedConverter) -> CalibratedConverter
+    # type: (SingleCCDCalibratedConverter) -> SingleCCDCalibratedConverter
     pass
 
 
 def add_shot_noise(calibrated_converter):
-    # type: (CalibratedConverter) -> CalibratedConverter
+    # type: (SingleCCDCalibratedConverter) -> SingleCCDCalibratedConverter
     pass
 
 
 def simulate_blooming(calibrated_converter):
-    # type: (CalibratedConverter) -> CalibratedConverter
+    # type: (SingleCCDCalibratedConverter) -> SingleCCDCalibratedConverter
     """
     Simulate *blooming* on a
-    :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` by calling
+    :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter` by calling
     :py:func:`~httm.transformations.calibrated_slices_to_raw.simulate_blooming_on_slice`
     over each slice.
 
     :param calibrated_converter: Should have electrons for units for each of its slices
-    :type calibrated_converter: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
-    :rtype: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
+    :type calibrated_converter: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
+    :rtype: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
     """
     full_well = calibrated_converter.parameters.full_well
     blooming_threshold = calibrated_converter.parameters.blooming_threshold
@@ -44,16 +44,16 @@ def simulate_blooming(calibrated_converter):
 
 
 def add_readout_noise(calibrated_converter):
-    # type: (CalibratedConverter) -> CalibratedConverter
+    # type: (SingleCCDCalibratedConverter) -> SingleCCDCalibratedConverter
     """
     Add *readout noise* to a
-    :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` by calling
+    :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter` by calling
     :py:func:`~httm.transformations.calibrated_slices_to_raw.add_readout_noise_to_slice`
     over each slice.
 
     :param calibrated_converter: Should have electrons for units for each of its slices
-    :type calibrated_converter: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
-    :rtype: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
+    :type calibrated_converter: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
+    :rtype: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
     """
     readout_noise_parameters = calibrated_converter.parameters.readout_noise_parameters
     image_slices = calibrated_converter.slices
@@ -67,16 +67,16 @@ def add_readout_noise(calibrated_converter):
 
 # noinspection PyProtectedMember
 def simulate_undershoot(calibrated_converter):
-    # type: (CalibratedConverter) -> CalibratedConverter
+    # type: (SingleCCDCalibratedConverter) -> SingleCCDCalibratedConverter
     """
     Add *undershoot* to a
-    :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` by calling
+    :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter` by calling
     :py:func:`~httm.transformations.calibrated_slices_to_raw.simulate_undershoot_on_slice`
     over each slice.
 
     :param calibrated_converter: Should have electrons for units for each of its slices
-    :type calibrated_converter: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
-    :rtype: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
+    :type calibrated_converter: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
+    :rtype: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
     """
     undershoot_parameter = calibrated_converter.parameters.undershoot_parameter
     image_slices = calibrated_converter.slices
@@ -86,16 +86,16 @@ def simulate_undershoot(calibrated_converter):
 
 
 def add_start_of_line_ringing(calibrated_converter):
-    # type: (CalibratedConverter) -> CalibratedConverter
+    # type: (SingleCCDCalibratedConverter) -> SingleCCDCalibratedConverter
     """
     Add *start of line ringing* to a
-    :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` by calling
+    :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter` by calling
     :py:func:`~httm.transformations.calibrated_slices_to_raw.add_start_of_line_ringing_to_slice`
     over each slice.
 
     :param calibrated_converter: Should have electrons for units for each of its slices
-    :type calibrated_converter: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
-    :rtype: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
+    :type calibrated_converter: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
+    :rtype: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
     """
     start_of_line_ringing_patterns = load_npz_resource(calibrated_converter.parameters.start_of_line_ringing)
     image_slices = calibrated_converter.slices
@@ -106,14 +106,14 @@ def add_start_of_line_ringing(calibrated_converter):
 
 
 def add_pattern_noise(calibrated_converter):
-    # type: (CalibratedConverter) -> CalibratedConverter
+    # type: (SingleCCDCalibratedConverter) -> SingleCCDCalibratedConverter
     """
-    Add *pattern noise* to a :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` by calling
+    Add *pattern noise* to a :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter` by calling
     :py:func:`~httm.transformations.calibrated_slices_to_raw.add_pattern_noise_to_slice` over each slice.
 
     :param calibrated_converter: Should have electrons for units for each of its slices
-    :type calibrated_converter: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
-    :rtype: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
+    :type calibrated_converter: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
+    :rtype: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
     """
     pattern_noises = load_npz_resource(calibrated_converter.parameters.pattern_noise)
     image_slices = calibrated_converter.slices
@@ -124,15 +124,15 @@ def add_pattern_noise(calibrated_converter):
 
 
 def convert_electrons_to_adu(calibrated_converter):
-    # type: (CalibratedConverter) -> CalibratedConverter
+    # type: (SingleCCDCalibratedConverter) -> SingleCCDCalibratedConverter
     """
-    Converts a :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` from having electrons
+    Converts a :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter` from having electrons
     to *Analogue to Digital Converter Units* (ADU) by calling
     :py:func:`~httm.transformations.calibrated_slices_to_raw.convert_slice_electrons_to_adu` over each slice.
 
     :param calibrated_converter: Should have electrons for units for each of its slices
-    :type calibrated_converter: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
-    :rtype: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
+    :type calibrated_converter: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
+    :rtype: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
     """
     video_scales = calibrated_converter.parameters.video_scales
     image_slices = calibrated_converter.slices

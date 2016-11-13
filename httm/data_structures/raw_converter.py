@@ -32,8 +32,8 @@ raw_transformation_flags = OrderedDict((k, dict(default=True, **transformation_f
 
 
 # noinspection PyUnresolvedReferences
-class RAWConverterParameters(
-    namedtuple('RAWConverterParameters',
+class SingleCCDRawConverterParameters(
+    namedtuple('SingleCCDRawConverterParameters',
                raw_converter_parameters.keys())):
     __doc__ = """
 Converter parameters for converting a raw FITS image into a calibrated FITS image.
@@ -45,10 +45,10 @@ Constructed using :py:func:`~httm.fits_utilities.raw_fits.raw_converter_paramete
     __slots__ = ()
 
 
-# TODO derive RAWConverterFlags from FITS header
+# TODO derive SingleCCDRawConverterFlags from FITS header
 # noinspection PyClassHasNoInit
-class RAWConverterFlags(
-    namedtuple('RAWConverterFlags',
+class SingleCCDRawConverterFlags(
+    namedtuple('SingleCCDRawConverterFlags',
                raw_transformation_flags.keys())):
     __doc__ = """
 Flags indicating which raw transformations have been performed.
@@ -59,8 +59,8 @@ Flags indicating which raw transformations have been performed.
 
 
 # noinspection PyUnresolvedReferences,PyClassHasNoInit
-class RAWConverter(
-    namedtuple('RAWConverter',
+class SingleCCDRawConverter(
+    namedtuple('SingleCCDRawConverter',
                ['slices',
                 'fits_metadata',
                 'parameters',
@@ -73,8 +73,8 @@ class RAWConverter(
     :param fits_metadata: Meta data associated with the image
     :type fits_metadata: :py:class:`~httm.data_structures.common.FITSMetaData`
     :param parameters: The parameters of the transformation
-    :type parameters: :py:class:`~httm.data_structures.raw_converter.RAWConverterParameters`
+    :type parameters: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverterParameters`
     :param flags: Flags indicating the state of the transformation
-    :type flags: :py:class:`~httm.data_structures.raw_converter.RAWConverterFlags`
+    :type flags: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverterFlags`
     """
     __slots__ = ()

@@ -3,15 +3,15 @@
 =======================================
 
 This module contains functions for marshalling and de-marshalling
-:py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` and the other book-keeping objects
+:py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter` and the other book-keeping objects
 it contains from a FITS file or :py:class:`astropy.io.fits.HDUList`.
 """
 
 import numpy
 from astropy.io.fits import HDUList, PrimaryHDU
 
-from ..data_structures.calibrated_converter import CalibratedConverterFlags, calibrated_transformation_flags, \
-    CalibratedConverterParameters, CalibratedConverter, calibrated_converter_parameters
+from ..data_structures.calibrated_converter import SingleCCDCalibratedConverterFlags, calibrated_transformation_flags, \
+    SingleCCDCalibratedConverterParameters, SingleCCDCalibratedConverter, calibrated_converter_parameters
 from ..data_structures.common import Slice, FITSMetaData
 
 
@@ -62,7 +62,7 @@ def calibrated_converter_flags_from_fits(input_file,
                                          start_of_line_ringing_uncompensated=None,
                                          ):
     """
-    Construct a :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverterFlags`
+    Construct a :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverterFlags`
     from a file or file name.
 
     :param input_file: The file or file name to input
@@ -81,10 +81,10 @@ def calibrated_converter_flags_from_fits(input_file,
     :type pattern_noise_uncompensated: boolean
     :param start_of_line_ringing_uncompensated:
     :type start_of_line_ringing_uncompensated: boolean
-    :rtype: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverterFlags`
+    :rtype: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverterFlags`
     """
     # TODO try to read these from file
-    return CalibratedConverterFlags(
+    return SingleCCDCalibratedConverterFlags(
         smear_rows_present=calibrated_transformation_flags['smear_rows_present'][
             'default'] if smear_rows_present is None else smear_rows_present,
         readout_noise_added=calibrated_transformation_flags['readout_noise_added'][
@@ -128,7 +128,7 @@ def calibrated_converter_parameters_from_fits(input_file,
     def get_parameter(parameter_name, parameter):
         return calibrated_converter_parameters[parameter_name]['default'] if parameter is None else parameter
 
-    return CalibratedConverterParameters(
+    return SingleCCDCalibratedConverterParameters(
         number_of_slices=get_parameter('number_of_slices', number_of_slices),
         camera_number=get_parameter('camera_number', camera_number),
         ccd_number=get_parameter('ccd_number', ccd_number),
@@ -154,7 +154,7 @@ def calibrated_converter_parameters_from_fits(input_file,
 
 
 def calibrated_converter_to_HDUList(converter):
-    # type: (CalibratedConverter) -> HDUList
+    # type: (SingleCCDCalibratedConverter) -> HDUList
     """
 
     :param converter:
@@ -173,13 +173,13 @@ def calibrated_converter_to_HDUList(converter):
 
 
 def write_calibrated_fits(converter, output_file):
-    # type: (CalibratedConverter, str) -> NoneType
+    # type: (SingleCCDCalibratedConverter, str) -> NoneType
     """
-    Write a completed :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
+    Write a completed :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
      to a (simulated) raw FITS file.
 
     :param converter:
-    :type converter: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
+    :type converter: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
     :param output_file:
     :type output_file: str
     :rtype: NoneType
@@ -195,11 +195,11 @@ def calibrated_converter_from_HDUList(header_data_unit_list,
                                       ):
     flags = calibrated_converter_flags_from_fits(header_data_unit_list) if flags is None else flags
     parameters = calibrated_converter_parameters_from_fits(
-        header_data_unit_list) if parameters is None else parameters  # type: CalibratedConverterParameters
+        header_data_unit_list) if parameters is None else parameters  # type: SingleCCDCalibratedConverterParameters
     assert len(header_data_unit_list) == 1, "Only a single image per FITS file is supported"
     assert header_data_unit_list[0].data.shape[1] % parameters.number_of_slices == 0, \
         "Image did not have the specified number of slices"
-    return CalibratedConverter(
+    return SingleCCDCalibratedConverter(
         slices=map(lambda pixel_data, index:
                    make_slice_from_calibrated_data(pixel_data,
                                                    parameters.left_dark_pixel_columns,

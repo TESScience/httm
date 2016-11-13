@@ -3,7 +3,7 @@
 =================================================
 
 Transformation functions for processing slices contained in a
-:py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` so that they are suitable
+:py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter` so that they are suitable
 for writing to a simulated raw FITS file.
 
 """

@@ -3,7 +3,7 @@
 =================================================
 
 Transformation functions for processing slices contained in a
-:py:class:`~httm.data_structures.raw_converter.RAWConverter` so that they are suitable
+:py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter` so that they are suitable
 for writing to a calibrated FITS file.
 
 """
