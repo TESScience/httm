@@ -1,0 +1,115 @@
+"""
+``httm.transformations.calibrated_converters_to_raw``
+=====================================================
+
+Transformation functions for processing
+:py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` objects so that
+they are suitable  for writing to a simulated raw FITS file.
+
+"""
+import calibrated_slices_to_raw
+from ..resources import load_npz_resource
+
+
+def introduce_smear_rows(calibrated_converter):
+    # type: (CalibratedConverter) -> CalibratedConverter
+    pass
+
+
+def add_shot_noise(calibrated_converter):
+    # type: (CalibratedConverter) -> CalibratedConverter
+    pass
+
+
+def simulate_blooming(calibrated_converter):
+    # type: (CalibratedConverter) -> CalibratedConverter
+    pass
+
+
+def add_readout_noise(calibrated_converter):
+    # type: (CalibratedConverter) -> CalibratedConverter
+    pass
+
+
+def simulate_undershoot(calibrated_converter):
+    # type: (CalibratedConverter) -> CalibratedConverter
+    """
+    Adds undershoot to a
+    :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` by calling
+    :py:func:`httm.transformations.calibrated_slices_to_raw.simulate_undershoot_on_slice`
+    over each slice.
+
+    :param calibrated_converter: Should have electrons for units for each of its slices
+    :type calibrated_converter: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
+    :rtype: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
+    """
+    undershoot_parameter = calibrated_converter.parameters.undershoot_parameter
+    image_slices = calibrated_converter.slices
+    return calibrated_converter._replace(
+        slices=tuple(*map(lambda s: calibrated_slices_to_raw.simulate_undershoot_on_slice(undershoot_parameter, s),
+                          image_slices)))
+
+
+def add_start_of_line_ringing(calibrated_converter):
+    # type: (CalibratedConverter) -> CalibratedConverter
+    """
+    Adds start of line ringing to a
+    :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` by calling
+    :py:func:`httm.transformations.calibrated_slices_to_raw.add_start_of_line_ringing_to_slice`
+    over each slice.
+
+    :param calibrated_converter: Should have electrons for units for each of its slices
+    :type calibrated_converter: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
+    :rtype: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
+    """
+    start_of_line_ringing_patterns = load_npz_resource(calibrated_converter.parameters.start_of_line_ringing)
+    image_slices = calibrated_converter.slices
+    return calibrated_converter._replace(
+        slices=tuple(
+            calibrated_slices_to_raw.add_start_of_line_ringing_to_slice(start_of_line_ringing, image_slice)
+            for (start_of_line_ringing, image_slice) in zip(start_of_line_ringing_patterns, image_slices)))
+
+
+def add_pattern_noise(calibrated_converter):
+    # type: (CalibratedConverter) -> CalibratedConverter
+    """
+    Adds pattern noise to a :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` by calling
+    :py:func:`httm.transformations.calibrated_slices_to_raw.add_pattern_noise_to_slice` over each slice.
+
+    :param calibrated_converter: Should have electrons for units for each of its slices
+    :type calibrated_converter: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
+    :rtype: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
+    """
+    pattern_noises = load_npz_resource(calibrated_converter.parameters.pattern_noise)
+    image_slices = calibrated_converter.slices
+    return calibrated_converter._replace(
+        slices=tuple(
+            calibrated_slices_to_raw.add_pattern_noise_to_slice(pattern_noise, image_slice)
+            for (pattern_noise, image_slice) in zip(pattern_noises, image_slices)))
+
+
+def convert_electrons_to_adu(calibrated_converter):
+    # type: (CalibratedConverter) -> CalibratedConverter
+    """
+    Converts a :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` from having electrons
+    to *Analogue to Digital Converter Units* (ADU) by calling
+    :py:func:`httm.transformations.calibrated_slices_to_raw.convert_slice_electrons_to_adu` over each slice.
+
+    :param calibrated_converter: Should have electrons for units for each of its slices
+    :type calibrated_converter: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
+    :rtype: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
+    """
+    video_scales = calibrated_converter.parameters.video_scales
+    image_slices = calibrated_converter.slices
+    number_of_exposures = calibrated_converter.parameters.number_of_exposures
+    compression = calibrated_converter.parameters.compression
+    baseline_adu = calibrated_converter.parameters.baseline_adu
+    clip_level_adu = calibrated_converter.parameters.clip_level_adu
+    assert len(video_scales) == len(image_slices), "Video scales do not match image slices"
+    # noinspection PyProtectedMember
+    return calibrated_converter._replace(
+        slices=tuple(
+            calibrated_slices_to_raw.convert_slice_electrons_to_adu(compression, number_of_exposures, video_scale,
+                                                                    baseline_adu, clip_level_adu,
+                                                                    image_slice)
+            for (video_scale, image_slice) in zip(video_scales, image_slices)))

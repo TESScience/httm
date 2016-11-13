@@ -1,10 +1,11 @@
 """
-``httm.transformations.raw_to_calibrated``
-==========================================
+``httm.transformations.raw_slices_to_calibrated``
+=================================================
 
-This module contains transformation functions for processing
-a :py:class:`~httm.data_structures.raw_converter.RAWConverter` so that it is suitable for
-writing to a calibrated FITS file.
+Transformation functions for processing slices contained in a
+:py:class:`~httm.data_structures.raw_converter.RAWConverter` so that they are suitable
+for writing to a calibrated FITS file.
+
 """
 import numpy
 
@@ -28,11 +29,10 @@ def remove_start_of_line_ringing_from_slice(top_dark_pixel_rows, image_slice):
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
     working_pixels = image_slice.pixels
-    mean_ringing = numpy.sum(working_pixels[:-top_dark_pixel_rows], 0)/top_dark_pixel_rows
+    mean_ringing = numpy.sum(working_pixels[:-top_dark_pixel_rows], 0) / top_dark_pixel_rows
     working_pixels -= mean_ringing
     # noinspection PyProtectedMember
     return image_slice._replace(pixels=working_pixels)
-
 
 
 def remove_smear_from_slice(top_dark_pixel_rows, smear_rows, image_slice):
@@ -53,7 +53,7 @@ def remove_smear_from_slice(top_dark_pixel_rows, smear_rows, image_slice):
     """
     working_pixels = image_slice.pixels
     mean_ringing = numpy.sum(
-    	working_pixels[-top_dark_pixel_rows:-top_dark_pixel_rows-smear_rows], 0)/smear_rows
+        working_pixels[-top_dark_pixel_rows:-top_dark_pixel_rows - smear_rows], 0) / smear_rows
     working_pixels -= mean_ringing
     # noinspection PyProtectedMember
     return image_slice._replace(pixels=working_pixels)
@@ -70,8 +70,7 @@ def remove_pattern_noise_from_slice(pattern_noise, image_slice):
     :type image_slice: :py:class:`~httm.data_structures.common.Slice`
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
-    return image_slice._replace(pixels=image_slice.pixels-pattern_noise)
-    
+    return image_slice._replace(pixels=image_slice.pixels - pattern_noise)
 
 
 def remove_undershoot_from_slice(undershoot, image_slice):
@@ -91,13 +90,12 @@ def remove_undershoot_from_slice(undershoot, image_slice):
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
     kernel = numpy.array([1.0, undershoot])
-    
+
     def convolve_row(row):
         return numpy.convolve(row, kernel, mode='same')
-	
+
     # noinspection PyProtectedMember
     return image_slice._replace(pixels=numpy.apply_along_axis(convolve_row, 1, image_slice.pixels))
-
 
 
 def convert_slice_adu_to_electrons(compression, number_of_exposures, video_scale, image_slice):
@@ -130,27 +128,3 @@ def convert_slice_adu_to_electrons(compression, number_of_exposures, video_scale
                  pixels=transform_adu_to_electron(image_slice.pixels))
 
 
-# noinspection PyProtectedMember
-def convert_adu_to_electrons(raw_transformation):
-    # type: (RAWConverter) -> RAWConverter
-    """
-    Converts a :py:class:`~httm.data_structures.raw_converter.RAWConverter` from
-    having *Analogue to Digital Converter Units* (ADU) to electron counts.
-
-    :param raw_transformation: Should have electrons for units
-    :type raw_transformation: :py:class:`~httm.data_structures.raw_converter.RAWConverter`
-    :rtype: :py:class:`~httm.data_structures.raw_converter.RAWConverter`
-    """
-    video_scales = raw_transformation.parameters.video_scales
-    image_slices = raw_transformation.slices
-    number_of_exposures = raw_transformation.fits_metadata.header['NREADS']
-    compression = raw_transformation.parameters.compression
-    assert len(video_scales) == len(image_slices), "Video scales do not match image slices"
-    return raw_transformation._replace(
-        slices=tuple(
-            convert_slice_adu_to_electrons(
-                compression,
-                number_of_exposures,
-                video_scale,
-                image_slice)
-            for (video_scale, image_slice) in zip(video_scales, image_slices)))

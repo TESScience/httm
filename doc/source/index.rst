@@ -11,5 +11,4 @@ Contents:
    fits_format
    notebooks/command_line_utilities
    notebooks/tutorial
-   plugins
    module

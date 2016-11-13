@@ -3,7 +3,7 @@ import argparse
 import sys
 
 from httm import raw_converter_from_file, write_fits
-from httm.transformations.raw_to_calibrated import convert_adu_to_electrons
+from httm.transformations.raw_slices_to_calibrated import convert_adu_to_electrons
 
 if __name__ == "__main__":
 

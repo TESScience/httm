@@ -1,9 +1,10 @@
 """
-``httm.transformations.calibrated_to_raw``
-==========================================
+``httm.transformations.calibrated_slices_to_raw``
+=================================================
 
-Transformation functions for processing a
-:py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` so that it is suitable for writing to a raw FITS file.
+Transformation functions for processing slices contained in a
+:py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` so that they are suitable
+for writing to a simulated raw FITS file.
 
 """
 
@@ -83,7 +84,7 @@ def introduce_smear_rows_to_slice(smear_ratio, image_slice):
     return image_slice._replace(pixels=working_pixels)
 
 
-def add_shot_noise(image_slice):
+def add_shot_noise_to_slice(image_slice):
     # type: (Slice) -> Slice
     """
     Add `shot noise <https://en.wikipedia.org/wiki/Shot_noise>`_ to every pixel.
@@ -144,7 +145,7 @@ def simulate_blooming_on_slice(full_well, blooming_threshold, nreads, image_slic
     def diffusion_step(column):
         diffusion_proof_part = numpy.clip(column, 0, nreads * blooming_threshold)
         excess = column - diffusion_proof_part
-        diffused_excess = numpy.convolve(excess, kernel, mode='same')   # implicitly lose charge from top and bottom
+        diffused_excess = numpy.convolve(excess, kernel, mode='same')  # implicitly lose charge from top and bottom
         return diffusion_proof_part + diffused_excess
 
     def bloom_column(column):
@@ -184,39 +185,49 @@ def add_readout_noise_to_slice(readout_noise, nreads, image_slice):
 
 
 # noinspection PyProtectedMember
-def simulate_undershoot(undershoot, image_slice):
+def simulate_undershoot_on_slice(undershoot_parameter, image_slice):
     """
     When you have a bright pixel, the pixel to the right of it will appear dimmer.  This is _undershoot_.
 
     This function simulates undershoot for a slice.
 
-    It convolves the kernel :math:`\\langle 1, -\\mathtt{undershoot}  \\rangle` with each input row,
+    It convolves the kernel :math:`\\langle 1, -\\mathtt{undershoot\\_parameter}  \\rangle` with each input row,
     yielding an output row of the same length. The convolution is non-cyclic: the input row is implicitly
     padded with zero at the start to make this true.
 
-    :param undershoot: Undershoot parameter from parameter structure, typically `~0.001`, dimensionless
-    :type undershoot: float
+    :param undershoot_parameter: Undershoot parameter from parameter structure, typically `~0.001`, dimensionless
+    :type undershoot_parameter: float
     :param image_slice: input slice. Units: electrons
     :type image_slice: :py:class:`~httm.data_structures.common.Slice`
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
-    kernel = numpy.array([1.0, -undershoot])
+    kernel = numpy.array([1.0, -undershoot_parameter])
 
     def convolve_row(row):
         return numpy.convolve(row, kernel, mode='same')
-	
+
     # noinspection PyProtectedMember
     return image_slice._replace(pixels=numpy.apply_along_axis(convolve_row, 1, image_slice.pixels))
 
 
-def convert_slice_electrons_to_adu(compression, number_of_exposures, video_scale, baseline_adu, clip_level_adu,image_slice):
+def convert_slice_electrons_to_adu(compression, number_of_exposures, video_scale, baseline_adu, clip_level_adu,
+                                   image_slice):
     # type: (float, int, float, float, int, Slice) -> Slice
     """
-    Simulate the nonlinear effects in the measurement of electrons.
-    
-    Other transformation functions handle linear and approximately linear effects. This
+    This functions simulate various nonlinear effects in the measurement of electrons, before finally yielding output
+    in *Analogue To Digital Converter Units* (ADU).
+
+    The other transformation functions handle linear and approximately linear effects. This
     transformation is more complex and has more parameters because nonlinear effects are not
     so easily disentangled.
+
+    For each pixel :math:`p`, with units in electrons, this function applies the following
+    transformation:
+
+    :math:`\\displaystyle{\\mathtt{exposure\\_baseline} + \\frac{p}{\\mathtt{video\\_scale}
+    \\times (1 + \\mathtt{compression\\_per\\_electron} \\times p)}}`
+
+    This transformation affects all pixels, dark, smear or illuminated.
 
     :param compression: The relative decrease in video gain over the total ADC range
     :type compression: float
@@ -241,36 +252,11 @@ def convert_slice_electrons_to_adu(compression, number_of_exposures, video_scale
     exposure_clip_level = clip_level_adu * number_of_exposures
 
     def transform_electron_to_adu(electron):
-	from numpy import clip
-	return clip(
-		exposure_baseline + electron / (video_scale * (1.0 + compression_per_electron * electron)),
-	0, exposure_clip_level )
+        from numpy import clip
+        return clip(
+            exposure_baseline + electron / (video_scale * (1.0 + compression_per_electron * electron)),
+            0, exposure_clip_level)
 
     return Slice(index=image_slice.index,
                  units="ADU",
                  pixels=transform_electron_to_adu(image_slice.pixels))
-
-
-def convert_electrons_to_adu(calibrated_converter):
-    # type: (CalibratedConverter) -> CalibratedConverter
-    """
-    Converts a :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` from having electrons
-    to *Analogue to Digital Converter Units* (ADU).
-
-    :param calibrated_converter: Should have electrons for units for each of its slices
-    :type calibrated_converter: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
-    :rtype: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
-    """
-    video_scales = calibrated_converter.parameters.video_scales
-    image_slices = calibrated_converter.slices
-    # TODO: NREADS should be read from parameters
-    number_of_exposures = calibrated_converter.fits_metadata.header['NREADS']
-    compression = calibrated_converter.parameters.compression
-    baseline_adu = calibrated_converter.parameters.baseline_adu
-    clip_level_adu = calibrated_converter.parameters.clip_level_adu
-    assert len(video_scales) == len(image_slices), "Video scales do not match image slices"
-    # noinspection PyProtectedMember
-    return calibrated_converter._replace(
-        slices=tuple(
-            convert_slice_electrons_to_adu(compression, number_of_exposures, video_scale, baseline_adu, clip_level_adu, image_slice)
-            for (video_scale, image_slice) in zip(video_scales, image_slices)))
