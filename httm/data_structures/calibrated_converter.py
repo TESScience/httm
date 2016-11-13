@@ -22,7 +22,7 @@ class CalibratedConverterParameters(namedtuple('CalibratedConverterParameters',
     __doc__ = """
 Converter parameters for converting a calibrated FITS image into an uncalibrated FITS image.
 
-Constructed using :py:func:`~httm.fits_utilities.calibrated_fits.calibrated_converter_from_file` or
+Constructed using :py:func:`~httm.fits_utilities.calibrated_fits.calibrated_converter_from_fits` or
 :py:func:`~httm.fits_utilities.calibrated_fits.calibrated_converter_from_HDUList`.
 
 {parameter_documentation}

@@ -1,6 +1,7 @@
 FITS File Format
 ================
 
-## Header Record Fields
+Header Record Fields
+--------------------
 
-  - `NREADS`: Number of exposures the image represents
+  - ``NREADS``: Number of exposures the image represents

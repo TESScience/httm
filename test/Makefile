@@ -18,7 +18,7 @@ SITE_PACKAGES=$(VIRTUAL_ENV)/lib/python2.7/site-packages
 VERSION=$(shell python -c "$(shell grep '^VERSION' $(CURDIR)/../setup.py) ; print VERSION")
 INSTALL=$(SITE_PACKAGES)/SPyFFI-$(VERSION)-py2.7.egg
 TESTS=httm-check-type-references pyfits-check-type-references numpy-check-type-references \
-      astropy-check-type-references plugins-test
+      astropy-check-type-references tutorial-test
 
 all: install
 

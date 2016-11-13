@@ -10,19 +10,31 @@ it contains from a FITS file or :py:class:`astropy.io.fits.HDUList`.
 import numpy
 from astropy.io.fits import HDUList, PrimaryHDU
 
+from ..data_structures.common import Slice, FITSMetaData
 from ..data_structures.raw_converter import RAWConverterFlags, RAWConverter, raw_transformation_flags, \
     RAWConverterParameters, raw_converter_parameters
-from ..data_structures.common import Slice, FITSMetaData
-from ..data_structures.documentation import document_parameters
 
 
-def write_RAW_HDUList(converter):
+def raw_converter_to_HDUList(converter):
     # type: (RAWConverter) -> HDUList
     # noinspection PyTypeChecker
-    # TODO: Put dark pixels and smear rows where they belong
+
+    left_dark_parts = [raw_slice.pixels[:, :converter.parameters.left_dark_pixel_columns] for raw_slice in
+                       converter.slices]
+    right_dark_parts = [raw_slice.pixels[:, -converter.parameters.right_dark_pixel_columns:] for raw_slice in
+                        converter.slices]
+    image_parts = [
+        raw_slice.pixels[:, converter.parameters.left_dark_pixel_columns:-converter.parameters.right_dark_pixel_columns]
+        for raw_slice in converter.slices]
+
+    for i in range(1, len(converter.slices), 2):
+        left_dark_parts[i] = numpy.fliplr(left_dark_parts[i])
+        right_dark_parts[i] = numpy.fliplr(right_dark_parts[i])
+        image_parts[i] = numpy.fliplr(image_parts[i])
+
+    # plus concatenates regular python lists
     return HDUList(PrimaryHDU(header=converter.fits_metadata.header,
-                              data=numpy.hstack([raw_slice.pixels
-                                                 for raw_slice in converter.slices])))
+                              data=numpy.hstack(left_dark_parts + image_parts + right_dark_parts)))
 
 
 def write_RAW_fits(converter, output_file):
@@ -36,7 +48,7 @@ def write_RAW_fits(converter, output_file):
     :type output_file: :py:class:`file` or :py:class:`str`
     :rtype: NoneType
     """
-    write_RAW_HDUList(converter).writeto(output_file)
+    raw_converter_to_HDUList(converter).writeto(output_file)
 
 
 def raw_converter_flags_from_file(input_file):
@@ -59,6 +71,39 @@ def raw_converter_flags_from_file(input_file):
         undershoot_uncompensated=undershoot_uncompensated,
         pattern_noise_uncompensated=pattern_noise_uncompensated,
         start_of_line_ringing_uncompensated=start_of_line_ringing_uncompensated,
+    )
+
+
+def raw_converter_parameters_from_fits(input_file,
+                                       number_of_slices=None,
+                                       camera_number=None,
+                                       ccd_number=None,
+                                       number_of_exposures=None,
+                                       video_scales=None,
+                                       left_dark_pixel_columns=None,
+                                       right_dark_pixel_columns=None,
+                                       top_dark_pixel_rows=None,
+                                       smear_rows=None,
+                                       gain_loss=None,
+                                       undershoot_parameter=None,
+                                       pattern_noise=None,
+                                       ):
+    def get_parameter(parameter_name, parameter):
+        return raw_converter_parameters[parameter_name]['default'] if parameter is None else parameter
+
+    return RAWConverterParameters(
+        number_of_slices=get_parameter('number_of_slices', number_of_slices),
+        camera_number=get_parameter('camera_number', camera_number),
+        ccd_number=get_parameter('ccd_number', ccd_number),
+        number_of_exposures=get_parameter('number_of_exposures', number_of_exposures),
+        video_scales=get_parameter('video_scales', video_scales),
+        left_dark_pixel_columns=get_parameter('left_dark_pixel_columns', left_dark_pixel_columns),
+        right_dark_pixel_columns=get_parameter('right_dark_pixel_columns', right_dark_pixel_columns),
+        top_dark_pixel_rows=get_parameter('top_dark_pixel_rows', top_dark_pixel_rows),
+        smear_rows=get_parameter('smear_rows', smear_rows),
+        gain_loss=get_parameter('gain_loss', gain_loss),
+        undershoot_parameter=get_parameter('undershoot_parameter', undershoot_parameter),
+        pattern_noise=get_parameter('pattern_noise', pattern_noise),
     )
 
 
@@ -92,65 +137,60 @@ def make_slice_from_raw_data(
 
 
 # TODO write raw_converter_from_HDUList
-def raw_converter_from_HDUList():
-    pass
-
-
-def raw_converter_from_file(
-        input_file,
-        number_of_slices=raw_converter_parameters['number_of_slices']['default'],
-        video_scales=raw_converter_parameters['video_scales']['default'],
-        compression=raw_converter_parameters['compression']['default'],
-        undershoot=raw_converter_parameters['undershoot']['default'],
-        pattern_noise=raw_converter_parameters['pattern_noise']['default']):
-    from astropy.io import fits
+# noinspection PyUnresolvedReferences
+def raw_converter_from_HDUList(header_data_unit_list,
+                               origin_file_name=None,
+                               flags=None,
+                               parameters=None,
+                               ):
     from numpy import hsplit, fliplr
-    header_data_unit_list = fits.open(input_file)
+    flags = raw_converter_flags_from_file(header_data_unit_list) if flags is None else flags
+    parameters = raw_converter_parameters_from_fits(header_data_unit_list) if parameters is None else parameters
     assert len(header_data_unit_list) == 1, "Only a single image per FITS file is supported"
-    assert header_data_unit_list[0].data.shape[1] % number_of_slices == 0, \
+    assert header_data_unit_list[0].data.shape[1] % parameters.number_of_slices == 0, \
         "Image did not have the specified number of slices"
+
+    left_dark_pixel_count = parameters.number_of_slices * parameters.left_dark_pixel_columns
+    right_dark_pixel_count = parameters.number_of_slices * parameters.right_dark_pixel_columns
+    sliced_image_smear_and_dark_pixels = hsplit(
+        header_data_unit_list[0].data[:, left_dark_pixel_count:-right_dark_pixel_count], parameters.number_of_slices)
+
+    # TODO: Document this in layout.rst
+    # Rows in odd numbered slices have to be reversed
+    for i in range(1, parameters.number_of_slices, 2):
+        sliced_image_smear_and_dark_pixels[i] = fliplr(sliced_image_smear_and_dark_pixels[i])
+
+    # Note that left and right dark pixels do not need to be reversed
+    sliced_left_dark_pixels = hsplit(header_data_unit_list[0].data[:, :left_dark_pixel_count],
+                                     parameters.number_of_slices)
+    sliced_right_dark_pixels = hsplit(header_data_unit_list[0].data[:, -right_dark_pixel_count:],
+                                      parameters.number_of_slices)
+
+    return RAWConverter(
+        slices=map(make_slice_from_raw_data,
+                   sliced_image_smear_and_dark_pixels,
+                   range(parameters.number_of_slices),
+                   sliced_left_dark_pixels,
+                   sliced_right_dark_pixels),
+        fits_metadata=FITSMetaData(origin_file_name=origin_file_name,
+                                   header=header_data_unit_list[0].header),
+        parameters=parameters,
+        flags=flags,
+    )
+
+
+def raw_converter_from_fits(
+        input_file,
+        flags=None,
+        parameters=None):
+    from astropy.io import fits
+    header_data_unit_list = fits.open(input_file)
     origin_file_name = None
     if isinstance(input_file, str):
         origin_file_name = input_file
     if hasattr(input_file, 'name'):
         origin_file_name = input_file.name
-
-    sliced_image_smear_and_dark_pixels = hsplit(header_data_unit_list[0].data[:, 44:-44], number_of_slices)
-
-    # TODO: Document this in layout.rst
-    # Rows in odd numbered slices have to be reversed
-    for i in range(1, number_of_slices, 2):
-        sliced_image_smear_and_dark_pixels[i] = fliplr(sliced_image_smear_and_dark_pixels[i])
-
-    # Note that left and right dark pixels do not need to be reversed
-    sliced_left_dark_pixels = hsplit(header_data_unit_list[0].data[:, :44], number_of_slices)
-    sliced_right_dark_pixels = hsplit(header_data_unit_list[0].data[:, -44:], number_of_slices)
-
-    return RAWConverter(
-        slices=map(make_slice_from_raw_data,
-                   sliced_image_smear_and_dark_pixels,
-                   range(number_of_slices),
-                   sliced_left_dark_pixels,
-                   sliced_right_dark_pixels),
-        fits_metadata=FITSMetaData(origin_file_name=origin_file_name,
-                                   header=header_data_unit_list[0].header),
-        parameters=RAWConverterParameters(
-            video_scales=video_scales,
-            number_of_slices=number_of_slices,
-            compression=compression,
-            undershoot=undershoot,
-            pattern_noise=pattern_noise,
-        ),
-        # TODO: Read this from a file
-        flags=raw_converter_flags_from_file(input_file),
-    )
-
-
-raw_converter_from_file.__doc__ = """
-Construct a :py:class:`~httm.data_structures.raw_converter.RAWConverter` from a file or file name
-
-:param input_file: The file or file name to input
-:type input_file: :py:class:`File` or :py:class:`str`
-{parameter_documentation}
-:rtype: :py:class:`~httm.data_structures.raw_converter.RAWConverter`
-""".format(parameter_documentation=document_parameters(raw_converter_parameters))
+    return raw_converter_from_HDUList(header_data_unit_list,
+                                      origin_file_name=origin_file_name,
+                                      flags=flags,
+                                      parameters=parameters)

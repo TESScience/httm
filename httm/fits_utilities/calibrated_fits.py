@@ -13,71 +13,163 @@ from astropy.io.fits import HDUList, PrimaryHDU
 from ..data_structures.calibrated_converter import CalibratedConverterFlags, calibrated_transformation_flags, \
     CalibratedConverterParameters, CalibratedConverter, calibrated_converter_parameters
 from ..data_structures.common import Slice, FITSMetaData
-from ..data_structures.documentation import document_parameters
 
 
-def make_slice_from_calibrated_data(pixels, index):
-    # type: (numpy.ndarray, int) -> Slice
+def make_slice_from_calibrated_data(pixels,
+                                    left_dark_pixel_columns,
+                                    right_dark_pixel_columns,
+                                    top_dark_pixel_rows,
+                                    smear_rows,
+                                    index):
+    # type: (numpy.ndarray, int, int, int, int, int) -> Slice
     """
     Construct a slice from an array of calibrated pixel data given a specified index.
 
     Result is in *electron* counts.
 
+
     :param pixels: Image pixels from the calibrated data.
     :type pixels: :py:class:`numpy.ndarray`
+    :param left_dark_pixel_columns:
+    :type left_dark_pixel_columns: int
+    :param right_dark_pixel_columns:
+    :type right_dark_pixel_columns: int
+    :param top_dark_pixel_rows:
+    :type top_dark_pixel_rows: int
+    :param smear_rows:
+    :type smear_rows: int
     :param index: The index of the slice to construct.
     :type index: int
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
-    # TODO: Add in smear and dark pixels
-    image_smear_and_dark_pixels = numpy.vstack([pixels, numpy.zeros((20, pixels.shape[1]))])
-    row_count = image_smear_and_dark_pixels.shape[0]
-    dark_pixel_columns = numpy.zeros((row_count, 11))
-    return Slice(pixels=numpy.hstack([dark_pixel_columns, image_smear_and_dark_pixels, dark_pixel_columns]),
+    image_and_smear_and_top_dark_pixels = numpy.vstack(
+        [pixels, numpy.zeros((top_dark_pixel_rows + smear_rows, pixels.shape[1]))])
+    row_count = image_and_smear_and_top_dark_pixels.shape[0]
+    left_dark_pixels = numpy.zeros((row_count, left_dark_pixel_columns))
+    right_dark_pixels = numpy.zeros((row_count, right_dark_pixel_columns))
+    return Slice(pixels=numpy.hstack([left_dark_pixels, image_and_smear_and_top_dark_pixels, right_dark_pixels]),
                  index=index,
                  units='electrons')
 
 
-def calibrated_converter_flags_from_file(input_file):
+def calibrated_converter_flags_from_fits(input_file,
+                                         smear_rows_present=None,
+                                         readout_noise_added=None,
+                                         shot_noise_added=None,
+                                         blooming_simulated=None,
+                                         undershoot_uncompensated=None,
+                                         pattern_noise_uncompensated=None,
+                                         start_of_line_ringing_uncompensated=None,
+                                         ):
     """
     Construct a :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverterFlags`
     from a file or file name.
 
     :param input_file: The file or file name to input
     :type input_file: :py:class:`file` or :py:class:`str`
-    :rtype: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
+    :param smear_rows_present:
+    :type smear_rows_present: boolean
+    :param readout_noise_added:
+    :type readout_noise_added: boolean
+    :param shot_noise_added:
+    :type shot_noise_added: boolean
+    :param blooming_simulated:
+    :type blooming_simulated: boolean
+    :param undershoot_uncompensated:
+    :type undershoot_uncompensated: boolean
+    :param pattern_noise_uncompensated:
+    :type pattern_noise_uncompensated: boolean
+    :param start_of_line_ringing_uncompensated:
+    :type start_of_line_ringing_uncompensated: boolean
+    :rtype: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverterFlags`
     """
     # TODO try to read these from file
-    smear_rows_present = calibrated_transformation_flags['smear_rows_present']['default']
-    readout_noise_added = calibrated_transformation_flags['readout_noise_added']['default']
-    shot_noise_added = calibrated_transformation_flags['shot_noise_added']['default']
-    blooming_simulated = calibrated_transformation_flags['blooming_simulated']['default']
-    undershoot_uncompensated = calibrated_transformation_flags['undershoot_uncompensated']['default']
-    pattern_noise_uncompensated = calibrated_transformation_flags['pattern_noise_uncompensated']['default']
-    start_of_line_ringing_uncompensated = calibrated_transformation_flags['start_of_line_ringing_uncompensated'][
-        'default']
     return CalibratedConverterFlags(
-        smear_rows_present=smear_rows_present,
-        readout_noise_added=readout_noise_added,
-        shot_noise_added=shot_noise_added,
-        blooming_simulated=blooming_simulated,
-        undershoot_uncompensated=undershoot_uncompensated,
-        pattern_noise_uncompensated=pattern_noise_uncompensated,
-        start_of_line_ringing_uncompensated=start_of_line_ringing_uncompensated,
+        smear_rows_present=calibrated_transformation_flags['smear_rows_present'][
+            'default'] if smear_rows_present is None else smear_rows_present,
+        readout_noise_added=calibrated_transformation_flags['readout_noise_added'][
+            'default'] if readout_noise_added is None else readout_noise_added,
+        shot_noise_added=calibrated_transformation_flags['shot_noise_added'][
+            'default'] if shot_noise_added is None else shot_noise_added,
+        blooming_simulated=calibrated_transformation_flags['blooming_simulated'][
+            'default'] if blooming_simulated is None else blooming_simulated,
+        undershoot_uncompensated=calibrated_transformation_flags['undershoot_uncompensated'][
+            'default'] if undershoot_uncompensated is None else undershoot_uncompensated,
+        pattern_noise_uncompensated=calibrated_transformation_flags['pattern_noise_uncompensated'][
+            'default'] if pattern_noise_uncompensated is None else pattern_noise_uncompensated,
+        start_of_line_ringing_uncompensated=calibrated_transformation_flags['start_of_line_ringing_uncompensated'][
+            'default'] if start_of_line_ringing_uncompensated is None else start_of_line_ringing_uncompensated,
     )
 
 
-def write_calibrated_HDUList(converter):
+def calibrated_converter_parameters_from_fits(input_file,
+                                              number_of_slices=None,
+                                              camera_number=None,
+                                              ccd_number=None,
+                                              number_of_exposures=None,
+                                              video_scales=None,
+                                              readout_noise=None,
+                                              left_dark_pixel_columns=None,
+                                              right_dark_pixel_columns=None,
+                                              top_dark_pixel_rows=None,
+                                              smear_rows=None,
+                                              random_seed=None,
+                                              full_well=None,
+                                              gain_loss=None,
+                                              undershoot_parameter=None,
+                                              baseline_adu=None,
+                                              drift_adu=None,
+                                              smear_ratio=None,
+                                              clip_level_adu=None,
+                                              start_of_line_ringing=None,
+                                              pattern_noise=None,
+                                              blooming_threshold=None,
+                                              ):
+    def get_parameter(parameter_name, parameter):
+        return calibrated_converter_parameters[parameter_name]['default'] if parameter is None else parameter
+
+    return CalibratedConverterParameters(
+        number_of_slices=get_parameter('number_of_slices', number_of_slices),
+        camera_number=get_parameter('camera_number', camera_number),
+        ccd_number=get_parameter('ccd_number', ccd_number),
+        number_of_exposures=get_parameter('number_of_exposures', number_of_exposures),
+        video_scales=get_parameter('video_scales', video_scales),
+        readout_noise=get_parameter('readout_noise', readout_noise),
+        left_dark_pixel_columns=get_parameter('left_dark_pixel_columns', left_dark_pixel_columns),
+        right_dark_pixel_columns=get_parameter('right_dark_pixel_columns', right_dark_pixel_columns),
+        top_dark_pixel_rows=get_parameter('top_dark_pixel_rows', top_dark_pixel_rows),
+        smear_rows=get_parameter('smear_rows', smear_rows),
+        random_seed=get_parameter('random_seed', random_seed),
+        full_well=get_parameter('full_well', full_well),
+        gain_loss=get_parameter('gain_loss', gain_loss),
+        undershoot_parameter=get_parameter('undershoot_parameter', undershoot_parameter),
+        baseline_adu=get_parameter('baseline_adu', baseline_adu),
+        drift_adu=get_parameter('drift_adu', drift_adu),
+        smear_ratio=get_parameter('smear_ratio', smear_ratio),
+        clip_level_adu=get_parameter('clip_level_adu', clip_level_adu),
+        start_of_line_ringing=get_parameter('start_of_line_ringing', start_of_line_ringing),
+        pattern_noise=get_parameter('pattern_noise', pattern_noise),
+        blooming_threshold=get_parameter('blooming_threshold', blooming_threshold),
+    )
+
+
+def calibrated_converter_to_HDUList(converter):
     # type: (CalibratedConverter) -> HDUList
     """
 
     :param converter:
     :return:
     """
-    # TODO: Trim dark pixels and smear rows from slice
+    left_dark_pixel_columns = converter.parameters.left_dark_pixel_columns
+    right_dark_pixel_columns = converter.parameters.right_dark_pixel_columns
+    top_dark_pixel_rows = converter.parameters.top_dark_pixel_rows
+    smear_rows = converter.parameters.smear_rows
+    slices = [raw_slice.pixels[:-(top_dark_pixel_rows + smear_rows), left_dark_pixel_columns:-right_dark_pixel_columns]
+              for raw_slice in converter.slices]
+    for i in range(1, len(slices), 2):
+        slices[i] = numpy.fliplr(slices[i])
     return HDUList(PrimaryHDU(header=converter.fits_metadata.header,
-                              data=numpy.hstack([raw_slice.pixels
-                                                 for raw_slice in converter.slices])))
+                              data=numpy.hstack(slices)))
 
 
 def write_calibrated_fits(converter, output_file):
@@ -92,82 +184,51 @@ def write_calibrated_fits(converter, output_file):
     :type output_file: str
     :rtype: NoneType
     """
-    write_calibrated_HDUList(converter).writeto(output_file)
+    calibrated_converter_to_HDUList(converter).writeto(output_file)
 
 
-# TODO write calibrated_converter_from_HDUList
-def calibrated_converter_from_HDUList():
-    pass
+# noinspection PyUnresolvedReferences
+def calibrated_converter_from_HDUList(header_data_unit_list,
+                                      origin_file_name=None,
+                                      flags=None,
+                                      parameters=None,
+                                      ):
+    flags = calibrated_converter_flags_from_fits(header_data_unit_list) if flags is None else flags
+    parameters = calibrated_converter_parameters_from_fits(
+        header_data_unit_list) if parameters is None else parameters  # type: CalibratedConverterParameters
+    assert len(header_data_unit_list) == 1, "Only a single image per FITS file is supported"
+    assert header_data_unit_list[0].data.shape[1] % parameters.number_of_slices == 0, \
+        "Image did not have the specified number of slices"
+    return CalibratedConverter(
+        slices=map(lambda pixel_data, index:
+                   make_slice_from_calibrated_data(pixel_data,
+                                                   parameters.left_dark_pixel_columns,
+                                                   parameters.right_dark_pixel_columns,
+                                                   parameters.top_dark_pixel_rows,
+                                                   parameters.smear_rows,
+                                                   index),
+                   numpy.hsplit(header_data_unit_list[0].data, parameters.number_of_slices),
+                   range(parameters.number_of_slices)),
+        fits_metadata=FITSMetaData(origin_file_name=origin_file_name,
+                                   header=header_data_unit_list[0].header),
+        parameters=parameters,
+        flags=flags,
+    )
 
 
-def calibrated_converter_from_file(
+def calibrated_converter_from_fits(
         input_file,
-        number_of_slices=calibrated_converter_parameters['number_of_slices']['default'],
-        video_scales=calibrated_converter_parameters['video_scales']['default'],
-        readout_noise=calibrated_converter_parameters['readout_noise']['default'],
-        left_dark_pixel_columns=calibrated_converter_parameters['left_dark_pixel_columns']['default'],
-        right_dark_pixel_columns=calibrated_converter_parameters['right_dark_pixel_columns']['default'],
-        top_dark_pixel_rows=calibrated_converter_parameters['top_dark_pixel_rows']['default'],
-        smear_rows=calibrated_converter_parameters['smear_rows']['default'],
-        random_seed=calibrated_converter_parameters['random_seed']['default'],
-        full_well=calibrated_converter_parameters['full_well']['default'],
-        compression=calibrated_converter_parameters['compression']['default'],
-        undershoot=calibrated_converter_parameters['undershoot']['default'],
-        baseline_adu=calibrated_converter_parameters['baseline_adu']['default'],
-        drift_adu=calibrated_converter_parameters['drift_adu']['default'],
-        smear_ratio=calibrated_converter_parameters['smear_ratio']['default'],
-        clip_level_adu=calibrated_converter_parameters['clip_level_adu']['default'],
-        start_of_line_ringing=calibrated_converter_parameters['start_of_line_ringing']['default'],
-        pattern_noise=calibrated_converter_parameters['pattern_noise']['default'],
-        blooming_threshold=calibrated_converter_parameters['blooming_threshold']['default'],
+        flags=None,
+        parameters=None,
 ):
     from astropy.io import fits
-    from numpy import hsplit
     header_data_unit_list = fits.open(input_file)
-    assert len(header_data_unit_list) == 1, "Only a single image per FITS file is supported"
-    assert header_data_unit_list[0].data.shape[1] % number_of_slices == 0, \
-        "Image did not have the specified number of slices"
     origin_file_name = None
     if isinstance(input_file, str):
         origin_file_name = input_file
     if hasattr(input_file, 'name'):
         origin_file_name = input_file.name
-    return CalibratedConverter(
-        slices=map(lambda pixel_data, index:
-                   make_slice_from_calibrated_data(pixel_data, index),
-                   hsplit(header_data_unit_list[0].data, number_of_slices),
-                   range(number_of_slices)),
-        fits_metadata=FITSMetaData(origin_file_name=origin_file_name,
-                                   header=header_data_unit_list[0].header),
-        parameters=CalibratedConverterParameters(
-            number_of_slices=number_of_slices,
-            video_scales=video_scales,
-            readout_noise=readout_noise,
-            left_dark_pixel_columns=left_dark_pixel_columns,
-            right_dark_pixel_columns=right_dark_pixel_columns,
-            top_dark_pixel_rows=top_dark_pixel_rows,
-            smear_rows=smear_rows,
-            random_seed=random_seed,
-            full_well=full_well,
-            compression=compression,
-            undershoot=undershoot,
-            baseline_adu=baseline_adu,
-            drift_adu=drift_adu,
-            smear_ratio=smear_ratio,
-            clip_level_adu=clip_level_adu,
-            start_of_line_ringing=start_of_line_ringing,
-            pattern_noise=pattern_noise,
-            blooming_threshold=blooming_threshold,
-        ),
-        flags=calibrated_converter_flags_from_file(input_file),
-    )
-
-
-calibrated_converter_from_file.__doc__ = """
-Construct a :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` from a file or file name
-
-:param input_file: The file or file name to input
-:type input_file: :py:class:`file` or :py:class:`str`
-{parameter_documentation}
-:rtype: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
-""".format(parameter_documentation=document_parameters(calibrated_converter_parameters))
+    return calibrated_converter_from_HDUList(header_data_unit_list,
+                                             origin_file_name=origin_file_name,
+                                             flags=flags,
+                                             parameters=parameters)

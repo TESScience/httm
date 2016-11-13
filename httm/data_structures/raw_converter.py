@@ -12,9 +12,16 @@ from metadata import transformation_flags, parameters
 
 raw_converter_parameters = OrderedDict((k, parameters[k])
                                        for k in ['number_of_slices',
+                                                 'camera_number',
+                                                 'ccd_number',
+                                                 'number_of_exposures',
                                                  'video_scales',
-                                                 'compression',
-                                                 'undershoot',
+                                                 'left_dark_pixel_columns',
+                                                 'right_dark_pixel_columns',
+                                                 'top_dark_pixel_rows',
+                                                 'smear_rows',
+                                                 'gain_loss',
+                                                 'undershoot_parameter',
                                                  'pattern_noise'])
 
 raw_transformation_flags = OrderedDict((k, dict(default=True, **transformation_flags[k]))
@@ -31,8 +38,7 @@ class RAWConverterParameters(
     __doc__ = """
 Converter parameters for converting a raw FITS image into a calibrated FITS image.
 
-Constructed using :py:func:`~httm.fits_utilities.raw_fits.raw_converter_from_file` or
-:py:func:`~httm.fits_utilities.raw_fits.raw_converter_from_HDUList`.
+Constructed using :py:func:`~httm.fits_utilities.raw_fits.raw_converter_parameters_from_fits`.
 
 {parameter_documentation}
 """.format(parameter_documentation=document_parameters(raw_converter_parameters))

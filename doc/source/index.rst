@@ -7,6 +7,9 @@ Contents:
    :maxdepth: 3
 
    layout
+   software_architecture
    fits_format
+   notebooks/command_line_utilities
+   notebooks/tutorial
    plugins
    module
