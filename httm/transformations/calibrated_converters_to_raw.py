@@ -31,12 +31,13 @@ def add_readout_noise(calibrated_converter):
     pass
 
 
+# noinspection PyProtectedMember
 def simulate_undershoot(calibrated_converter):
     # type: (CalibratedConverter) -> CalibratedConverter
     """
     Adds undershoot to a
     :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` by calling
-    :py:func:`httm.transformations.calibrated_slices_to_raw.simulate_undershoot_on_slice`
+    :py:func:`~httm.transformations.calibrated_slices_to_raw.simulate_undershoot_on_slice`
     over each slice.
 
     :param calibrated_converter: Should have electrons for units for each of its slices
@@ -46,7 +47,7 @@ def simulate_undershoot(calibrated_converter):
     undershoot_parameter = calibrated_converter.parameters.undershoot_parameter
     image_slices = calibrated_converter.slices
     return calibrated_converter._replace(
-        slices=tuple(*map(lambda s: calibrated_slices_to_raw.simulate_undershoot_on_slice(undershoot_parameter, s),
+        slices=tuple(map(lambda s: calibrated_slices_to_raw.simulate_undershoot_on_slice(undershoot_parameter, s),
                           image_slices)))
 
 
@@ -55,7 +56,7 @@ def add_start_of_line_ringing(calibrated_converter):
     """
     Adds start of line ringing to a
     :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` by calling
-    :py:func:`httm.transformations.calibrated_slices_to_raw.add_start_of_line_ringing_to_slice`
+    :py:func:`~httm.transformations.calibrated_slices_to_raw.add_start_of_line_ringing_to_slice`
     over each slice.
 
     :param calibrated_converter: Should have electrons for units for each of its slices
@@ -74,7 +75,7 @@ def add_pattern_noise(calibrated_converter):
     # type: (CalibratedConverter) -> CalibratedConverter
     """
     Adds pattern noise to a :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` by calling
-    :py:func:`httm.transformations.calibrated_slices_to_raw.add_pattern_noise_to_slice` over each slice.
+    :py:func:`~httm.transformations.calibrated_slices_to_raw.add_pattern_noise_to_slice` over each slice.
 
     :param calibrated_converter: Should have electrons for units for each of its slices
     :type calibrated_converter: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
@@ -93,7 +94,7 @@ def convert_electrons_to_adu(calibrated_converter):
     """
     Converts a :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` from having electrons
     to *Analogue to Digital Converter Units* (ADU) by calling
-    :py:func:`httm.transformations.calibrated_slices_to_raw.convert_slice_electrons_to_adu` over each slice.
+    :py:func:`~httm.transformations.calibrated_slices_to_raw.convert_slice_electrons_to_adu` over each slice.
 
     :param calibrated_converter: Should have electrons for units for each of its slices
     :type calibrated_converter: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
@@ -102,14 +103,14 @@ def convert_electrons_to_adu(calibrated_converter):
     video_scales = calibrated_converter.parameters.video_scales
     image_slices = calibrated_converter.slices
     number_of_exposures = calibrated_converter.parameters.number_of_exposures
-    compression = calibrated_converter.parameters.compression
-    baseline_adu = calibrated_converter.parameters.baseline_adu
+    gain_loss = calibrated_converter.parameters.gain_loss
+    baseline_adus = calibrated_converter.parameters.baseline_adu
     clip_level_adu = calibrated_converter.parameters.clip_level_adu
     assert len(video_scales) == len(image_slices), "Video scales do not match image slices"
     # noinspection PyProtectedMember
     return calibrated_converter._replace(
         slices=tuple(
-            calibrated_slices_to_raw.convert_slice_electrons_to_adu(compression, number_of_exposures, video_scale,
+            calibrated_slices_to_raw.convert_slice_electrons_to_adu(gain_loss, number_of_exposures, video_scale,
                                                                     baseline_adu, clip_level_adu,
                                                                     image_slice)
-            for (video_scale, image_slice) in zip(video_scales, image_slices)))
+            for (video_scale, baseline_adu, image_slice) in zip(video_scales, baseline_adus, image_slices)))

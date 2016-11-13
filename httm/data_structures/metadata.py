@@ -123,7 +123,8 @@ parameters = OrderedDict([
     ('gain_loss', {
         'type': 'float',
         'documentation': 'The relative decrease in video gain over the total ADC range. '
-                         'This is the parameter of our nonlinearity model.',
+                         'This is the parameter of our non-linearity model. '
+                         'This is sometimes referred to as *compression* in the electrical engineering literature.',
         'default': 0.01,
         'standard_fits_keyword': 'GAINLOSS',
         'required_keyword': False,

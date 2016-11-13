@@ -17,7 +17,7 @@ def convert_adu_to_electrons(raw_transformation):
     """
     Converts a :py:class:`~httm.data_structures.raw_converter.RAWConverter` from
     having *Analogue to Digital Converter Units* (ADU) to estimated electron counts by calling
-    :py:func:`httm.transformations.raw_slices_to_calibrated.convert_slice_adu_to_electrons` over each slice.
+    :py:func:`~httm.transformations.raw_slices_to_calibrated.convert_slice_adu_to_electrons` over each slice.
 
     :param calibrated_converter: Should have electrons for units for each of its slices
     :type calibrated_converter: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
@@ -26,12 +26,12 @@ def convert_adu_to_electrons(raw_transformation):
     video_scales = raw_transformation.parameters.video_scales
     image_slices = raw_transformation.slices
     number_of_exposures = raw_transformation.parameters.number_of_exposures
-    compression = raw_transformation.parameters.compression
+    gain_loss = raw_transformation.parameters.gain_loss
     assert len(video_scales) == len(image_slices), "Video scales do not match image slices"
     return raw_transformation._replace(
         slices=tuple(
             raw_slices_to_calibrated.convert_slice_adu_to_electrons(
-                compression,
+                gain_loss,
                 number_of_exposures,
                 video_scale,
                 image_slice)
