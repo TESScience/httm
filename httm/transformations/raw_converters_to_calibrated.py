@@ -19,7 +19,7 @@ def convert_adu_to_electrons(raw_transformation):
     having *Analogue to Digital Converter Units* (ADU) to estimated electron counts by calling
     :py:func:`~httm.transformations.raw_slices_to_calibrated.convert_slice_adu_to_electrons` over each slice.
 
-    :param raw_transformation: Should have electrons for units for each of its slices
+    :param raw_transformation: Should have ADUs for units for each of its slices
     :type raw_transformation: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
     :rtype: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
     """

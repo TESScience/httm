@@ -66,7 +66,8 @@ def add_pattern_noise_to_slice(pattern_noise, image_slice):
     return image_slice._replace(pixels=image_slice.pixels + pattern_noise)
 
 
-def introduce_smear_rows_to_slice(smear_ratio, image_slice):
+def introduce_smear_rows_to_slice(smear_ratio, left_dark_pixel_columns, right_dark_pixel_columns, top_dark_pixel_rows,
+                                  smear_rows, image_slice):
     # type: (float, Slice) -> Slice
     """
     This function takes a slice with empty smear rows and populates them, and adds smear to every image pixel
@@ -86,26 +87,37 @@ def introduce_smear_rows_to_slice(smear_ratio, image_slice):
     The pixels in the resulting smear rows should all be nonzero for reasonable input data,
     but if this transformation has not been applied, they should always contain zeros for a slice of calibrated data.
 
-    :param image_slice: input slice. Units: electrons
-    :type image_slice: :py:class:`~httm.data_structures.common.Slice`
-    :param smear_ratio: dimensionless ratio of smear exposure to nominal exposure
+    :param smear_ratio: Dimensionless ratio of smear exposure to nominal exposure
     :type smear_ratio: float
+    :param left_dark_pixel_columns: The number of dark pixel columns at the right side of the slice
+    :type left_dark_pixel_columns: int
+    :param right_dark_pixel_columns: The number of dark pixel columns at the right side of the slice
+    :type right_dark_pixel_columns: int
+    :param top_dark_pixel_rows: The number of dark pixel rows at the top of the slice
+    :type top_dark_pixel_rows: int
+    :param smear_rows: The number of smear rows
+    :type smear_rows: int
+    :param image_slice: Input slice. Units: electrons
+    :type image_slice: :py:class:`~httm.data_structures.common.Slice`
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
     assert image_slice.units == "electrons", "units must be electrons"
-    assert False, "Smear rows are already introduced (should be set to 0)"
-
-    # TODO relative coordinates
+    smear_pixels = image_slice.pixels[-(top_dark_pixel_rows + smear_rows):-top_dark_pixel_rows,
+                   left_dark_pixel_columns:-right_dark_pixel_columns]
+    assert numpy.all(smear_pixels == 0), "Smear rows are already introduced (should be set to 0)"
 
     working_pixels = image_slice.pixels
-    image_pixels = working_pixels[0:2058, 11:523]
+    image_pixels = working_pixels[0:-(top_dark_pixel_rows + smear_rows),
+                   left_dark_pixel_columns:-right_dark_pixel_columns]
+
     estimated_smear = smear_ratio * numpy.sum(image_pixels, 0)
-    working_pixels[2058:2068, 11:523] = estimated_smear
-    working_pixels[0:2058, 11:523] += estimated_smear
+    working_pixels[-(top_dark_pixel_rows + smear_rows):-top_dark_pixel_rows, left_dark_pixel_columns:-right_dark_pixel_columns] = estimated_smear
+    working_pixels[0:-(top_dark_pixel_rows + smear_rows), left_dark_pixel_columns:-right_dark_pixel_columns] += estimated_smear
     # noinspection PyProtectedMember
     return image_slice._replace(pixels=working_pixels)
 
 
+# noinspection PyProtectedMember
 def add_shot_noise_to_slice(image_slice):
     # type: (Slice) -> Slice
     """
@@ -125,9 +137,9 @@ def add_shot_noise_to_slice(image_slice):
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
     assert image_slice.units == "electrons", "units must be electrons"
-    # noinspection PyProtectedMember
+    pixels = image_slice.pixels
     return image_slice._replace(
-        pixels=numpy.random.normal(loc=image_slice.pixels, scale=numpy.sqrt(image_slice.pixels)))
+        pixels=pixels + numpy.sqrt(pixels) * numpy.random.normal(loc=0, scale=1, size=pixels.shape))
 
 
 def simulate_blooming_on_slice(full_well, blooming_threshold, number_of_exposures, image_slice):
@@ -212,6 +224,10 @@ def add_readout_noise_to_slice(readout_noise_parameter, number_of_exposures, ima
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
     assert image_slice.units == "electrons", "units must be electrons"
+    assert number_of_exposures > 0, "number of exposures must be positive"
+    assert readout_noise_parameter >= 0, "readout noise parameter must be non-negative"
+    if readout_noise_parameter <= 0.0:
+        return image_slice
     # noinspection PyProtectedMember
     return image_slice._replace(
         pixels=numpy.random.normal(loc=image_slice.pixels,
