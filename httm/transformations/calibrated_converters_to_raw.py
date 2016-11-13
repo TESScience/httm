@@ -23,13 +23,30 @@ def add_shot_noise(calibrated_converter):
 
 def simulate_blooming(calibrated_converter):
     # type: (CalibratedConverter) -> CalibratedConverter
-    pass
+    """
+    Simulate *blooming* on a
+    :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` by calling
+    :py:func:`~httm.transformations.calibrated_slices_to_raw.simulate_blooming_on_slice`
+    over each slice.
+
+    :param calibrated_converter: Should have electrons for units for each of its slices
+    :type calibrated_converter: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
+    :rtype: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
+    """
+    full_well = calibrated_converter.parameters.full_well
+    blooming_threshold = calibrated_converter.parameters.blooming_threshold
+    number_of_exposures = calibrated_converter.parameters.number_of_exposures
+    image_slices = calibrated_converter.slices
+    return calibrated_converter._replace(
+        slices=tuple(map(lambda s: calibrated_slices_to_raw.simulate_blooming_on_slice(full_well, blooming_threshold,
+                                                                                       number_of_exposures, s),
+                         image_slices)))
 
 
 def add_readout_noise(calibrated_converter):
     # type: (CalibratedConverter) -> CalibratedConverter
     """
-    Adds *readout noise* to a
+    Add *readout noise* to a
     :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` by calling
     :py:func:`~httm.transformations.calibrated_slices_to_raw.add_readout_noise_to_slice`
     over each slice.
@@ -43,7 +60,8 @@ def add_readout_noise(calibrated_converter):
     number_of_exposures = calibrated_converter.parameters.number_of_exposures
     return calibrated_converter._replace(
         slices=tuple(
-            calibrated_slices_to_raw.add_readout_noise_to_slice(readout_noise_parameter, number_of_exposures, image_slice)
+            calibrated_slices_to_raw.add_readout_noise_to_slice(readout_noise_parameter, number_of_exposures,
+                                                                image_slice)
             for (readout_noise_parameter, image_slice) in zip(readout_noise_parameters, image_slices)))
 
 
@@ -51,7 +69,7 @@ def add_readout_noise(calibrated_converter):
 def simulate_undershoot(calibrated_converter):
     # type: (CalibratedConverter) -> CalibratedConverter
     """
-    Adds *undershoot* to a
+    Add *undershoot* to a
     :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` by calling
     :py:func:`~httm.transformations.calibrated_slices_to_raw.simulate_undershoot_on_slice`
     over each slice.
@@ -64,13 +82,13 @@ def simulate_undershoot(calibrated_converter):
     image_slices = calibrated_converter.slices
     return calibrated_converter._replace(
         slices=tuple(map(lambda s: calibrated_slices_to_raw.simulate_undershoot_on_slice(undershoot_parameter, s),
-                          image_slices)))
+                         image_slices)))
 
 
 def add_start_of_line_ringing(calibrated_converter):
     # type: (CalibratedConverter) -> CalibratedConverter
     """
-    Adds *start of line ringing* to a
+    Add *start of line ringing* to a
     :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` by calling
     :py:func:`~httm.transformations.calibrated_slices_to_raw.add_start_of_line_ringing_to_slice`
     over each slice.
@@ -90,7 +108,7 @@ def add_start_of_line_ringing(calibrated_converter):
 def add_pattern_noise(calibrated_converter):
     # type: (CalibratedConverter) -> CalibratedConverter
     """
-    Adds *pattern noise* to a :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` by calling
+    Add *pattern noise* to a :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` by calling
     :py:func:`~httm.transformations.calibrated_slices_to_raw.add_pattern_noise_to_slice` over each slice.
 
     :param calibrated_converter: Should have electrons for units for each of its slices
