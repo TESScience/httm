@@ -193,7 +193,7 @@ def simulate_blooming_on_slice(full_well, blooming_threshold, number_of_exposure
     return image_slice._replace(pixels=working_pixels)
 
 
-def add_readout_noise_to_slice(readout_noise, number_of_exposures, image_slice):
+def add_readout_noise_to_slice(readout_noise_parameter, number_of_exposures, image_slice):
     """
     This transformation a Gaussian random *readout* noise to every pixel.
 
@@ -201,10 +201,10 @@ def add_readout_noise_to_slice(readout_noise, number_of_exposures, image_slice):
 
     The average value :math:`\\mu` of the noise is `0`.
 
-    The variance :math:`\\sigma^2` is :math:`\\mathtt{readout\_noise}^2 \\times \\mathtt{number\_of\_exposures}`.
+    The variance :math:`\\sigma^2` is :math:`\\mathtt{readout\_noise\_parameter}^2 \\times \\mathtt{number\_of\_exposures}`.
 
-    :param readout_noise: noise standard deviation for one image
-    :type readout_noise: float
+    :param readout_noise_parameter: noise standard deviation for one image
+    :type readout_noise_parameter: float
     :param number_of_exposures: number of stacked images in the slice
     :type number_of_exposures: int
     :param image_slice: input slice
@@ -214,11 +214,11 @@ def add_readout_noise_to_slice(readout_noise, number_of_exposures, image_slice):
     assert image_slice.units == "electrons", "units must be electrons"
     # noinspection PyProtectedMember
     return image_slice._replace(
-        pixels=image_slice.pixels + numpy.random.normal(loc=0.0, scale=readout_noise * numpy.sqrt(number_of_exposures),
-                                                        size=image_slice.pixels.size))
+        pixels=numpy.random.normal(loc=image_slice.pixels,
+                                   scale=readout_noise_parameter * numpy.sqrt(number_of_exposures)))
 
 
-def simulate_undershoot(undershoot_parameter, image_slice):
+def simulate_undershoot_on_slice(undershoot_parameter, image_slice):
     """
     When a CCD reads out a bright pixel, the pixel to the right of it appears artificially dimmer.
 

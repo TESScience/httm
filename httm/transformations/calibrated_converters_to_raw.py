@@ -28,14 +28,30 @@ def simulate_blooming(calibrated_converter):
 
 def add_readout_noise(calibrated_converter):
     # type: (CalibratedConverter) -> CalibratedConverter
-    pass
+    """
+    Adds *readout noise* to a
+    :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` by calling
+    :py:func:`~httm.transformations.calibrated_slices_to_raw.add_readout_noise_to_slice`
+    over each slice.
+
+    :param calibrated_converter: Should have electrons for units for each of its slices
+    :type calibrated_converter: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
+    :rtype: :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter`
+    """
+    readout_noise_parameters = calibrated_converter.parameters.readout_noise_parameters
+    image_slices = calibrated_converter.slices
+    number_of_exposures = calibrated_converter.parameters.number_of_exposures
+    return calibrated_converter._replace(
+        slices=tuple(
+            calibrated_slices_to_raw.add_readout_noise_to_slice(readout_noise_parameter, number_of_exposures, image_slice)
+            for (readout_noise_parameter, image_slice) in zip(readout_noise_parameters, image_slices)))
 
 
 # noinspection PyProtectedMember
 def simulate_undershoot(calibrated_converter):
     # type: (CalibratedConverter) -> CalibratedConverter
     """
-    Adds undershoot to a
+    Adds *undershoot* to a
     :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` by calling
     :py:func:`~httm.transformations.calibrated_slices_to_raw.simulate_undershoot_on_slice`
     over each slice.
@@ -54,7 +70,7 @@ def simulate_undershoot(calibrated_converter):
 def add_start_of_line_ringing(calibrated_converter):
     # type: (CalibratedConverter) -> CalibratedConverter
     """
-    Adds start of line ringing to a
+    Adds *start of line ringing* to a
     :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` by calling
     :py:func:`~httm.transformations.calibrated_slices_to_raw.add_start_of_line_ringing_to_slice`
     over each slice.
@@ -74,7 +90,7 @@ def add_start_of_line_ringing(calibrated_converter):
 def add_pattern_noise(calibrated_converter):
     # type: (CalibratedConverter) -> CalibratedConverter
     """
-    Adds pattern noise to a :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` by calling
+    Adds *pattern noise* to a :py:class:`~httm.data_structures.calibrated_converter.CalibratedConverter` by calling
     :py:func:`~httm.transformations.calibrated_slices_to_raw.add_pattern_noise_to_slice` over each slice.
 
     :param calibrated_converter: Should have electrons for units for each of its slices

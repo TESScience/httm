@@ -53,7 +53,7 @@ parameters = OrderedDict([
         'standard_fits_keyword': ['VSCALE1', 'VSCALE2', 'VSCALE3', 'VSCALE4'],
         'required_keyword': False,
     }),
-    ('readout_noise', {
+    ('readout_noise_parameters', {
         'type': 'tuple of :py:class:`float` objects, must have one for each slice',
         'documentation': 'The video readout noise standard deviation in electrons. '
                          'Corresponds to fluctuations in electron counts for completely '
