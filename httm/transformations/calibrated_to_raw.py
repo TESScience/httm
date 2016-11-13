@@ -16,14 +16,16 @@ from ..data_structures.common import Slice
 def add_start_of_line_ringing_to_slice(start_of_line_ringing, image_slice):
     # type: (numpy.ndarray, Slice) -> Slice
     """
-    This transformation introduces to each row the *start of line ringing* pattern.
-
     Every uncalibrated row of pixels (dark or otherwise) in a CCD slice
     has been observed in the lab to start with a fixed pattern.
 
-    This pattern is the *start of line ringing*.
+    This pattern is referred to as the *start of line ringing*.
 
-    Start of line ringing is most prominent in the left dark pixel columns.
+    This transformation introduces the *start of line ringing* pattern to each row.
+
+    *Start of line ringing* differs from CCD to CCD and slice to slice.
+
+    It is most prominent in the left dark pixel columns.
 
     :param start_of_line_ringing: One dimensional array of floats, representing a fixed pattern \
     disturbance in each row of a slice.
@@ -46,7 +48,7 @@ def add_pattern_noise_to_slice(pattern_noise, image_slice):
 
     The default values should be zero, because the expected pattern noise is zero.
 
-    This is here simply because this effect might be noticeable in the flight electronics.
+    This transformation is present to accommodate the flight electronics where *pattern noise* may be present.
 
     :param pattern_noise: A two dimensional array of floats, representing a fixed pattern \
     disturbance in a slice.
@@ -211,26 +213,27 @@ def add_readout_noise_to_slice(readout_noise, number_of_exposures, image_slice):
 
 
 # noinspection PyProtectedMember
-def simulate_undershoot(undershoot, image_slice):
+def simulate_undershoot(undershoot_parameter, image_slice):
     """
     When a CCD reads out a bright pixel, the pixel to the right of it appears artificially dimmer.
 
     This is *undershoot*.
 
-    This function simulates undershoot for a slice.
+    This function simulates *undershoot* for a slice.
 
-    It convolves the kernel :math:`\\langle 1, -\\mathtt{undershoot}  \\rangle` with each input row,
-    yielding an output row of the same length. The convolution is non-cyclic: the input row is implicitly
-    padded with zero at the start to make this true.
+    It convolves the kernel :math:`\\langle 1, -\\mathtt{undershoot\_parameter}  \\rangle` with each input row,
+    yielding an output row of the same length.
 
-    :param undershoot: Undershoot parameter from parameter structure, typically `~0.001`, dimensionless
-    :type undershoot: float
+    The convolution is non-cyclic: the input row is implicitly padded with zero at the start to make this true.
+
+    :param undershoot_parameter: Typically `~0.001`, dimensionless
+    :type undershoot_parameter: float
     :param image_slice: input slice. Units: electrons
     :type image_slice: :py:class:`~httm.data_structures.common.Slice`
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
     assert image_slice.units == "electrons", "units must be electrons"
-    convolutional_kernel = numpy.array([1.0, -undershoot])
+    convolutional_kernel = numpy.array([1.0, -undershoot_parameter])
 
     def convolve_row(row):
         return numpy.convolve(row, convolutional_kernel, mode='same')
