@@ -102,17 +102,17 @@ def introduce_smear_rows_to_slice(smear_ratio, left_dark_pixel_columns, right_da
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
     assert image_slice.units == "electrons", "units must be electrons"
-    smear_pixels = image_slice.pixels[-(top_dark_pixel_rows + smear_rows):-top_dark_pixel_rows,
-                   left_dark_pixel_columns:-right_dark_pixel_columns]
+    top = (top_dark_pixel_rows + smear_rows)
+    smear_pixels = image_slice.pixels[-top:-top_dark_pixel_rows, left_dark_pixel_columns:-right_dark_pixel_columns]
+
+    # noinspection PyTypeChecker
     assert numpy.all(smear_pixels == 0), "Smear rows are already introduced (should be set to 0)"
-
-    working_pixels = image_slice.pixels
-    image_pixels = working_pixels[0:-(top_dark_pixel_rows + smear_rows),
-                   left_dark_pixel_columns:-right_dark_pixel_columns]
-
+    image_pixels = image_slice.pixels[0:-top, left_dark_pixel_columns:-right_dark_pixel_columns]
     estimated_smear = smear_ratio * numpy.sum(image_pixels, 0)
-    working_pixels[-(top_dark_pixel_rows + smear_rows):-top_dark_pixel_rows, left_dark_pixel_columns:-right_dark_pixel_columns] = estimated_smear
-    working_pixels[0:-(top_dark_pixel_rows + smear_rows), left_dark_pixel_columns:-right_dark_pixel_columns] += estimated_smear
+
+    working_pixels = numpy.copy(image_slice.pixels)
+    working_pixels[-top:-top_dark_pixel_rows, left_dark_pixel_columns:-right_dark_pixel_columns] = estimated_smear
+    working_pixels[0:-top, left_dark_pixel_columns:-right_dark_pixel_columns] += estimated_smear
     # noinspection PyProtectedMember
     return image_slice._replace(pixels=working_pixels)
 
@@ -197,7 +197,8 @@ def simulate_blooming_on_slice(full_well, blooming_threshold, number_of_exposure
             column = diffusion_step(column)
         return column
 
-    working_pixels = image_slice.pixels
+    # TODO: relative coordinates
+    working_pixels = numpy.copy(image_slice.pixels)
     image_pixels = working_pixels[0:2058, 11:523]
     bloomed_pixels = numpy.apply_along_axis(bloom_column, 0, image_pixels)
     working_pixels[0:2058, 11:523] = bloomed_pixels
@@ -260,11 +261,62 @@ def simulate_undershoot_on_slice(undershoot_parameter, image_slice):
         return numpy.convolve(row, convolutional_kernel, mode='same')
 
     # noinspection PyProtectedMember
-    return image_slice._replace(pixels=numpy.apply_along_axis(convolve_row, 1, image_slice.pixels))
+    return image_slice._replace(
+        pixels=numpy.apply_along_axis(convolve_row, 1, image_slice.pixels))
 
 
-def convert_slice_electrons_to_adu(gain_loss, number_of_exposures, video_scale, baseline_adu, clip_level_adu,
-                                   image_slice):
+def add_baseline_to_slice(single_frame_baseline_adu, single_frame_baseline_adu_drift_term, number_of_exposures,
+                          video_scale, image_slice):
+    """
+    This transformation adds a scalar random variate, the *baseline electron count*, to every pixel.
+
+    The baseline electron count is also known as the *video bias*.
+
+    To avoid clipping for low numbers of estimated electrons (which may even be negative) the
+    ADC output is biased above zero, and this bias is not perfectly stable.
+
+    Because this bias is not perfectly stable, the baseline electron count is modeled as a Gaussian
+    noise term.
+
+    The average value :math:`\\mu` of the baseline electron count is :math:`\\displaystyle{
+    \\frac{\\mathtt{single\\_frame\\_baseline\\_adu}
+    \\times\\mathtt{number\\_of\\_exposures}}{\\mathtt{video\\_scale}}}`.
+
+    The variance :math:`\\sigma^2` of the baseline electron count is :math:`\\displaystyle{
+    \\mathtt{single\\_frame\\_baseline\\_adu\\_drift\\_term}^2 / \\mathtt{video\\_scale}^2}`.
+
+    :param single_frame_baseline_adu: The expected video bias in ADU for a single frame exposure.
+    :type single_frame_baseline_adu: float
+    :param single_frame_baseline_adu_drift_term: A standard deviation in ADU of the baseline electron count random \
+    variate.
+    :type single_frame_baseline_adu_drift_term: float
+    :param number_of_exposures: Number of stacked images in the slice
+    :type number_of_exposures: int
+    :param video_scale: Constant for converting electron counts to \
+    *Analogue to Digital Converter Units* (ADU). Units: electrons per ADU
+    :type video_scale: float
+    :param image_slice: input slice
+    :type image_slice: :py:class:`~httm.data_structures.common.Slice`
+    :rtype: :py:class:`~httm.data_structures.common.Slice`
+    """
+    assert image_slice.units == "electrons", "units must be electrons"
+    assert number_of_exposures > 0, "number of exposures must be positive"
+    assert single_frame_baseline_adu_drift_term >= 0, "readout noise parameter must be non-negative"
+    baseline_electrons = single_frame_baseline_adu * number_of_exposures / video_scale
+    if single_frame_baseline_adu_drift_term <= 0.0:
+        local_baseline_electron_estimate = baseline_electrons  # type: float
+    else:
+        local_baseline_electron_estimate = \
+            numpy.random.normal(loc=baseline_electrons,
+                                scale=single_frame_baseline_adu_drift_term / video_scale)  # type: float
+
+    # noinspection PyProtectedMember
+    return image_slice._replace(pixels=image_slice.pixels + local_baseline_electron_estimate)
+
+
+# noinspection PyUnresolvedReferences
+def convert_slice_electrons_to_adu(gain_loss, number_of_exposures, video_scale,
+                                   clip_level_adu, image_slice):
     # type: (float, int, float, float, int, Slice) -> Slice
     """
     This functions simulate various nonlinear effects in the measurement of electrons, before finally yielding output
@@ -284,19 +336,15 @@ def convert_slice_electrons_to_adu(gain_loss, number_of_exposures, video_scale, 
     :math:`\\displaystyle{\\mathtt{gain\\_loss\\_per\\_electron} := \\frac{\\mathtt{gain\\_loss\\_per\\_adu}}
     {\\mathtt{video\\_scale}}}`
 
-    :math:`\\displaystyle{\\mathtt{exposure\\_baseline} := \\mathtt{baseline\\_adu}
-    \\times\\mathtt{number\\_of\\_exposures}}`
-
     :math:`\\displaystyle{\\mathtt{exposure\\_clip\\_level} := \\mathtt{clip\\_level\\_adu}
     \\times\\mathtt{number\\_of\\_exposures}}`
 
     :math:`\\displaystyle{\\mathtt{clip}(x,a,b) := \\max(a,\\min(x,b))}`
 
-    For each pixel :math:`p`, with units in electrons, this function applies the following
-    transformation:
+    For each pixel :math:`p`, with units in estimated electrons,
+    this function applies the following transformation:
 
-    :math:`\\mathtt{clip}(\\displaystyle{\\mathtt{exposure\\_baseline}
-    + \\frac{p}{\\mathtt{video\\_scale} \\times (1 + \\mathtt{gain\\_loss\\_per\\_electron} \\times p)}}, 0,
+    :math:`\\mathtt{clip}(\\frac{p}{\\mathtt{video\\_scale} \\times (1 + \\mathtt{gain\\_loss\\_per\\_electron} \\times p)}, 0,
     \\mathtt{exposure\\_clip\\_level})`
 
     This transformation affects all pixels, dark, smear or illuminated.
@@ -308,8 +356,6 @@ def convert_slice_electrons_to_adu(gain_loss, number_of_exposures, video_scale, 
     :param video_scale: Constant for converting electron counts to \
     *Analogue to Digital Converter Units* (ADU). Units: electrons per ADU
     :type video_scale: float
-    :param baseline_adu: Analog to digital converter output for zero electrons. Units: ADU
-    :type baseline_adu: float
     :param clip_level_adu: Maximum analog to digital converter output. Units: ADU
     :type clip_level_adu: int
     :param image_slice: Input slice. Units: electrons
@@ -319,16 +365,16 @@ def convert_slice_electrons_to_adu(gain_loss, number_of_exposures, video_scale, 
 
     assert image_slice.units == "electrons", "units must be electrons"
     gain_loss_per_adu = gain_loss / (number_of_exposures * FPE_MAX_ADU)  # type: float
-    gain_loss_per_electron = gain_loss_per_adu / video_scale
-    exposure_baseline = baseline_adu * number_of_exposures
-    exposure_clip_level = clip_level_adu * number_of_exposures
+    gain_loss_per_electron = gain_loss_per_adu / video_scale  # type: float
+    exposure_clip_level = clip_level_adu * number_of_exposures  # type: float
 
     def transform_electron_to_adu(electron):
         from numpy import clip
+        # noinspection PyTypeChecker
         return clip(
-            exposure_baseline + electron / (video_scale * (1.0 + gain_loss_per_electron * electron)),
+            electron / (video_scale * (1.0 + gain_loss_per_electron * electron)),
             0, exposure_clip_level)
 
     return Slice(index=image_slice.index,
-                 units="ADU",
+                 units='ADU',
                  pixels=transform_electron_to_adu(image_slice.pixels))

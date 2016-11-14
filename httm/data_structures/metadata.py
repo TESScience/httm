@@ -24,7 +24,7 @@ parameters = OrderedDict([
     }),
     ('camera_number', {
         'type': 'int',
-        'documentation': 'The number of the camera that took the image',
+        'documentation': 'The number of the camera that took the image.',
         'default': 0,
         'standard_fits_keyword': 'CAMNUM',
         'required_keyword': True,
@@ -32,13 +32,13 @@ parameters = OrderedDict([
     ('ccd_number', {
         'type': 'int',
         'default': 0,
-        'documentation': 'The number of the CCD that took the image',
+        'documentation': 'The number of the CCD that took the image.',
         'standard_fits_keyword': 'CCDNUM',
         'required_keyword': True,
     }),
     ('number_of_exposures', {
         'type': 'int',
-        'documentation': 'The number of frames stacked in the image',
+        'documentation': 'The number of frames stacked in the image.',
         'default': 1,
         'standard_fits_keyword': 'N_FRAMES',
         'alternate_fits_keywords': ['NREADS'],
@@ -139,16 +139,16 @@ parameters = OrderedDict([
         'standard_fits_keyword': 'UNDRSHUT',
         'required_keyword': False,
     }),
-    ('baseline_adu', {
+    ('single_frame_baseline_adus', {
         'type': 'float',
-        'documentation': 'The mean ADC level for a pixel with zero electrons.',
+        'documentation': 'The mean ADU for a pixel with zero electrons for a single frame exposure, per slice.',
         'default': (6000.0, 6000.0, 6000.0, 6000.0,),
         'standard_fits_keyword': ['BASEADU1', 'BASEADU2', 'BASEADU3', 'BASEADU4'],
         'required_keyword': False,
     }),
-    ('drift_adu', {
+    ('single_frame_baseline_adu_drift_term', {
         'type': 'float',
-        'documentation': 'Standard deviation of a random number added to the baseline_adu '
+        'documentation': 'Standard deviation of a random number added to the single_frame_baseline_adu '
                          'per simulated frame, to stress the baseline determination code.',
         'default': 0.0,
         'standard_fits_keyword': 'DRIFTADU',

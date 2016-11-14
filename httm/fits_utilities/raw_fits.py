@@ -133,7 +133,7 @@ def make_slice_from_raw_data(
     return Slice(
         pixels=numpy.hstack([left_dark_pixel_columns, image_and_smear_pixels, right_dark_pixel_columns]),
         index=index,
-        units='adu')
+        units='ADU')
 
 
 # TODO write raw_converter_from_HDUList
