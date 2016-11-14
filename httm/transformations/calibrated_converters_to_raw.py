@@ -87,6 +87,36 @@ def simulate_blooming(calibrated_converter):
 
 
 # noinspection PyProtectedMember
+def add_baseline(calibrated_converter):
+    # type: (SingleCCDCalibratedConverter) -> SingleCCDCalibratedConverter
+    """
+    Add a random scalar *baseline electron count* to a
+    :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter` for
+    each :py:class:`~httm.data_structures.common.Slice`.
+
+    Calls
+    :py:func:`~httm.transformations.calibrated_slices_to_raw.add_baseline_to_slice`
+    over each slice.
+
+    :param calibrated_converter: Should have electrons for units for each of its slices
+    :type calibrated_converter: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
+    :rtype: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
+    """
+    single_frame_baseline_adus = calibrated_converter.parameters.single_frame_baseline_adus
+    single_frame_baseline_adu_drift_term = calibrated_converter.parameters.single_frame_baseline_adu_drift_term
+    number_of_exposures = calibrated_converter.parameters.number_of_exposures
+    video_scales = calibrated_converter.parameters.video_scales
+    image_slices = calibrated_converter.slices
+    return calibrated_converter._replace(
+        slices=tuple(
+            calibrated_slices_to_raw.add_baseline_to_slice(single_frame_baseline_adu,
+                                                           single_frame_baseline_adu_drift_term, number_of_exposures,
+                                                           video_scale, image_slice)
+            for (single_frame_baseline_adu, video_scale, image_slice)
+            in zip(single_frame_baseline_adus, video_scales, image_slices)))
+
+
+# noinspection PyProtectedMember
 def add_readout_noise(calibrated_converter):
     # type: (SingleCCDCalibratedConverter) -> SingleCCDCalibratedConverter
     """
@@ -192,13 +222,11 @@ def convert_electrons_to_adu(calibrated_converter):
     image_slices = calibrated_converter.slices
     number_of_exposures = calibrated_converter.parameters.number_of_exposures
     gain_loss = calibrated_converter.parameters.gain_loss
-    baseline_adus = calibrated_converter.parameters.baseline_adu
     clip_level_adu = calibrated_converter.parameters.clip_level_adu
     assert len(video_scales) == len(image_slices), "Video scales do not match image slices"
     # noinspection PyProtectedMember
     return calibrated_converter._replace(
         slices=tuple(
             calibrated_slices_to_raw.convert_slice_electrons_to_adu(gain_loss, number_of_exposures, video_scale,
-                                                                    baseline_adu, clip_level_adu,
-                                                                    image_slice)
-            for (video_scale, baseline_adu, image_slice) in zip(video_scales, baseline_adus, image_slices)))
+                                                                    clip_level_adu, image_slice)
+            for (video_scale, image_slice) in zip(video_scales, image_slices)))

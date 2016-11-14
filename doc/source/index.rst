@@ -1,8 +1,6 @@
 HTTM: A Conversion Tool For TESS Full Frame Images
 ==================================================
 
-Contents:
-
 .. toctree::
    :maxdepth: 3
 

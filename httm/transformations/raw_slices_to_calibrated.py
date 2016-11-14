@@ -98,15 +98,23 @@ def remove_undershoot_from_slice(undershoot, image_slice):
     return image_slice._replace(pixels=numpy.apply_along_axis(convolve_row, 1, image_slice.pixels))
 
 
-def convert_slice_adu_to_electrons(compression, number_of_exposures, video_scale, image_slice):
+# TODO: this is wrong
+def convert_slice_adu_to_electrons(
+        gain_loss, number_of_exposures, video_scale, image_slice):
     # type: (float, int, float, Slice) -> Slice
     """
     Converts a slice from *Analogue to Digital Converter Units* (ADU) to electron counts.
 
-    :param compression: The relative decrease in video gain over the total ADC range
-    :type compression: float
-    :param number_of_exposures: The number of exposures the image comprises.\
-    This is read from the `NREADS` header of the input FITS file. TODO: Link to header description
+    TODO: Present math
+
+    This function is the inverse transform of
+    :py:func:`~httm.transformations.calibrated_slices_to_raw.convert_slice_electrons_to_adu`.
+    Note that unlike :py:func:`~httm.transformations.calibrated_slices_to_raw.convert_slice_electrons_to_adu`,
+    this function does not handle the *exposure baseline* and that is instead handled in ???.
+
+    :param gain_loss: The relative decrease in video gain over the total ADC range
+    :type gain_loss: float
+    :param number_of_exposures: The number of exposures the image comprises.
     :type number_of_exposures: int
     :param video_scale: Constant for converting electron counts to \
     *Analogue to Digital Converter Units* (ADU). Units: electrons per ADU
@@ -115,16 +123,15 @@ def convert_slice_adu_to_electrons(compression, number_of_exposures, video_scale
     :type image_slice: :py:class:`~httm.data_structures.common.Slice`
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
-    assert image_slice.units == "ADU", "units must be ADU"
-    compression_per_adu = compression / (number_of_exposures * FPE_MAX_ADU)  # type: float
-    compression_per_electron = compression_per_adu / video_scale  # type: float
+    assert image_slice.units == "ADU", "pixel units must be in ADU"
+    gain_loss_per_adu = gain_loss / (number_of_exposures * FPE_MAX_ADU)  # type: float
+    gain_loss_per_electron = gain_loss_per_adu / video_scale  # type: float
 
     def transform_adu_to_electron(adu):
         # type: (float) -> float
-        return adu / (-1.0 / video_scale + compression_per_electron * adu)
+        return (video_scale * adu) / \
+               (1 + gain_loss_per_electron * video_scale * adu)
 
     return Slice(index=image_slice.index,
                  units="electrons",
                  pixels=transform_adu_to_electron(image_slice.pixels))
-
-
