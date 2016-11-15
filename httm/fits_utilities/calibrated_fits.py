@@ -6,7 +6,7 @@ This module contains functions for marshalling and de-marshalling
 :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter` and the other book-keeping objects
 it contains from a FITS file or :py:class:`astropy.io.fits.HDUList`.
 """
-
+import astropy
 import numpy
 from astropy.io.fits import HDUList, PrimaryHDU
 
@@ -54,12 +54,12 @@ def make_slice_from_calibrated_data(pixels,
 
 def calibrated_converter_flags_from_fits(input_file,
                                          smear_rows_present=None,
-                                         readout_noise_added=None,
-                                         shot_noise_added=None,
-                                         blooming_simulated=None,
-                                         undershoot_uncompensated=None,
-                                         pattern_noise_uncompensated=None,
-                                         start_of_line_ringing_uncompensated=None,
+                                         readout_noise_present=None,
+                                         shot_noise_present=None,
+                                         blooming_present=None,
+                                         undershoot_present=None,
+                                         pattern_noise_present=None,
+                                         start_of_line_ringing_present=None,
                                          ):
     """
     Construct a :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverterFlags`
@@ -67,38 +67,38 @@ def calibrated_converter_flags_from_fits(input_file,
 
     :param input_file: The file or file name to input
     :type input_file: :py:class:`file` or :py:class:`str`
-    :param smear_rows_present:
-    :type smear_rows_present: boolean
-    :param readout_noise_added:
-    :type readout_noise_added: boolean
-    :param shot_noise_added:
-    :type shot_noise_added: boolean
-    :param blooming_simulated:
-    :type blooming_simulated: boolean
-    :param undershoot_uncompensated:
-    :type undershoot_uncompensated: boolean
-    :param pattern_noise_uncompensated:
-    :type pattern_noise_uncompensated: boolean
-    :param start_of_line_ringing_uncompensated:
-    :type start_of_line_ringing_uncompensated: boolean
+    :param smear_rows_present: Flag that indicates if *smear rows* are already present or have otherwise been \
+    removed
+    :type smear_rows_present: bool
+    :param readout_noise_present: Flag that indicates if *readout noise* has been simulated or has otherwise been \
+    removed
+    :type readout_noise_present: bool
+    :param shot_noise_present: Flag that indicates *shot noise* has not been simulated
+    :type shot_noise_present: bool
+    :param blooming_present: Flag that indicates *blooming* has been simulated
+    :type blooming_present: bool
+    :param undershoot_present: Flag indicates that *undershoot* has been simulated or has otherwise been removed
+    :type undershoot_present: bool
+    :param pattern_noise_present: Flag indicates that *pattern noise* has been simulated or has otherwise been removed
+    :type pattern_noise_present: bool
+    :param start_of_line_ringing_present: Flag that indicates *start of line ringing* has been simulated
+    :type start_of_line_ringing_present: bool
     :rtype: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverterFlags`
     """
+
+    def get_parameter(parameter_name, parameter):
+        return calibrated_transformation_flags[parameter_name]['default'] if parameter is None else parameter
+
     # TODO try to read these from file
     return SingleCCDCalibratedConverterFlags(
-        smear_rows_present=calibrated_transformation_flags['smear_rows_present'][
-            'default'] if smear_rows_present is None else smear_rows_present,
-        readout_noise_added=calibrated_transformation_flags['readout_noise_added'][
-            'default'] if readout_noise_added is None else readout_noise_added,
-        shot_noise_added=calibrated_transformation_flags['shot_noise_added'][
-            'default'] if shot_noise_added is None else shot_noise_added,
-        blooming_simulated=calibrated_transformation_flags['blooming_simulated'][
-            'default'] if blooming_simulated is None else blooming_simulated,
-        undershoot_uncompensated=calibrated_transformation_flags['undershoot_uncompensated'][
-            'default'] if undershoot_uncompensated is None else undershoot_uncompensated,
-        pattern_noise_uncompensated=calibrated_transformation_flags['pattern_noise_uncompensated'][
-            'default'] if pattern_noise_uncompensated is None else pattern_noise_uncompensated,
-        start_of_line_ringing_uncompensated=calibrated_transformation_flags['start_of_line_ringing_uncompensated'][
-            'default'] if start_of_line_ringing_uncompensated is None else start_of_line_ringing_uncompensated,
+        smear_rows_present=get_parameter('smear_rows_present', smear_rows_present),
+        readout_noise_present=get_parameter('readout_noise_present', readout_noise_present),
+        shot_noise_present=get_parameter('shot_noise_present', shot_noise_present),
+        blooming_present=get_parameter('blooming_present', blooming_present),
+        undershoot_present=get_parameter('undershoot_present', undershoot_present),
+        pattern_noise_present=get_parameter('pattern_noise_present', pattern_noise_present),
+        start_of_line_ringing_present=get_parameter('start_of_line_ringing_present',
+                                                    start_of_line_ringing_present),
     )
 
 
@@ -125,6 +125,34 @@ def calibrated_converter_parameters_from_fits(input_file,
                                               pattern_noise=None,
                                               blooming_threshold=None,
                                               ):
+    """
+    TODO: Document me
+
+    :param input_file:
+    :param number_of_slices:
+    :param camera_number:
+    :param ccd_number:
+    :param number_of_exposures:
+    :param video_scales:
+    :param readout_noise_parameters:
+    :param left_dark_pixel_columns:
+    :param right_dark_pixel_columns:
+    :param top_dark_pixel_rows:
+    :param smear_rows:
+    :param random_seed:
+    :param full_well:
+    :param gain_loss:
+    :param undershoot_parameter:
+    :param single_frame_baseline_adus:
+    :param single_frame_baseline_adu_drift_term:
+    :param smear_ratio:
+    :param clip_level_adu:
+    :param start_of_line_ringing:
+    :param pattern_noise:
+    :param blooming_threshold:
+    :return:
+    """
+
     def get_parameter(parameter_name, parameter):
         return calibrated_converter_parameters[parameter_name]['default'] if parameter is None else parameter
 
@@ -157,10 +185,14 @@ def calibrated_converter_parameters_from_fits(input_file,
 def calibrated_converter_to_HDUList(converter):
     # type: (SingleCCDCalibratedConverter) -> HDUList
     """
+    This function converts a :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
+    into an :py:class:`astropy.io.fits.HDUList` object, suitable for writing out to a (simulated) raw FITS file.
 
-    :param converter:
-    :return:
+    :param converter: A calibrated converter object
+    :type converter: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
+    :rtype: :py:class:`astropy.io.fits.HDUList`
     """
+    # TODO: write parameters and flags to HDU Headers
     left_dark_pixel_columns = converter.parameters.left_dark_pixel_columns
     right_dark_pixel_columns = converter.parameters.right_dark_pixel_columns
     top_dark_pixel_rows = converter.parameters.top_dark_pixel_rows
@@ -176,8 +208,8 @@ def calibrated_converter_to_HDUList(converter):
 def write_calibrated_fits(converter, output_file):
     # type: (SingleCCDCalibratedConverter, str) -> NoneType
     """
-    Write a completed :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
-     to a (simulated) raw FITS file.
+    Write a :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
+    to a (simulated) raw FITS file.
 
     :param converter:
     :type converter: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
@@ -189,11 +221,16 @@ def write_calibrated_fits(converter, output_file):
 
 
 # noinspection PyUnresolvedReferences
-def calibrated_converter_from_HDUList(header_data_unit_list,
-                                      origin_file_name=None,
-                                      flags=None,
-                                      parameters=None,
-                                      ):
+def calibrated_converter_from_HDUList(header_data_unit_list, origin_file_name=None, flags=None, parameters=None):
+    """
+    TODO: Document me
+
+    :param header_data_unit_list:
+    :param origin_file_name:
+    :param flags:
+    :param parameters:
+    :return:
+    """
     flags = calibrated_converter_flags_from_fits(header_data_unit_list) if flags is None else flags
     parameters = calibrated_converter_parameters_from_fits(
         header_data_unit_list) if parameters is None else parameters  # type: SingleCCDCalibratedConverterParameters
@@ -217,13 +254,17 @@ def calibrated_converter_from_HDUList(header_data_unit_list,
     )
 
 
-def calibrated_converter_from_fits(
-        input_file,
-        flags=None,
-        parameters=None,
-):
-    from astropy.io import fits
-    header_data_unit_list = fits.open(input_file)
+def calibrated_converter_from_fits(input_file, flags=None, parameters=None):
+    """
+    TODO: Document me
+
+    :param input_file:
+    :param flags:
+    :param parameters:
+    :return:
+    """
+    header_data_unit_list = astropy.io.fits.open(input_file) if not isinstance(input_file,
+                                                                               astropy.io.fits.HDUList) else input_file
     origin_file_name = None
     if isinstance(input_file, str):
         origin_file_name = input_file

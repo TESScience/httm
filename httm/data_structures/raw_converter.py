@@ -26,9 +26,9 @@ raw_converter_parameters = OrderedDict((k, parameters[k])
 
 raw_transformation_flags = OrderedDict((k, dict(default=True, **transformation_flags[k]))
                                        for k in ['smear_rows_present',
-                                                 'undershoot_uncompensated',
-                                                 'pattern_noise_uncompensated',
-                                                 'start_of_line_ringing_uncompensated'])
+                                                 'undershoot_present',
+                                                 'pattern_noise_present',
+                                                 'start_of_line_ringing_present'])
 
 
 # noinspection PyUnresolvedReferences

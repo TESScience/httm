@@ -200,43 +200,43 @@ parameters = OrderedDict([
 
 transformation_flags = OrderedDict([
     ('smear_rows_present', {
-        'type': 'boolean',
+        'type': 'bool',
         'documentation': 'Indicates whether there is data in the smear rows.',
         'standard_fits_keyword': 'SMRPRES',
         'required_keyword': False,
     }),
-    ('readout_noise_added', {
-        'type': 'boolean',
+    ('readout_noise_present', {
+        'type': 'bool',
         'documentation': 'Indicates whether *readout noise* has been added.',
         'standard_fits_keyword': 'RDNOISEP',
         'required_keyword': False,
     }),
-    ('shot_noise_added', {
-        'type': 'boolean',
+    ('shot_noise_present', {
+        'type': 'bool',
         'documentation': 'Indicates whether *shot noise* has been added.',
         'standard_fits_keyword': 'SHNOISEP',
         'required_keyword': False,
     }),
-    ('blooming_simulated', {
-        'type': 'boolean',
+    ('blooming_present', {
+        'type': 'bool',
         'documentation': 'Indicates whether *blooming* has been simulated.',
         'standard_fits_keyword': 'BLOOMP',
         'required_keyword': False,
     }),
-    ('undershoot_uncompensated', {
-        'type': 'boolean',
+    ('undershoot_present', {
+        'type': 'bool',
         'documentation': 'Indicates whether *undershoot* is present or otherwise compensated for.',
         'standard_fits_keyword': 'UNDRSP',
         'required_keyword': False,
     }),
-    ('pattern_noise_uncompensated', {
-        'type': 'boolean',
+    ('pattern_noise_present', {
+        'type': 'bool',
         'documentation': 'Indicates whether *pattern noise* is present or otherwise compensated for.',
         'standard_fits_keyword': 'PTNOISEP',
         'required_keyword': False,
     }),
-    ('start_of_line_ringing_uncompensated', {
-        'type': 'boolean',
+    ('start_of_line_ringing_present', {
+        'type': 'bool',
         'documentation': 'Indicates whether *start of line ringing* is present or otherwise compensated for.',
         'standard_fits_keyword': 'SOLRP',
         'required_keyword': False,

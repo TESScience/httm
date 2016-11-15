@@ -117,9 +117,12 @@ def remove_smear(raw_converter):
     """
     top_dark_pixel_rows = raw_converter.parameters.top_dark_pixel_rows
     smear_rows = raw_converter.parameters.smear_rows
+    right_dark_pixel_columns = raw_converter.parameters.right_dark_pixel_columns
+    left_dark_pixel_columns = raw_converter.parameters.left_dark_pixel_columns
     image_slices = raw_converter.slices
     # noinspection PyProtectedMember
     return raw_converter._replace(
         slices=tuple(
-            raw_slices_to_calibrated.remove_smear_from_slice(top_dark_pixel_rows, smear_rows, image_slice)
+            raw_slices_to_calibrated.remove_smear_from_slice(left_dark_pixel_columns, right_dark_pixel_columns,
+                                                             top_dark_pixel_rows, smear_rows, image_slice)
             for image_slice in image_slices))

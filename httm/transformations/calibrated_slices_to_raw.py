@@ -89,9 +89,9 @@ def introduce_smear_rows_to_slice(smear_ratio, left_dark_pixel_columns, right_da
 
     :param smear_ratio: Dimensionless ratio of smear exposure to nominal exposure
     :type smear_ratio: float
-    :param left_dark_pixel_columns: The number of dark pixel columns at the right side of the slice
+    :param left_dark_pixel_columns: The number of dark pixel columns on the left side of the slice
     :type left_dark_pixel_columns: int
-    :param right_dark_pixel_columns: The number of dark pixel columns at the right side of the slice
+    :param right_dark_pixel_columns: The number of dark pixel columns on the right side of the slice
     :type right_dark_pixel_columns: int
     :param top_dark_pixel_rows: The number of dark pixel rows at the top of the slice
     :type top_dark_pixel_rows: int
@@ -155,8 +155,10 @@ def simulate_blooming_on_slice(full_well, blooming_threshold, number_of_exposure
 
     This process is modeled using three parameters:
 
-      - :math:`\\mathtt{full\\_well}`, the maximum number of electrons in a pixel. This is the number of electrons sufficient to cause such rapid diffusion that the pixel cannot hold any more.
-      - :math:`\\mathtt{blooming\\_threshold}`, the number of electrons in the pixel that suffices to drive significant diffusion.
+      - :math:`\\mathtt{full\\_well}`, the maximum number of electrons in a pixel. This is the number of electrons \
+      sufficient to cause such rapid diffusion that the pixel cannot hold any more.
+      - :math:`\\mathtt{blooming\\_threshold}`, the number of electrons in the pixel that suffices to drive \
+      significant diffusion.
       - :math:`\\mathtt{number\\_of\\_exposures}`, the number of stacked images in the slice.
 
     Blooming is modeled as a diffusion process.
@@ -169,6 +171,8 @@ def simulate_blooming_on_slice(full_well, blooming_threshold, number_of_exposure
 
     The single step is repeated until all pixels are below
     :math:`\\mathtt{number\_of\_exposures} \\times \\mathtt{full\_well}`.
+
+    This transformation does not have an inverse.
 
     :param full_well: The maximum number of electrons in a pixel.
     :type full_well: float
@@ -213,7 +217,8 @@ def add_readout_noise_to_slice(readout_noise_parameter, number_of_exposures, ima
 
     The average value :math:`\\mu` of the noise is `0`.
 
-    The variance :math:`\\sigma^2` is :math:`\\mathtt{readout\_noise\_parameter}^2 \\times \\mathtt{number\_of\_exposures}`.
+    The variance :math:`\\sigma^2` is \
+    :math:`\\mathtt{readout\_noise\_parameter}^2 \\times \\mathtt{number\_of\_exposures}`.
 
     :param readout_noise_parameter: noise standard deviation for one image
     :type readout_noise_parameter: float
@@ -328,7 +333,7 @@ def convert_slice_electrons_to_adu(gain_loss, number_of_exposures, video_scale,
     transformation is more complex and has more parameters because nonlinear effects are not
     so easily disentangled.
 
-    Define the following values:
+    Define the following:
 
     :math:`\\displaystyle{\\mathtt{FPE\\_MAX\\_ADU} := 65535}`
 

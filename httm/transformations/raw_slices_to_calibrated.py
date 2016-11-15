@@ -31,35 +31,49 @@ def remove_start_of_line_ringing_from_slice(top_dark_pixel_rows, image_slice):
     :type image_slice: :py:class:`~httm.data_structures.common.Slice`
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
-    working_pixels = image_slice.pixels
+    assert image_slice.units == "electrons", "units must be electrons"
+    working_pixels = numpy.copy(image_slice.pixels)
     mean_ringing = numpy.sum(working_pixels[:-top_dark_pixel_rows], 0) / top_dark_pixel_rows
     working_pixels -= mean_ringing
     # noinspection PyProtectedMember
     return image_slice._replace(pixels=working_pixels)
 
 
-def remove_smear_from_slice(top_dark_pixel_rows, smear_rows, image_slice):
-    # type: (int, int, Slice) -> Slice
+def remove_smear_from_slice(left_dark_pixel_columns, right_dark_pixel_columns, top_dark_pixel_rows, smear_rows,
+                            image_slice):
+    # type: (int, int, int, int, Slice) -> Slice
     """
     This function estimates *smear* from the *smear rows* of a slice and compensates for this
     effect.
     
     This averages the smear rows and subtracts the result from each row in the image.
 
-    It implicitly remove start of line ringing and the video bias.
+    Smear rows are then zeroed.
 
-    :param top_dark_pixel_rows: Number of top dark pixel rows
+    This transformation implicitly removes *start of line ringing* and the *baseline electron count*.
+
+    :param left_dark_pixel_columns: The number of dark pixel columns on the left side of the slice
+    :type left_dark_pixel_columns: int
+    :param right_dark_pixel_columns: The number of dark pixel columns on the right side of the slice
+    :type right_dark_pixel_columns: int
+    :param top_dark_pixel_rows: The number of top dark pixel rows
     :type top_dark_pixel_rows: int
-    :param smear_rows: Number of smear rows
+    :param smear_rows: The number of smear rows
     :type smear_rows: int
     :param image_slice: Input slice. Units: electrons
     :type image_slice: :py:class:`~httm.data_structures.common.Slice`
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
-    working_pixels = image_slice.pixels
+    assert image_slice.units == "electrons", "units must be electrons"
+    top = (top_dark_pixel_rows + smear_rows)
+    smear_pixels = image_slice.pixels[-top:-top_dark_pixel_rows, left_dark_pixel_columns:-right_dark_pixel_columns]
+    # noinspection PyTypeChecker
+    assert numpy.any(smear_pixels != 0), "Smear rows should not be zero"
+    working_pixels = numpy.copy(image_slice.pixels)
     mean_ringing = numpy.sum(
         working_pixels[-top_dark_pixel_rows:-top_dark_pixel_rows - smear_rows], 0) / smear_rows
     working_pixels -= mean_ringing
+    working_pixels[-top:-top_dark_pixel_rows, left_dark_pixel_columns:-right_dark_pixel_columns] = 0
     # noinspection PyProtectedMember
     return image_slice._replace(pixels=working_pixels)
 
@@ -102,6 +116,7 @@ def remove_undershoot_from_slice(undershoot_parameter, image_slice):
     :type image_slice: :py:class:`~httm.data_structures.common.Slice`
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
+    assert image_slice.units == "electrons", "units must be electrons"
     convolutional_kernel = numpy.array([1.0, undershoot_parameter])
 
     def convolve_row(row):
@@ -142,7 +157,7 @@ def convert_slice_adu_to_electrons(
     :param video_scale: Constant for converting electron counts to \
     *Analogue to Digital Converter Units* (ADU). Units: electrons per ADU
     :type video_scale: float
-    :param image_slice: Input slice. Units: electrons
+    :param image_slice: Input slice. Units: ADU
     :type image_slice: :py:class:`~httm.data_structures.common.Slice`
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
