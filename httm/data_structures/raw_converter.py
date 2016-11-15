@@ -28,7 +28,8 @@ raw_transformation_flags = OrderedDict((k, dict(default=True, **transformation_f
                                        for k in ['smear_rows_present',
                                                  'undershoot_present',
                                                  'pattern_noise_present',
-                                                 'start_of_line_ringing_present'])
+                                                 'start_of_line_ringing_present',
+                                                 'in_adu'])
 
 
 # noinspection PyUnresolvedReferences

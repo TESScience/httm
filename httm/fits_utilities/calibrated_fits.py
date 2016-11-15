@@ -60,6 +60,7 @@ def calibrated_converter_flags_from_fits(input_file,
                                          undershoot_present=None,
                                          pattern_noise_present=None,
                                          start_of_line_ringing_present=None,
+                                         in_adu=None,
                                          ):
     """
     Construct a :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverterFlags`
@@ -83,6 +84,8 @@ def calibrated_converter_flags_from_fits(input_file,
     :type pattern_noise_present: bool
     :param start_of_line_ringing_present: Flag that indicates *start of line ringing* has been simulated
     :type start_of_line_ringing_present: bool
+    :param in_adu:
+    :type in_adu: bool
     :rtype: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverterFlags`
     """
 
@@ -99,6 +102,7 @@ def calibrated_converter_flags_from_fits(input_file,
         pattern_noise_present=get_parameter('pattern_noise_present', pattern_noise_present),
         start_of_line_ringing_present=get_parameter('start_of_line_ringing_present',
                                                     start_of_line_ringing_present),
+        in_adu=get_parameter('in_adu', in_adu),
     )
 
 

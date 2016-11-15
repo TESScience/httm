@@ -240,5 +240,12 @@ transformation_flags = OrderedDict([
         'documentation': 'Indicates whether *start of line ringing* is present or otherwise compensated for.',
         'standard_fits_keyword': 'SOLRP',
         'required_keyword': False,
+    }),
+    ('in_adu', {
+        'type': 'bool',
+        'documentation': 'Indicates whether the data is in *Analogue to Digital Converter Units* '
+                         'or otherwise in electon counts.',
+        'standard_fits_keyword': 'ADU',
+        'required_keyword': False,
     })
 ])
