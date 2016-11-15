@@ -50,15 +50,15 @@ def remove_smear_from_slice(left_dark_pixel_columns, right_dark_pixel_columns, t
 
     Smear rows are then zeroed.
 
-    This transformation implicitly removes start of line ringing and the baseline electron count.
+    This transformation implicitly removes *start of line ringing* and the *baseline electron count*.
 
     :param left_dark_pixel_columns: The number of dark pixel columns on the left side of the slice
     :type left_dark_pixel_columns: int
     :param right_dark_pixel_columns: The number of dark pixel columns on the right side of the slice
     :type right_dark_pixel_columns: int
-    :param top_dark_pixel_rows: Number of top dark pixel rows
+    :param top_dark_pixel_rows: The number of top dark pixel rows
     :type top_dark_pixel_rows: int
-    :param smear_rows: Number of smear rows
+    :param smear_rows: The number of smear rows
     :type smear_rows: int
     :param image_slice: Input slice. Units: electrons
     :type image_slice: :py:class:`~httm.data_structures.common.Slice`
