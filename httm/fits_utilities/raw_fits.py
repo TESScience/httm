@@ -18,11 +18,10 @@ from ..data_structures.raw_converter import SingleCCDRawConverterFlags, SingleCC
 def raw_converter_to_HDUList(converter):
     # type: (SingleCCDRawConverter) -> HDUList
     # noinspection PyTypeChecker
-
-    left_dark_parts = [raw_slice.pixels[:, :converter.parameters.left_dark_pixel_columns] for raw_slice in
-                       converter.slices]
-    right_dark_parts = [raw_slice.pixels[:, -converter.parameters.right_dark_pixel_columns:] for raw_slice in
-                        converter.slices]
+    left_dark_parts = [raw_slice.pixels[:, :converter.parameters.left_dark_pixel_columns]
+                       for raw_slice in converter.slices]
+    right_dark_parts = [raw_slice.pixels[:, -converter.parameters.right_dark_pixel_columns:]
+                        for raw_slice in converter.slices]
     image_parts = [
         raw_slice.pixels[:, converter.parameters.left_dark_pixel_columns:-converter.parameters.right_dark_pixel_columns]
         for raw_slice in converter.slices]

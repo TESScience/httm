@@ -18,7 +18,7 @@ SITE_PACKAGES=$(VIRTUAL_ENV)/lib/python2.7/site-packages
 VERSION=$(shell python -c "$(shell grep '^VERSION' $(CURDIR)/../setup.py) ; print VERSION")
 INSTALL=$(SITE_PACKAGES)/SPyFFI-$(VERSION)-py2.7.egg
 TESTS=httm-check-type-references pyfits-check-type-references numpy-check-type-references \
-      astropy-check-type-references tutorial-test
+      astropy-check-type-references tutorial-test smoke-test command_line_utilities-test
 
 all: install
 
@@ -35,6 +35,7 @@ documentation:
 
 # This is a generic test to make sure that references to python objects in a particular module exist
 %-check-type-references: $(VIRTUAL_ENV)
+	@make -C ../doc generated-sources
 	@echo -n Checking files for broken docstring references for $(patsubst  %-check-type-references,%,$@)...
 	@find ../{httm,doc} -name "*.py" \
 	| xargs grep -E "\`[\~]?$(patsubst  %-check-type-references,%,$@)" \
@@ -53,7 +54,7 @@ documentation:
 test: 
 	@make $(TESTS)
 
-%-test: %.ipynb $(RUNIPY)
+%-test: notebooks/%.ipynb $(RUNIPY)
 	@echo -n Testing $<...
 	@$(PYTHON) $(RUNIPY) $(QUIET) $<
 	@echo OK
