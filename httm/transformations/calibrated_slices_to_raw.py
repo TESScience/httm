@@ -117,13 +117,12 @@ def introduce_smear_rows_to_slice(smear_ratio, left_dark_pixel_columns, right_da
     return image_slice._replace(pixels=working_pixels)
 
 
-# noinspection PyProtectedMember
 def add_shot_noise_to_slice(image_slice):
     # type: (Slice) -> Slice
     """
     This transformation adds `shot noise <https://en.wikipedia.org/wiki/Shot_noise>`_ to every pixel.
 
-    *Shot noise* is a fluctuation in electron counts.
+    Shot noise is a fluctuation in electron counts.
 
     It is modeled as a Gaussian distributed error.
 
@@ -138,6 +137,7 @@ def add_shot_noise_to_slice(image_slice):
     """
     assert image_slice.units == "electrons", "units must be electrons"
     pixels = image_slice.pixels
+    # noinspection PyProtectedMember
     return image_slice._replace(
         pixels=pixels + numpy.sqrt(pixels) * numpy.random.normal(loc=0, scale=1, size=pixels.shape))
 
@@ -155,15 +155,14 @@ def simulate_blooming_on_slice(full_well, blooming_threshold, number_of_exposure
 
     This process is modeled using three parameters:
 
-      - ``full_well``, the maximum number of electrons in a pixel. This is the number of electrons sufficient to cause
-         such rapid diffusion that the pixel cannot hold any more.
-      - ``blooming_threshold``, the number of electrons in the pixel that suffices to drive significant diffusion.
-      - ``number_of_exposures``, the number of stacked images in the slice.
+      - :math:`\\mathtt{full\\_well}`, the maximum number of electrons in a pixel. This is the number of electrons sufficient to cause such rapid diffusion that the pixel cannot hold any more.
+      - :math:`\\mathtt{blooming\\_threshold}`, the number of electrons in the pixel that suffices to drive significant diffusion.
+      - :math:`\\mathtt{number\\_of\\_exposures}`, the number of stacked images in the slice.
 
     Blooming is modeled as a diffusion process.
 
     In a single step of the diffusion process, those pixels with electrons above
-    :math:`\\mathtt{number\_of\_exposures} \\times \\mathtt{blooming\_threshold}` electrons diffuse charge to
+    :math:`\\mathtt{number\\_of\\_exposures} \\times \\mathtt{blooming\\_threshold}` electrons diffuse charge to
     neighboring pixels in the same column.
 
     A single step of the diffusion process is always performed *at least once*.
@@ -247,6 +246,9 @@ def simulate_undershoot_on_slice(undershoot_parameter, image_slice):
     yielding an output row of the same length.
 
     The convolution is non-cyclic: the input row is implicitly padded with zero at the start to make this true.
+
+    This transformation is the (approximate) inverse of
+    :py:func:`~httm.transformations.raw_slices_to_calibrated.remove_undershoot_from_slice`.
 
     :param undershoot_parameter: Typically `~0.001`, dimensionless
     :type undershoot_parameter: float
@@ -344,10 +346,14 @@ def convert_slice_electrons_to_adu(gain_loss, number_of_exposures, video_scale,
     For each pixel :math:`p`, with units in estimated electrons,
     this function applies the following transformation:
 
-    :math:`\\mathtt{clip}(\\frac{p}{\\mathtt{video\\_scale} \\times (1 + \\mathtt{gain\\_loss\\_per\\_electron} \\times p)}, 0,
-    \\mathtt{exposure\\_clip\\_level})`
+    :math:`\\displaystyle{\\mathtt{clip}\\left(\\frac{p}{\\mathtt{video\\_scale} \\times
+    (1 + \\mathtt{gain\\_loss\\_per\\_electron} \\times p)}, 0,
+    \\mathtt{exposure\\_clip\\_level}\\right)}`
 
     This transformation affects all pixels, dark, smear or illuminated.
+
+    This function is the inverse transform of
+    :py:func:`~httm.transformations.raw_slices_to_calibrated.convert_slice_adu_to_electrons`.
 
     :param gain_loss: The relative decrease in video gain over the total ADC range
     :type gain_loss: float
