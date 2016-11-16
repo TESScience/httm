@@ -6,15 +6,22 @@ This module contains top level transformations for converting calibrated
 or raw TESS full frame FITS images between one another.
 """
 
+from fits_utilities.raw_fits import raw_converter_from_HDUList, raw_converter_to_HDUList
+
 
 # TODO: Write me
-def raw_hdulist_to_calibrated(hdulist):
+def raw_hdulist_to_calibrated(hdulist, origin_file_name=None, flags=None, parameters=None):
     """
-    TODO
+    TODO: Document me
 
     :param hdulist:
+    :param origin_file_name:
+    :param flags:
+    :param parameters:
     """
-    pass
+    # TODO: Run transformations
+    return raw_converter_to_HDUList(
+        raw_converter_from_HDUList(hdulist, origin_file_name=origin_file_name, flags=flags, parameters=parameters))
 
 
 # TODO: Write me

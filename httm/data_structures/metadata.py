@@ -24,7 +24,7 @@ parameters = OrderedDict([
     }),
     ('camera_number', {
         'type': 'int',
-        'documentation': 'The number of the camera that took the image',
+        'documentation': 'The number of the camera that took the image.',
         'default': 0,
         'standard_fits_keyword': 'CAMNUM',
         'required_keyword': True,
@@ -32,13 +32,13 @@ parameters = OrderedDict([
     ('ccd_number', {
         'type': 'int',
         'default': 0,
-        'documentation': 'The number of the CCD that took the image',
+        'documentation': 'The number of the CCD that took the image.',
         'standard_fits_keyword': 'CCDNUM',
         'required_keyword': True,
     }),
     ('number_of_exposures', {
         'type': 'int',
-        'documentation': 'The number of frames stacked in the image',
+        'documentation': 'The number of frames stacked in the image.',
         'default': 1,
         'standard_fits_keyword': 'N_FRAMES',
         'alternate_fits_keywords': ['NREADS'],
@@ -139,16 +139,16 @@ parameters = OrderedDict([
         'standard_fits_keyword': 'UNDRSHUT',
         'required_keyword': False,
     }),
-    ('baseline_adu', {
+    ('single_frame_baseline_adus', {
         'type': 'float',
-        'documentation': 'The mean ADC level for a pixel with zero electrons.',
+        'documentation': 'The mean ADU for a pixel with zero electrons for a single frame exposure, per slice.',
         'default': (6000.0, 6000.0, 6000.0, 6000.0,),
         'standard_fits_keyword': ['BASEADU1', 'BASEADU2', 'BASEADU3', 'BASEADU4'],
         'required_keyword': False,
     }),
-    ('drift_adu', {
+    ('single_frame_baseline_adu_drift_term', {
         'type': 'float',
-        'documentation': 'Standard deviation of a random number added to the baseline_adu '
+        'documentation': 'Standard deviation of a random number added to the single_frame_baseline_adu '
                          'per simulated frame, to stress the baseline determination code.',
         'default': 0.0,
         'standard_fits_keyword': 'DRIFTADU',
@@ -200,45 +200,52 @@ parameters = OrderedDict([
 
 transformation_flags = OrderedDict([
     ('smear_rows_present', {
-        'type': 'boolean',
+        'type': 'bool',
         'documentation': 'Indicates whether there is data in the smear rows.',
         'standard_fits_keyword': 'SMRPRES',
         'required_keyword': False,
     }),
-    ('readout_noise_added', {
-        'type': 'boolean',
+    ('readout_noise_present', {
+        'type': 'bool',
         'documentation': 'Indicates whether *readout noise* has been added.',
         'standard_fits_keyword': 'RDNOISEP',
         'required_keyword': False,
     }),
-    ('shot_noise_added', {
-        'type': 'boolean',
+    ('shot_noise_present', {
+        'type': 'bool',
         'documentation': 'Indicates whether *shot noise* has been added.',
         'standard_fits_keyword': 'SHNOISEP',
         'required_keyword': False,
     }),
-    ('blooming_simulated', {
-        'type': 'boolean',
+    ('blooming_present', {
+        'type': 'bool',
         'documentation': 'Indicates whether *blooming* has been simulated.',
         'standard_fits_keyword': 'BLOOMP',
         'required_keyword': False,
     }),
-    ('undershoot_uncompensated', {
-        'type': 'boolean',
+    ('undershoot_present', {
+        'type': 'bool',
         'documentation': 'Indicates whether *undershoot* is present or otherwise compensated for.',
         'standard_fits_keyword': 'UNDRSP',
         'required_keyword': False,
     }),
-    ('pattern_noise_uncompensated', {
-        'type': 'boolean',
+    ('pattern_noise_present', {
+        'type': 'bool',
         'documentation': 'Indicates whether *pattern noise* is present or otherwise compensated for.',
         'standard_fits_keyword': 'PTNOISEP',
         'required_keyword': False,
     }),
-    ('start_of_line_ringing_uncompensated', {
-        'type': 'boolean',
+    ('start_of_line_ringing_present', {
+        'type': 'bool',
         'documentation': 'Indicates whether *start of line ringing* is present or otherwise compensated for.',
         'standard_fits_keyword': 'SOLRP',
+        'required_keyword': False,
+    }),
+    ('in_adu', {
+        'type': 'bool',
+        'documentation': 'Indicates whether the data is in *Analogue to Digital Converter Units* '
+                         'or otherwise in electon counts.',
+        'standard_fits_keyword': 'ADU',
         'required_keyword': False,
     })
 ])
