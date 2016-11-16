@@ -37,29 +37,30 @@ raw_transformations = OrderedDict([
     ('convert_adu_to_electrons', {
         'type': 'bool',
         'default': True,
-        'documentation': 'Convert an image from having units in '
+        'documentation': 'Convert the image from having units in '
                          '*Analogue to Digital Converter Units* (ADU) '
                          'to electron counts.',
     }),
     ('remove_pattern_noise', {
         'type': 'bool',
         'default': True,
-        'documentation': 'TODO',
+        'documentation': 'Compensate for a fixed *pattern noise* on each slice of the image.',
     }),
     ('remove_start_of_line_ringing', {
         'type': 'bool',
         'default': True,
-        'documentation': 'TODO',
+        'documentation': 'Compensate for *start of line ringing* on each row of each slice of the image.',
     }),
     ('remove_undershoot', {
         'type': 'bool',
         'default': True,
-        'documentation': 'TODO',
+        'documentation': 'Compensate for *undershoot* for each row of each slice of the image.',
     }),
     ('remove_smear', {
         'type': 'bool',
         'default': True,
-        'documentation': 'TODO',
+        'documentation': 'Compensate for *smear* in the image by reading it from the *smear rows* each slice '
+                         'and removing it from the rest of the slice.',
     }),
 ])
 
