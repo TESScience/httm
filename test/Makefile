@@ -37,7 +37,7 @@ documentation:
 
 # This is a generic test to make sure that references to python objects in a particular module exist
 %-check-type-references: $(VIRTUAL_ENV)
-	@make -C ../doc generated-sources > /dev/null
+	@make -C ../doc generated-sources > $(STD_OUT)
 	@echo -n Checking files for broken docstring references for $(patsubst  %-check-type-references,%,$@)...
 	@find ../{httm,doc} -name "*.py" \
 	| xargs grep -E "\`[\~]?$(patsubst  %-check-type-references,%,$@)" \
