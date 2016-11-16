@@ -24,12 +24,61 @@ raw_converter_parameters = OrderedDict((k, parameters[k])
                                                  'undershoot_parameter',
                                                  'pattern_noise'])
 
+# TODO: Set blooming, shot noise, etc to True even though we can't scrub them
 raw_transformation_flags = OrderedDict((k, dict(default=True, **transformation_flags[k]))
                                        for k in ['smear_rows_present',
                                                  'undershoot_present',
                                                  'pattern_noise_present',
                                                  'start_of_line_ringing_present',
+                                                 'baseline_present',
                                                  'in_adu'])
+
+raw_transformations = OrderedDict([
+    ('convert_adu_to_electrons', {
+        'type': 'bool',
+        'default': True,
+        'documentation': 'Convert an image from having units in '
+                         '*Analogue to Digital Converter Units* (ADU) '
+                         'to electron counts.',
+    }),
+    ('remove_pattern_noise', {
+        'type': 'bool',
+        'default': True,
+        'documentation': 'TODO',
+    }),
+    ('remove_start_of_line_ringing', {
+        'type': 'bool',
+        'default': True,
+        'documentation': 'TODO',
+    }),
+    ('remove_undershoot', {
+        'type': 'bool',
+        'default': True,
+        'documentation': 'TODO',
+    }),
+    ('remove_smear', {
+        'type': 'bool',
+        'default': True,
+        'documentation': 'TODO',
+    }),
+])
+
+
+# noinspection PyClassHasNoInit
+class SingleCCDRawTransformations(namedtuple('SingleCCDCalibratedConverterParameters',
+                                             raw_transformations.keys())):
+    __doc__ = """
+Designate which transformations to run when processing a
+:py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`.
+
+See the :mod:`httm.transformations.calibrated_converters_to_raw` documentation for details.
+
+{parameter_documentation}
+""".format(parameter_documentation=document_parameters(raw_transformations))
+    __slots__ = ()
+
+SingleCCDRawTransformations.__new__.__defaults__ = \
+    tuple(transformation["default"] for transformation in raw_transformations.values())
 
 
 # noinspection PyUnresolvedReferences

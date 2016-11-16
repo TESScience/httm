@@ -18,7 +18,8 @@ SITE_PACKAGES=$(VIRTUAL_ENV)/lib/python2.7/site-packages
 VERSION=$(shell python -c "$(shell grep '^VERSION' $(CURDIR)/../setup.py) ; print VERSION")
 INSTALL=$(SITE_PACKAGES)/SPyFFI-$(VERSION)-py2.7.egg
 TESTS=httm-check-type-references pyfits-check-type-references numpy-check-type-references \
-      astropy-check-type-references tutorial-test smoke-test command_line_utilities-test
+      astropy-check-type-references tutorial-test smoke-test command_line_utilities-test \
+      demo-test
 
 all: install
 
@@ -28,6 +29,7 @@ install: $(VIRTUAL_ENV)
 	@$(PIP) install $(QUIET) -r requirements.txt --quiet
 	@make -C .. clean > $(STD_OUT)
 	@(cd .. ; $(PYTHON) setup.py install > $(STD_OUT) 2> $(ERROR_OUT))
+	@make -C fits_data/ all > $(STD_OUT)
 	@echo done.
 
 documentation:
@@ -68,4 +70,5 @@ $(VIRTUAL_ENV):
 	@touch $@
 
 clean:
+	@make -C fits_data/ clean
 	rm -rf $(VIRTUAL_ENV)

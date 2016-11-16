@@ -1,0 +1,15 @@
+To install, type:
+
+     make install
+
+To run tests, type:
+
+     make test
+
+To install and run tests, type:
+
+     make {install,test}
+
+To uninstall completely, type:
+
+     make clean

@@ -65,6 +65,7 @@ def raw_converter_flags_from_fits(input_file,
                                   undershoot_present=None,
                                   pattern_noise_present=None,
                                   start_of_line_ringing_present=None,
+                                  baseline_present=None,
                                   in_adu=None
                                   ):
     """
@@ -81,6 +82,8 @@ def raw_converter_flags_from_fits(input_file,
     :type pattern_noise_present: bool
     :param start_of_line_ringing_present:
     :type start_of_line_ringing_present: bool
+    :param baseline_present:
+    :type baseline_present: bool
     :param in_adu:
     :type in_adu: bool
     :param input_file: The file or file name to input
@@ -96,6 +99,7 @@ def raw_converter_flags_from_fits(input_file,
         undershoot_present=get_parameter('undershoot_present', undershoot_present),
         pattern_noise_present=get_parameter('pattern_noise_present', pattern_noise_present),
         start_of_line_ringing_present=get_parameter('start_of_line_ringing_present', start_of_line_ringing_present),
+        baseline_present=get_parameter('baseline_present', baseline_present),
         in_adu=get_parameter('in_adu', in_adu),
     )
 

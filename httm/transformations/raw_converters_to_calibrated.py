@@ -12,6 +12,8 @@ from collections import OrderedDict
 import raw_slices_to_calibrated
 from ..resources import load_npz_resource
 
+# TODO: Add flags, specify which remove baseline electron count
+
 
 def convert_adu_to_electrons(raw_converter):
     # type: (SingleCCDRawConverter) -> SingleCCDRawConverter
@@ -20,7 +22,8 @@ def convert_adu_to_electrons(raw_converter):
     having *Analogue to Digital Converter Units* (ADU) to estimated electron counts by calling
     :py:func:`~httm.transformations.raw_slices_to_calibrated.convert_slice_adu_to_electrons` over each slice.
 
-    :param raw_converter: Should have ADUs for units for each of its slices
+    :param raw_converter: Should have *Analogue to Digital Converter Units* (ADU) \
+    for units for each of its slices
     :type raw_converter: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
     :rtype: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
     """
@@ -65,7 +68,7 @@ def remove_pattern_noise(raw_converter):
 def remove_start_of_line_ringing(raw_converter):
     # type: (SingleCCDRawConverter) -> SingleCCDRawConverter
     """
-    Compensates for *start of line ringing* on a
+    Compensates for *start of line ringing* on each row in a
     :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     by calling :py:func:`~httm.transformations.raw_slices_to_calibrated.remove_start_of_line_ringing_from_slice`
     over each slice.
@@ -86,7 +89,7 @@ def remove_start_of_line_ringing(raw_converter):
 def remove_undershoot(raw_converter):
     # type: (SingleCCDRawConverter) -> SingleCCDRawConverter
     """
-    Removes *undershoot* from a
+    Removes *undershoot* from each row in a
     :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     by calling :py:func:`~httm.transformations.raw_slices_to_calibrated.remove_undershoot_from_slice`
     over each slice.
@@ -107,7 +110,7 @@ def remove_undershoot(raw_converter):
 def remove_smear(raw_converter):
     # type: (SingleCCDRawConverter) -> SingleCCDRawConverter
     """
-    Removes *smear* from a
+    Removes *smear* and zeroes the *smear rows* in a
     :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     by calling :py:func:`~httm.transformations.raw_slices_to_calibrated.remove_smear_from_slice`
     over each slice.

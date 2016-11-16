@@ -27,6 +27,8 @@ calibrated_transformations = OrderedDict([
         'documentation': 'Add *shot noise* to each pixel in each slice of an image.',
     }),
     ('simulate_blooming', {
+        'type': 'bool',
+        'default': True,
         'documentation': 'Simulate *blooming* on for each column for each slice of an image.',
     }),
     ('add_readout_noise', {
@@ -54,6 +56,12 @@ calibrated_transformations = OrderedDict([
         'default': True,
         'documentation': 'Add a *baseline electron count* to each slice in an image.',
     }),
+    ('convert_electrons_to_adu', {
+        'type': 'bool',
+        'default': True,
+        'documentation': 'Convert an image from having pixel units in electron counts to '
+                         '*Analogue to Digital Converter Units* (ADU).',
+    }),
 ])
 
 
@@ -72,7 +80,7 @@ See the :mod:`httm.transformations.calibrated_converters_to_raw` documentation f
 
 
 SingleCCDCalibratedTransformations.__new__.__defaults__ = \
-    [transformation["default"] for transformation in calibrated_transformations.values()]
+    tuple(transformation["default"] for transformation in calibrated_transformations.values())
 
 
 # noinspection PyClassHasNoInit
