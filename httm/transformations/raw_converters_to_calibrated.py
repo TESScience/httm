@@ -7,6 +7,7 @@ Transformation functions for processing
 they are suitable for writing to a calibrated FITS file.
 
 """
+from collections import OrderedDict
 
 import raw_slices_to_calibrated
 from ..resources import load_npz_resource
@@ -126,3 +127,12 @@ def remove_smear(raw_converter):
             raw_slices_to_calibrated.remove_smear_from_slice(left_dark_pixel_columns, right_dark_pixel_columns,
                                                              top_dark_pixel_rows, smear_rows, image_slice)
             for image_slice in image_slices))
+
+
+raw_transformations = OrderedDict([
+    ('convert_adu_to_electrons', convert_adu_to_electrons),
+    ('remove_pattern_noise', remove_pattern_noise),
+    ('remove_start_of_line_ringing', remove_start_of_line_ringing),
+    ('remove_undershoot', remove_undershoot),
+    ('remove_smear', remove_smear),
+])

@@ -7,6 +7,8 @@ Transformation functions for processing
 they are suitable  for writing to a simulated raw FITS file.
 
 """
+from collections import OrderedDict
+
 import calibrated_slices_to_raw
 from ..resources import load_npz_resource
 
@@ -102,7 +104,7 @@ def add_baseline(calibrated_converter):
     """
     image_slices = calibrated_converter.slices
     single_frame_baseline_adus = calibrated_converter.parameters.single_frame_baseline_adus
-    assert len(single_frame_baseline_adus) >= len(image_slices),\
+    assert len(single_frame_baseline_adus) >= len(image_slices), \
         "There should be at least as many Baseline ADU values as slices"
     single_frame_baseline_adu_drift_term = calibrated_converter.parameters.single_frame_baseline_adu_drift_term
     number_of_exposures = calibrated_converter.parameters.number_of_exposures
@@ -234,3 +236,16 @@ def convert_electrons_to_adu(calibrated_converter):
             calibrated_slices_to_raw.convert_slice_electrons_to_adu(gain_loss, number_of_exposures, video_scale,
                                                                     clip_level_adu, image_slice)
             for (video_scale, image_slice) in zip(video_scales, image_slices)))
+
+
+calibrated_transformations = OrderedDict([
+    ('introduce_smear_rows', introduce_smear_rows),
+    ('add_shot_noise', add_shot_noise),
+    ('simulate_blooming', simulate_blooming),
+    ('add_readout_noise', add_readout_noise),
+    ('simulate_undershoot', simulate_undershoot),
+    ('add_start_of_line_ringing', add_start_of_line_ringing),
+    ('add_pattern_noise', add_pattern_noise),
+    ('add_baseline', add_baseline),
+    ('convert_electrons_to_adu', convert_electrons_to_adu),
+])
