@@ -19,47 +19,47 @@ calibrated_transformations = OrderedDict([
     ('introduce_smear_rows', {
         'type': 'bool',
         'default': True,
-        'documentation': 'Introduce *smear rows* to each slice of an image.',
+        'documentation': 'Introduce *smear rows* to each slice of the image.',
     }),
     ('add_shot_noise', {
         'type': 'bool',
         'default': True,
-        'documentation': 'Add *shot noise* to each pixel in each slice of an image.',
+        'documentation': 'Add *shot noise* to each pixel in each slice of the image.',
     }),
     ('simulate_blooming', {
         'type': 'bool',
         'default': True,
-        'documentation': 'Simulate *blooming* on for each column for each slice of an image.',
+        'documentation': 'Simulate *blooming* on for each column for each slice of the image.',
     }),
     ('add_readout_noise', {
         'type': 'bool',
         'default': True,
-        'documentation': 'Add *readout noise* to each pixel in each slice of an image.',
+        'documentation': 'Add *readout noise* to each pixel in each slice of the image.',
     }),
     ('simulate_undershoot', {
         'type': 'bool',
         'default': True,
-        'documentation': 'Simulate *undershoot* on each row of each slice in an image.',
+        'documentation': 'Simulate *undershoot* on each row of each slice in the image.',
     }),
     ('simulate_start_of_line_ringing', {
         'type': 'bool',
         'default': True,
-        'documentation': 'Simulate *start of line ringing* on each row of each slice in an image.',
+        'documentation': 'Simulate *start of line ringing* on each row of each slice in the image.',
     }),
     ('add_pattern_noise', {
         'type': 'bool',
         'default': True,
-        'documentation': 'Add a fixed *pattern noise* to each slice in an image.',
+        'documentation': 'Add a fixed *pattern noise* to each slice in the image.',
     }),
     ('add_baseline', {
         'type': 'bool',
         'default': True,
-        'documentation': 'Add a *baseline electron count* to each slice in an image.',
+        'documentation': 'Add a *baseline electron count* to each slice in the image.',
     }),
     ('convert_electrons_to_adu', {
         'type': 'bool',
         'default': True,
-        'documentation': 'Convert an image from having pixel units in electron counts to '
+        'documentation': 'Convert the image from having pixel units in electron counts to '
                          '*Analogue to Digital Converter Units* (ADU).',
     }),
 ])
