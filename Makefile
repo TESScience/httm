@@ -1,6 +1,10 @@
 .PHONY: all documentation test clean
 
 all:
+	@make {documentation,test,data}
+
+data:
+	make -C httm/data all
 
 documentation:
 	make -C doc {clean,html,latexpdf}

@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 from numpy import savez, sin, reshape
+import sys
 
 if __name__ == "__main__":
     # Create default pattern noise file
+
     amplitude_electrons = 10
+
     # noinspection PyTypeChecker
-    pat = reshape(amplitude_electrons*sin(range(2078*2136)), (2078,2136))
-    savez("pattern_noise.npz", pattern_noise=pat)
+    noise_pattern = reshape(amplitude_electrons * sin(range(2078 * 2136)), (2078, 2136))
+
+    savez(sys.argv[1], pattern_noise=noise_pattern)
