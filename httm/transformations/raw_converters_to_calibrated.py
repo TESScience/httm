@@ -129,7 +129,7 @@ def remove_smear(raw_converter):
             for image_slice in image_slices))
 
 
-raw_transformations = OrderedDict([
+raw_transformation_functions = OrderedDict([
     ('convert_adu_to_electrons', convert_adu_to_electrons),
     ('remove_pattern_noise', remove_pattern_noise),
     ('remove_start_of_line_ringing', remove_start_of_line_ringing),

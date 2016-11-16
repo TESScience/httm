@@ -45,7 +45,7 @@ def introduce_smear_rows(calibrated_converter):
 def add_shot_noise(calibrated_converter):
     # type: (SingleCCDCalibratedConverter) -> SingleCCDCalibratedConverter
     """
-    Add *shot noise* to a
+    Add *shot noise* to each pixel in each slice in a
     :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`.
 
     Calls :py:func:`~httm.transformations.calibrated_slices_to_raw.add_shot_noise_to_slice`
@@ -64,7 +64,7 @@ def add_shot_noise(calibrated_converter):
 def simulate_blooming(calibrated_converter):
     # type: (SingleCCDCalibratedConverter) -> SingleCCDCalibratedConverter
     """
-    Simulate *blooming* on a
+    Simulate *blooming* on for each column for each slice in a
     :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`.
 
     Calls
@@ -123,7 +123,7 @@ def add_baseline(calibrated_converter):
 def add_readout_noise(calibrated_converter):
     # type: (SingleCCDCalibratedConverter) -> SingleCCDCalibratedConverter
     """
-    Add *readout noise* to a
+    Add *readout noise* to each pixel in each slice in a
     :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`.
 
     Calls
@@ -148,7 +148,7 @@ def add_readout_noise(calibrated_converter):
 def simulate_undershoot(calibrated_converter):
     # type: (SingleCCDCalibratedConverter) -> SingleCCDCalibratedConverter
     """
-    Add *undershoot* to a
+    Simulate *undershoot* on each row of each slice in a
     :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`.
 
     Calls
@@ -167,14 +167,14 @@ def simulate_undershoot(calibrated_converter):
                          image_slices)))
 
 
-def add_start_of_line_ringing(calibrated_converter):
+def simulate_start_of_line_ringing(calibrated_converter):
     # type: (SingleCCDCalibratedConverter) -> SingleCCDCalibratedConverter
     """
-    Add *start of line ringing* to a
+    Simulate *start of line ringing* on each row of each slice in a
     :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`.
 
     Calls
-    :py:func:`~httm.transformations.calibrated_slices_to_raw.add_start_of_line_ringing_to_slice`
+    :py:func:`~httm.transformations.calibrated_slices_to_raw.simulate_start_of_line_ringing_to_slice`
     over each slice.
 
     :param calibrated_converter: Should have electrons for units for each of its slices
@@ -186,14 +186,15 @@ def add_start_of_line_ringing(calibrated_converter):
     # noinspection PyProtectedMember
     return calibrated_converter._replace(
         slices=tuple(
-            calibrated_slices_to_raw.add_start_of_line_ringing_to_slice(start_of_line_ringing, image_slice)
+            calibrated_slices_to_raw.simulate_start_of_line_ringing_to_slice(start_of_line_ringing, image_slice)
             for (start_of_line_ringing, image_slice) in zip(start_of_line_ringing_patterns, image_slices)))
 
 
 def add_pattern_noise(calibrated_converter):
     # type: (SingleCCDCalibratedConverter) -> SingleCCDCalibratedConverter
     """
-    Add *pattern noise* to a :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`.
+    Add *pattern noise* to each slice in a
+    :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`.
 
     Calls
     :py:func:`~httm.transformations.calibrated_slices_to_raw.add_pattern_noise_to_slice` over each slice.
@@ -214,8 +215,8 @@ def add_pattern_noise(calibrated_converter):
 def convert_electrons_to_adu(calibrated_converter):
     # type: (SingleCCDCalibratedConverter) -> SingleCCDCalibratedConverter
     """
-    Converts a :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter` from having electrons
-    to *Analogue to Digital Converter Units* (ADU).
+    Converts a :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
+    from having electrons to *Analogue to Digital Converter Units* (ADU).
 
     Calls
     :py:func:`~httm.transformations.calibrated_slices_to_raw.convert_slice_electrons_to_adu` over each slice.
@@ -229,7 +230,8 @@ def convert_electrons_to_adu(calibrated_converter):
     number_of_exposures = calibrated_converter.parameters.number_of_exposures
     gain_loss = calibrated_converter.parameters.gain_loss
     clip_level_adu = calibrated_converter.parameters.clip_level_adu
-    assert len(video_scales) >= len(image_slices), "There should be at least as many Video scales as there are slices"
+    assert len(video_scales) >= len(image_slices), \
+        "There should be at least as many Video scales as there are slices"
     # noinspection PyProtectedMember
     return calibrated_converter._replace(
         slices=tuple(
@@ -238,13 +240,13 @@ def convert_electrons_to_adu(calibrated_converter):
             for (video_scale, image_slice) in zip(video_scales, image_slices)))
 
 
-calibrated_transformations = OrderedDict([
+calibrated_transformation_functions = OrderedDict([
     ('introduce_smear_rows', introduce_smear_rows),
     ('add_shot_noise', add_shot_noise),
     ('simulate_blooming', simulate_blooming),
     ('add_readout_noise', add_readout_noise),
     ('simulate_undershoot', simulate_undershoot),
-    ('add_start_of_line_ringing', add_start_of_line_ringing),
+    ('simulate_start_of_line_ringing', simulate_start_of_line_ringing),
     ('add_pattern_noise', add_pattern_noise),
     ('add_baseline', add_baseline),
     ('convert_electrons_to_adu', convert_electrons_to_adu),

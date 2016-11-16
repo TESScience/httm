@@ -15,10 +15,69 @@ calibrated_converter_parameters = parameters
 calibrated_transformation_flags = OrderedDict((k, dict(default=False, **transformation_flags[k]))
                                               for k in transformation_flags.keys())
 
+calibrated_transformations = OrderedDict([
+    ('introduce_smear_rows', {
+        'type': 'bool',
+        'default': True,
+        'documentation': 'Introduce *smear rows* to each slice of an image.',
+    }),
+    ('add_shot_noise', {
+        'type': 'bool',
+        'default': True,
+        'documentation': 'Add *shot noise* to each pixel in each slice of an image.',
+    }),
+    ('simulate_blooming', {
+        'documentation': 'Simulate *blooming* on for each column for each slice of an image.',
+    }),
+    ('add_readout_noise', {
+        'type': 'bool',
+        'default': True,
+        'documentation': 'Add *readout noise* to each pixel in each slice of an image.',
+    }),
+    ('simulate_undershoot', {
+        'type': 'bool',
+        'default': True,
+        'documentation': 'Simulate *undershoot* on each row of each slice in an image.',
+    }),
+    ('simulate_start_of_line_ringing', {
+        'type': 'bool',
+        'default': True,
+        'documentation': 'Simulate *start of line ringing* on each row of each slice in an image.',
+    }),
+    ('add_pattern_noise', {
+        'type': 'bool',
+        'default': True,
+        'documentation': 'Add a fixed *pattern noise* to each slice in an image.',
+    }),
+    ('add_baseline', {
+        'type': 'bool',
+        'default': True,
+        'documentation': 'Add a *baseline electron count* to each slice in an image.',
+    }),
+])
 
-# noinspection PyUnresolvedReferences
+
+# noinspection PyClassHasNoInit
+class SingleCCDCalibratedTransformations(namedtuple('SingleCCDCalibratedConverterParameters',
+                                                    calibrated_transformations.keys())):
+    __doc__ = """
+Designate which transformations to run when processing a
+:py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`.
+
+See the :mod:`httm.transformations.calibrated_converters_to_raw` documentation for details.
+
+{parameter_documentation}
+""".format(parameter_documentation=document_parameters(calibrated_transformations))
+    __slots__ = ()
+
+
+SingleCCDCalibratedTransformations.__new__.__defaults__ = \
+    [transformation["default"] for transformation in calibrated_transformations.values()]
+
+
+# noinspection PyClassHasNoInit
 class SingleCCDCalibratedConverterParameters(namedtuple('SingleCCDCalibratedConverterParameters',
-                                               calibrated_converter_parameters.keys())):
+                                                        calibrated_converter_parameters.keys())):
     __doc__ = """
 Converter parameters for converting a calibrated FITS image into an uncalibrated FITS image.
 

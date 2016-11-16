@@ -17,7 +17,7 @@ from ..data_structures.common import Slice
 # noinspection PyProtectedMember
 
 
-def add_start_of_line_ringing_to_slice(start_of_line_ringing, image_slice):
+def simulate_start_of_line_ringing_to_slice(start_of_line_ringing, image_slice):
     # type: (numpy.ndarray, Slice) -> Slice
     """
     Every uncalibrated row of pixels (dark or otherwise) in a CCD slice
