@@ -12,6 +12,6 @@ setup(
     author='Matthew Wampler-Doty, John Doty',
     author_email='matthew.wampler.doty@gmail.com, jpd@noqsi.com',
     packages=find_packages('.'),
-    install_requires=['numpy', 'astropy==1.1.2'],
+    install_requires=['numpy', 'astropy'],
     scripts=glob('scripts/*'),
 )
