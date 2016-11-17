@@ -9,7 +9,7 @@ for writing to a calibrated FITS file.
 """
 import numpy
 
-from constants import FPE_MAX_ADU
+from .constants import FPE_MAX_ADU
 from ..data_structures.common import Slice
 
 

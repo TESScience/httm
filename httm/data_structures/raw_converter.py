@@ -7,8 +7,8 @@ This module contains data structures for dealing with converting raw images to c
 
 from collections import namedtuple, OrderedDict
 
-from documentation import document_parameters
-from metadata import transformation_flags, parameters
+from .documentation import document_parameters
+from .metadata import transformation_flags, parameters
 
 raw_converter_parameters = OrderedDict((k, parameters[k])
                                        for k in ['number_of_slices',

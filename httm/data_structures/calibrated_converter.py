@@ -7,8 +7,8 @@ This module contains data structures for dealing with converting calibrated imag
 
 from collections import namedtuple, OrderedDict
 
-from documentation import document_parameters
-from metadata import parameters, transformation_flags
+from .documentation import document_parameters
+from .metadata import parameters, transformation_flags
 
 calibrated_converter_parameters = parameters
 

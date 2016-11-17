@@ -9,8 +9,10 @@ they are suitable for writing to a calibrated FITS file.
 """
 from collections import OrderedDict
 
-import raw_slices_to_calibrated
+from .raw_slices_to_calibrated import convert_slice_adu_to_electrons, remove_pattern_noise_from_slice, \
+    remove_undershoot_from_slice, remove_smear_from_slice
 from ..resources import load_npz_resource
+
 
 # TODO: Add flags, specify which remove baseline electron count
 
@@ -34,13 +36,8 @@ def convert_adu_to_electrons(raw_converter):
     gain_loss = raw_converter.parameters.gain_loss
     # noinspection PyProtectedMember
     return raw_converter._replace(
-        slices=tuple(
-            raw_slices_to_calibrated.convert_slice_adu_to_electrons(
-                gain_loss,
-                number_of_exposures,
-                video_scale,
-                image_slice)
-            for (video_scale, image_slice) in zip(video_scales, image_slices)))
+        slices=tuple(convert_slice_adu_to_electrons(gain_loss, number_of_exposures, video_scale, image_slice)
+                     for (video_scale, image_slice) in zip(video_scales, image_slices)))
 
 
 def remove_pattern_noise(raw_converter):
@@ -60,9 +57,8 @@ def remove_pattern_noise(raw_converter):
     assert len(pattern_noises) >= len(image_slices), "There should be at least as many noise patterns as slices"
     # noinspection PyProtectedMember
     return raw_converter._replace(
-        slices=tuple(
-            raw_slices_to_calibrated.remove_pattern_noise_from_slice(pattern_noise, image_slice)
-            for (pattern_noise, image_slice) in zip(pattern_noises, image_slices)))
+        slices=tuple(remove_pattern_noise_from_slice(pattern_noise, image_slice)
+                     for (pattern_noise, image_slice) in zip(pattern_noises, image_slices)))
 
 
 def remove_start_of_line_ringing(raw_converter):
@@ -81,9 +77,8 @@ def remove_start_of_line_ringing(raw_converter):
     image_slices = raw_converter.slices
     # noinspection PyProtectedMember
     return raw_converter._replace(
-        slices=tuple(
-            raw_slices_to_calibrated.remove_pattern_noise_from_slice(top_dark_pixel_rows, image_slice)
-            for image_slice in image_slices))
+        slices=tuple(remove_pattern_noise_from_slice(top_dark_pixel_rows, image_slice)
+                     for image_slice in image_slices))
 
 
 def remove_undershoot(raw_converter):
@@ -102,9 +97,8 @@ def remove_undershoot(raw_converter):
     image_slices = raw_converter.slices
     # noinspection PyProtectedMember
     return raw_converter._replace(
-        slices=tuple(
-            raw_slices_to_calibrated.remove_undershoot_from_slice(undershoot_parameter, image_slice)
-            for image_slice in image_slices))
+        slices=tuple(remove_undershoot_from_slice(undershoot_parameter, image_slice)
+                     for image_slice in image_slices))
 
 
 def remove_smear(raw_converter):
@@ -126,10 +120,9 @@ def remove_smear(raw_converter):
     image_slices = raw_converter.slices
     # noinspection PyProtectedMember
     return raw_converter._replace(
-        slices=tuple(
-            raw_slices_to_calibrated.remove_smear_from_slice(left_dark_pixel_columns, right_dark_pixel_columns,
-                                                             top_dark_pixel_rows, smear_rows, image_slice)
-            for image_slice in image_slices))
+        slices=tuple(remove_smear_from_slice(left_dark_pixel_columns, right_dark_pixel_columns,
+                                             top_dark_pixel_rows, smear_rows, image_slice)
+                     for image_slice in image_slices))
 
 
 raw_transformation_functions = OrderedDict([

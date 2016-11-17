@@ -225,11 +225,11 @@ def raw_converter_from_HDUList(header_data_unit_list,
                                       parameters.number_of_slices)
 
     return SingleCCDRawConverter(
-        slices=map(make_slice_from_raw_data,
-                   sliced_image_smear_and_dark_pixels,
-                   range(parameters.number_of_slices),
-                   sliced_left_dark_pixels,
-                   sliced_right_dark_pixels),
+        slices=tuple(map(make_slice_from_raw_data,
+                         sliced_image_smear_and_dark_pixels,
+                         range(parameters.number_of_slices),
+                         sliced_left_dark_pixels,
+                         sliced_right_dark_pixels)),
         fits_metadata=FITSMetaData(origin_file_name=origin_file_name,
                                    header=header_data_unit_list[0].header),
         parameters=parameters,

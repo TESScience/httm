@@ -9,7 +9,10 @@ they are suitable  for writing to a simulated raw FITS file.
 """
 from collections import OrderedDict
 
-import calibrated_slices_to_raw
+from .calibrated_slices_to_raw import introduce_smear_rows_to_slice, add_shot_noise_to_slice, \
+    simulate_blooming_on_slice, \
+    add_baseline_to_slice, add_readout_noise_to_slice, simulate_undershoot_on_slice, \
+    simulate_start_of_line_ringing_to_slice, add_pattern_noise_to_slice, convert_slice_electrons_to_adu
 from ..resources import load_npz_resource
 
 
@@ -35,11 +38,10 @@ def introduce_smear_rows(calibrated_converter):
     image_slices = calibrated_converter.slices
     # noinspection PyProtectedMember
     return calibrated_converter._replace(
-        slices=tuple(map(
-            lambda s: calibrated_slices_to_raw.introduce_smear_rows_to_slice(smear_ratio, left_dark_pixel_columns,
-                                                                             right_dark_pixel_columns,
-                                                                             top_dark_pixel_rows, smear_rows, s),
-            image_slices)))
+        slices=tuple(introduce_smear_rows_to_slice(smear_ratio, left_dark_pixel_columns,
+                                                   right_dark_pixel_columns,
+                                                   top_dark_pixel_rows, smear_rows, image_slice)
+                     for image_slice in image_slices))
 
 
 def add_shot_noise(calibrated_converter):
@@ -58,7 +60,7 @@ def add_shot_noise(calibrated_converter):
     image_slices = calibrated_converter.slices
     # noinspection PyProtectedMember
     return calibrated_converter._replace(
-        slices=tuple(map(calibrated_slices_to_raw.add_shot_noise_to_slice, image_slices)))
+        slices=tuple(add_shot_noise_to_slice(image_slice) for image_slice in image_slices))
 
 
 def simulate_blooming(calibrated_converter):
@@ -81,10 +83,8 @@ def simulate_blooming(calibrated_converter):
     image_slices = calibrated_converter.slices
     # noinspection PyProtectedMember
     return calibrated_converter._replace(
-        slices=tuple(
-            map(lambda s: calibrated_slices_to_raw.simulate_blooming_on_slice(full_well, blooming_threshold,
-                                                                              number_of_exposures, s),
-                image_slices)))
+        slices=tuple(simulate_blooming_on_slice(full_well, blooming_threshold, number_of_exposures, image_slice)
+                     for image_slice in image_slices))
 
 
 def add_baseline(calibrated_converter):
@@ -112,12 +112,10 @@ def add_baseline(calibrated_converter):
     assert len(video_scales) >= len(image_slices), "There should be at least as many video scales as slices"
     # noinspection PyProtectedMember
     return calibrated_converter._replace(
-        slices=tuple(
-            calibrated_slices_to_raw.add_baseline_to_slice(single_frame_baseline_adu,
-                                                           single_frame_baseline_adu_drift_term, number_of_exposures,
-                                                           video_scale, image_slice)
-            for (single_frame_baseline_adu, video_scale, image_slice)
-            in zip(single_frame_baseline_adus, video_scales, image_slices)))
+        slices=tuple(add_baseline_to_slice(single_frame_baseline_adu, single_frame_baseline_adu_drift_term,
+                                           number_of_exposures, video_scale, image_slice)
+                     for (single_frame_baseline_adu, video_scale, image_slice)
+                     in zip(single_frame_baseline_adus, video_scales, image_slices)))
 
 
 def add_readout_noise(calibrated_converter):
@@ -139,10 +137,8 @@ def add_readout_noise(calibrated_converter):
     number_of_exposures = calibrated_converter.parameters.number_of_exposures
     # noinspection PyProtectedMember
     return calibrated_converter._replace(
-        slices=tuple(
-            calibrated_slices_to_raw.add_readout_noise_to_slice(readout_noise_parameter, number_of_exposures,
-                                                                image_slice)
-            for (readout_noise_parameter, image_slice) in zip(readout_noise_parameters, image_slices)))
+        slices=tuple(add_readout_noise_to_slice(readout_noise_parameter, number_of_exposures, image_slice)
+                     for (readout_noise_parameter, image_slice) in zip(readout_noise_parameters, image_slices)))
 
 
 def simulate_undershoot(calibrated_converter):
@@ -163,8 +159,7 @@ def simulate_undershoot(calibrated_converter):
     image_slices = calibrated_converter.slices
     # noinspection PyProtectedMember
     return calibrated_converter._replace(
-        slices=tuple(map(lambda s: calibrated_slices_to_raw.simulate_undershoot_on_slice(undershoot_parameter, s),
-                         image_slices)))
+        slices=tuple(simulate_undershoot_on_slice(undershoot_parameter, image_slice) for image_slice in image_slices))
 
 
 def simulate_start_of_line_ringing(calibrated_converter):
@@ -185,9 +180,8 @@ def simulate_start_of_line_ringing(calibrated_converter):
     image_slices = calibrated_converter.slices
     # noinspection PyProtectedMember
     return calibrated_converter._replace(
-        slices=tuple(
-            calibrated_slices_to_raw.simulate_start_of_line_ringing_to_slice(start_of_line_ringing, image_slice)
-            for (start_of_line_ringing, image_slice) in zip(start_of_line_ringing_patterns, image_slices)))
+        slices=tuple(simulate_start_of_line_ringing_to_slice(start_of_line_ringing, image_slice)
+                     for (start_of_line_ringing, image_slice) in zip(start_of_line_ringing_patterns, image_slices)))
 
 
 def add_pattern_noise(calibrated_converter):
@@ -207,9 +201,8 @@ def add_pattern_noise(calibrated_converter):
     image_slices = calibrated_converter.slices
     # noinspection PyProtectedMember
     return calibrated_converter._replace(
-        slices=tuple(
-            calibrated_slices_to_raw.add_pattern_noise_to_slice(pattern_noise, image_slice)
-            for (pattern_noise, image_slice) in zip(pattern_noises, image_slices)))
+        slices=tuple(add_pattern_noise_to_slice(pattern_noise, image_slice)
+                     for (pattern_noise, image_slice) in zip(pattern_noises, image_slices)))
 
 
 def convert_electrons_to_adu(calibrated_converter):
@@ -234,10 +227,9 @@ def convert_electrons_to_adu(calibrated_converter):
         "There should be at least as many Video scales as there are slices"
     # noinspection PyProtectedMember
     return calibrated_converter._replace(
-        slices=tuple(
-            calibrated_slices_to_raw.convert_slice_electrons_to_adu(gain_loss, number_of_exposures, video_scale,
-                                                                    clip_level_adu, image_slice)
-            for (video_scale, image_slice) in zip(video_scales, image_slices)))
+        slices=tuple(convert_slice_electrons_to_adu(gain_loss, number_of_exposures, video_scale,
+                                                    clip_level_adu, image_slice)
+                     for (video_scale, image_slice) in zip(video_scales, image_slices)))
 
 
 calibrated_transformation_functions = OrderedDict([

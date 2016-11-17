@@ -243,15 +243,15 @@ def calibrated_converter_from_HDUList(header_data_unit_list, origin_file_name=No
     assert header_data_unit_list[0].data.shape[1] % parameters.number_of_slices == 0, \
         "Image did not have the specified number of slices"
     return SingleCCDCalibratedConverter(
-        slices=map(lambda pixel_data, index:
-                   make_slice_from_calibrated_data(pixel_data,
-                                                   parameters.left_dark_pixel_columns,
-                                                   parameters.right_dark_pixel_columns,
-                                                   parameters.top_dark_pixel_rows,
-                                                   parameters.smear_rows,
-                                                   index),
-                   numpy.hsplit(header_data_unit_list[0].data, parameters.number_of_slices),
-                   range(parameters.number_of_slices)),
+        slices=tuple(map(lambda pixel_data, index:
+                         make_slice_from_calibrated_data(pixel_data,
+                                                         parameters.left_dark_pixel_columns,
+                                                         parameters.right_dark_pixel_columns,
+                                                         parameters.top_dark_pixel_rows,
+                                                         parameters.smear_rows,
+                                                         index),
+                         numpy.hsplit(header_data_unit_list[0].data, parameters.number_of_slices),
+                         range(parameters.number_of_slices))),
         fits_metadata=FITSMetaData(origin_file_name=origin_file_name,
                                    header=header_data_unit_list[0].header),
         parameters=parameters,

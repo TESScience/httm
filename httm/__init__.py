@@ -6,7 +6,7 @@ This module contains top level transformations for converting calibrated
 or raw TESS full frame FITS images between one another.
 """
 
-from fits_utilities.raw_fits import raw_converter_from_HDUList, raw_converter_to_HDUList
+from .fits_utilities.raw_fits import raw_converter_from_HDUList, raw_converter_to_HDUList
 
 
 # TODO: Write me
