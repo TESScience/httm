@@ -181,7 +181,7 @@ parameters = OrderedDict([
                          'change in the video baseline caused by the disturbance '
                          'in the data acquisition rhythm between *rows*. '
                          'Units of the array are electrons.',
-        'default': ':httm_package:/data/start_of_line_ringing.npz',
+        'default': ':httm:/data/default_start_of_line_ringing.npz',
         'standard_fits_keyword': 'SOLRING',
         'required_keyword': False,
     }),
@@ -192,7 +192,7 @@ parameters = OrderedDict([
                          'change in the video baseline caused by the disturbance '
                          'in the data acquisition rhythm between *frames*. '
                          'Units of the matrix are electrons.',
-        'default': ':httm_package:/data/pattern_noise.npz',
+        'default': ':httm:/data/default_pattern_noise.npz',
         'standard_fits_keyword': 'PATNOISE',
         'required_keyword': False,
     })

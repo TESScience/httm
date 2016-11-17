@@ -1,9 +1,9 @@
 .PHONY: all clean
-FILES=pattern_noise.npz start_of_line_ringing.npz
+FILES=default_pattern_noise.npz default_start_of_line_ringing.npz
 
 all: $(FILES)
 
-%.npz: ./scripts/make_%
+default_%.npz: ./scripts/make_%
 	$< $@
 
 clean:
