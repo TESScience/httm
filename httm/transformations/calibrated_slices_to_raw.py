@@ -309,13 +309,13 @@ def add_baseline_to_slice(single_frame_baseline_adu, single_frame_baseline_adu_d
     assert image_slice.units == "electrons", "units must be electrons"
     assert number_of_exposures > 0, "number of exposures must be positive"
     assert single_frame_baseline_adu_drift_term >= 0, "readout noise parameter must be non-negative"
-    baseline_electrons = single_frame_baseline_adu * number_of_exposures / video_scale
+    baseline_electrons = single_frame_baseline_adu * number_of_exposures * video_scale
     if single_frame_baseline_adu_drift_term <= 0.0:
         local_baseline_electron_estimate = baseline_electrons  # type: float
     else:
         local_baseline_electron_estimate = \
             numpy.random.normal(loc=baseline_electrons,
-                                scale=single_frame_baseline_adu_drift_term / video_scale)  # type: float
+                                scale=single_frame_baseline_adu_drift_term * video_scale)  # type: float
 
     # noinspection PyProtectedMember
     return image_slice._replace(pixels=image_slice.pixels + local_baseline_electron_estimate)
