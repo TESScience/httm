@@ -13,7 +13,7 @@ from .calibrated_slices_to_raw import introduce_smear_rows_to_slice, add_shot_no
     simulate_blooming_on_slice, \
     add_baseline_to_slice, add_readout_noise_to_slice, simulate_undershoot_on_slice, \
     simulate_start_of_line_ringing_to_slice, add_pattern_noise_to_slice, convert_slice_electrons_to_adu
-from ..resources import load_npz_resource
+from ..resource_utilities import load_npz_resource
 
 
 def introduce_smear_rows(calibrated_converter):
@@ -176,7 +176,8 @@ def simulate_start_of_line_ringing(calibrated_converter):
     :type calibrated_converter: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
     :rtype: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
     """
-    start_of_line_ringing_patterns = load_npz_resource(calibrated_converter.parameters.start_of_line_ringing)
+    start_of_line_ringing_patterns = load_npz_resource(calibrated_converter.parameters.start_of_line_ringing,
+                                                       'start_of_line_ringing')
     image_slices = calibrated_converter.slices
     # noinspection PyProtectedMember
     return calibrated_converter._replace(
@@ -197,7 +198,7 @@ def add_pattern_noise(calibrated_converter):
     :type calibrated_converter: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
     :rtype: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
     """
-    pattern_noises = load_npz_resource(calibrated_converter.parameters.pattern_noise)
+    pattern_noises = load_npz_resource(calibrated_converter.parameters.pattern_noise, 'pattern_noise')
     image_slices = calibrated_converter.slices
     # noinspection PyProtectedMember
     return calibrated_converter._replace(
