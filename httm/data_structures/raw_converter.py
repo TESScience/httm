@@ -64,6 +64,11 @@ raw_transformations = OrderedDict([
     }),
 ])
 
+raw_transformation_defaults = OrderedDict(
+    (key, raw_transformations[key]['default'])
+    for key in raw_transformations.keys()
+)
+
 
 # noinspection PyClassHasNoInit
 class SingleCCDRawTransformations(namedtuple('SingleCCDCalibratedConverterParameters',
@@ -77,6 +82,7 @@ See the :mod:`httm.transformations.calibrated_converters_to_raw` documentation f
 {parameter_documentation}
 """.format(parameter_documentation=document_parameters(raw_transformations))
     __slots__ = ()
+
 
 SingleCCDRawTransformations.__new__.__defaults__ = \
     tuple(transformation["default"] for transformation in raw_transformations.values())

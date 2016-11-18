@@ -46,10 +46,11 @@ def raw_converter_to_HDUList(converter):
                               data=numpy.hstack(left_dark_parts + image_parts + right_dark_parts)))
 
 
-def write_RAW_fits(converter, output_file):
+def write_raw_fits(converter, output_file):
     # type: (SingleCCDRawConverter, str) -> NoneType
     """
-    Write a completed :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter` to a (simulated) raw FITS file
+    Write a completed :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
+    to a (simulated) raw FITS file
 
     :param converter:
     :type converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
@@ -57,7 +58,7 @@ def write_RAW_fits(converter, output_file):
     :type output_file: :py:class:`file` or :py:class:`str`
     :rtype: NoneType
     """
-    raw_converter_to_HDUList(converter).writeto(output_file)
+    raw_converter_to_HDUList(converter).writeto(output_file, clobber=True)
 
 
 def raw_converter_flags_from_fits(input_file,

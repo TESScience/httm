@@ -222,7 +222,7 @@ def write_calibrated_fits(converter, output_file):
     :type output_file: str
     :rtype: NoneType
     """
-    calibrated_converter_to_HDUList(converter).writeto(output_file)
+    calibrated_converter_to_HDUList(converter).writeto(output_file, clobber=True)
 
 
 # noinspection PyUnresolvedReferences

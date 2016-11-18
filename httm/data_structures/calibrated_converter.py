@@ -64,6 +64,11 @@ calibrated_transformations = OrderedDict([
     }),
 ])
 
+calibrated_transformation_defaults = OrderedDict(
+    (key, calibrated_transformations[key]['default'])
+    for key in calibrated_transformations.keys()
+)
+
 
 # noinspection PyClassHasNoInit
 class SingleCCDCalibratedTransformations(namedtuple('SingleCCDCalibratedConverterParameters',
