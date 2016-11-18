@@ -40,9 +40,8 @@ def raw_converter_to_HDUList(converter):
         image_parts[i] = numpy.fliplr(image_parts[i])
 
     # TODO: Write parameters and flags to HDU header
-
-    # `+` concatenates regular python lists
     return HDUList(PrimaryHDU(header=converter.fits_metadata.header,
+                              # `+` concatenates python lists
                               data=numpy.hstack(left_dark_parts + image_parts + right_dark_parts)))
 
 
