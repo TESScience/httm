@@ -33,60 +33,6 @@ raw_transformation_flags = OrderedDict((k, dict(default=True, **transformation_f
                                                  'baseline_present',
                                                  'in_adu'])
 
-raw_transformations = OrderedDict([
-    ('convert_adu_to_electrons', {
-        'type': 'bool',
-        'default': True,
-        'documentation': 'Convert the image from having units in '
-                         '*Analogue to Digital Converter Units* (ADU) '
-                         'to electron counts.',
-    }),
-    ('remove_pattern_noise', {
-        'type': 'bool',
-        'default': True,
-        'documentation': 'Compensate for a fixed *pattern noise* on each slice of the image.',
-    }),
-    ('remove_start_of_line_ringing', {
-        'type': 'bool',
-        'default': True,
-        'documentation': 'Compensate for *start of line ringing* on each row of each slice of the image.',
-    }),
-    ('remove_undershoot', {
-        'type': 'bool',
-        'default': True,
-        'documentation': 'Compensate for *undershoot* for each row of each slice of the image.',
-    }),
-    ('remove_smear', {
-        'type': 'bool',
-        'default': True,
-        'documentation': 'Compensate for *smear* in the image by reading it from the *smear rows* each slice '
-                         'and removing it from the rest of the slice.',
-    }),
-])
-
-raw_transformation_defaults = OrderedDict(
-    (key, raw_transformations[key]['default'])
-    for key in raw_transformations.keys()
-)
-
-
-# noinspection PyClassHasNoInit
-class SingleCCDRawTransformations(namedtuple('SingleCCDCalibratedConverterParameters',
-                                             raw_transformations.keys())):
-    __doc__ = """
-Designate which transformations to run when processing a
-:py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`.
-
-See the :mod:`httm.transformations.calibrated_converters_to_raw` documentation for details.
-
-{parameter_documentation}
-""".format(parameter_documentation=document_parameters(raw_transformations))
-    __slots__ = ()
-
-
-SingleCCDRawTransformations.__new__.__defaults__ = \
-    tuple(transformation["default"] for transformation in raw_transformations.values())
-
 
 # noinspection PyUnresolvedReferences
 class SingleCCDRawConverterParameters(

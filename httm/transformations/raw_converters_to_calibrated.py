@@ -52,7 +52,7 @@ def remove_pattern_noise(raw_converter):
     :type raw_converter: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
     :rtype: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
     """
-    pattern_noises = load_npz_resource(raw_converter.parameters.pattern_noise)
+    pattern_noises = load_npz_resource(raw_converter.parameters.pattern_noise, 'pattern_noise')
     image_slices = raw_converter.slices
     assert len(pattern_noises) >= len(image_slices), "There should be at least as many noise patterns as slices"
     # noinspection PyProtectedMember
@@ -125,10 +125,44 @@ def remove_smear(raw_converter):
                      for image_slice in image_slices))
 
 
-raw_transformation_functions = OrderedDict([
-    ('convert_adu_to_electrons', convert_adu_to_electrons),
-    ('remove_pattern_noise', remove_pattern_noise),
-    ('remove_start_of_line_ringing', remove_start_of_line_ringing),
-    ('remove_undershoot', remove_undershoot),
-    ('remove_smear', remove_smear),
+raw_transformations = OrderedDict([
+    ('convert_adu_to_electrons', {
+        'default': True,
+        'documentation': 'Convert the image from having units in '
+                         '*Analogue to Digital Converter Units* (ADU) '
+                         'to electron counts.',
+        'function': convert_adu_to_electrons,
+    }),
+    ('remove_pattern_noise', {
+        'default': True,
+        'documentation': 'Compensate for a fixed *pattern noise* on each slice of the image.',
+        'function': remove_pattern_noise,
+    }),
+    ('remove_start_of_line_ringing', {
+        'default': True,
+        'documentation': 'Compensate for *start of line ringing* on each row of each slice of the image.',
+        'function': remove_start_of_line_ringing,
+    }),
+    ('remove_undershoot', {
+        'default': True,
+        'documentation': 'Compensate for *undershoot* for each row of each slice of the image.',
+        'function': remove_undershoot,
+    }),
+    ('remove_smear', {
+        'default': True,
+        'documentation': 'Compensate for *smear* in the image by reading it from the '
+                         '*smear rows* each slice and removing it from the rest of the slice.',
+        'function': remove_smear,
+    }),
 ])
+
+raw_transformation_defaults = OrderedDict(
+    (key, raw_transformations[key]['default'])
+    for key in raw_transformations.keys()
+)
+
+raw_transformation_functions = OrderedDict(
+    (key, raw_transformations[key]['function'])
+    for key in raw_transformations.keys()
+)
+

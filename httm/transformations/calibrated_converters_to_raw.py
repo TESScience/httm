@@ -233,14 +233,61 @@ def convert_electrons_to_adu(calibrated_converter):
                      for (video_scale, image_slice) in zip(video_scales, image_slices)))
 
 
-calibrated_transformation_functions = OrderedDict([
-    ('introduce_smear_rows', introduce_smear_rows),
-    ('add_shot_noise', add_shot_noise),
-    ('simulate_blooming', simulate_blooming),
-    ('add_readout_noise', add_readout_noise),
-    ('simulate_undershoot', simulate_undershoot),
-    ('simulate_start_of_line_ringing', simulate_start_of_line_ringing),
-    ('add_pattern_noise', add_pattern_noise),
-    ('add_baseline', add_baseline),
-    ('convert_electrons_to_adu', convert_electrons_to_adu),
+calibrated_transformations = OrderedDict([
+    ('introduce_smear_rows', {
+        'default': True,
+        'documentation': 'Introduce *smear rows* to each slice of the image.',
+        'function': introduce_smear_rows,
+    }),
+    ('add_shot_noise', {
+        'default': True,
+        'documentation': 'Add *shot noise* to each pixel in each slice of the image.',
+        'function': add_shot_noise,
+    }),
+    ('simulate_blooming', {
+        'default': True,
+        'documentation': 'Simulate *blooming* on for each column for each slice of the image.',
+        'function': simulate_blooming,
+    }),
+    ('add_readout_noise', {
+        'default': True,
+        'documentation': 'Add *readout noise* to each pixel in each slice of the image.',
+        'function': add_readout_noise,
+    }),
+    ('simulate_undershoot', {
+        'default': True,
+        'documentation': 'Simulate *undershoot* on each row of each slice in the image.',
+        'function': simulate_undershoot,
+    }),
+    ('simulate_start_of_line_ringing', {
+        'default': True,
+        'documentation': 'Simulate *start of line ringing* on each row of each slice in the image.',
+        'function': simulate_start_of_line_ringing,
+    }),
+    ('add_pattern_noise', {
+        'default': True,
+        'documentation': 'Add a fixed *pattern noise* to each slice in the image.',
+        'function': add_pattern_noise,
+    }),
+    ('add_baseline', {
+        'default': True,
+        'documentation': 'Add a *baseline electron count* to each slice in the image.',
+        'function': add_baseline,
+    }),
+    ('convert_electrons_to_adu', {
+        'default': True,
+        'documentation': 'Convert the image from having pixel units in electron counts to '
+                         '*Analogue to Digital Converter Units* (ADU).',
+        'function': convert_electrons_to_adu,
+    }),
 ])
+
+calibrated_transformation_functions = OrderedDict(
+    (key, calibrated_transformations[key]['function'])
+    for key in calibrated_transformations.keys()
+)
+
+calibrated_transformation_defaults = OrderedDict(
+    (key, calibrated_transformations[key]['default'])
+    for key in calibrated_transformations.keys()
+)
