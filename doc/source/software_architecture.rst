@@ -4,13 +4,13 @@ Software Architecture
 This section describes the over-all software architecture.
 
 
-Converting a Calibrated FITS Image to a Raw FITS Image
-------------------------------------------------------
+Converting an Electron Flux FITS Image to a Raw FITS Image
+----------------------------------------------------------
 
-The transformation from calibrated FITS to raw is implemented in the :py:func:`~httm.calibrated_fits_to_raw` function,
-see that function's documentation for details.
+The transformation from an electron flux FITS to a simulated raw image is implemented
+in the :py:func:`~httm.electron_flux_fits_to_raw` function, see that function's documentation for details.
 
-.. image:: figures/calibrated_fits_to_raw.png
+.. image:: figures/electron_flux_fits_to_raw.png
 
 
 Converting a Raw FITS Image to a Calibrated FITS Image

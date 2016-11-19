@@ -2,11 +2,11 @@
 =======================
 
 Interface functions for marshalling and de-marshalling FITS files or :py:class:`astropy.io.fits.HDUList` to
-converter objects (either :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter` or
-:py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`)
+converter objects (either :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter` or
+:py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`)
 
 .. toctree::
    :maxdepth: 2
 
-   fits_utilities/calibrated_fits
+   fits_utilities/raw_flux_fits
    fits_utilities/raw_fits

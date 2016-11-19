@@ -4,7 +4,7 @@
 
 This module contains functions for marshalling and de-marshalling
 :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter` and the other book-keeping objects
-it contains from a FITS file or :py:class:`astropy.io.fits.HDUList`.
+it contains to and from FITS files or :py:class:`astropy.io.fits.HDUList`s.
 """
 import astropy
 import numpy
@@ -16,7 +16,7 @@ from ..data_structures.raw_converter import SingleCCDRawConverterFlags, SingleCC
 
 
 # noinspection PyUnresolvedReferences
-def raw_converter_to_HDUList(converter):
+def raw_converter_to_calibrated_HDUList(converter):
     # type: (SingleCCDRawConverter) -> HDUList
     """
     TODO: Document me
@@ -25,13 +25,13 @@ def raw_converter_to_HDUList(converter):
     :return:
     """
     # noinspection PyTypeChecker
-    left_dark_pixel_columns = converter.parameters.left_dark_pixel_columns  # type: int
-    right_dark_pixel_columns = converter.parameters.right_dark_pixel_columns  # type: int
-    left_dark_parts = [raw_slice.pixels[:, :left_dark_pixel_columns]
+    early_dark_pixel_columns = converter.parameters.early_dark_pixel_columns  # type: int
+    late_dark_pixel_columns = converter.parameters.late_dark_pixel_columns  # type: int
+    left_dark_parts = [raw_slice.pixels[:, :early_dark_pixel_columns]
                        for raw_slice in converter.slices]  # type: list
-    right_dark_parts = [raw_slice.pixels[:, -right_dark_pixel_columns:]
+    right_dark_parts = [raw_slice.pixels[:, -late_dark_pixel_columns:]
                         for raw_slice in converter.slices]  # type: list
-    image_parts = [raw_slice.pixels[:, left_dark_pixel_columns:-right_dark_pixel_columns]
+    image_parts = [raw_slice.pixels[:, early_dark_pixel_columns:-late_dark_pixel_columns]
                    for raw_slice in converter.slices]  # type: list
 
     for i in range(1, len(converter.slices), 2):
@@ -40,16 +40,16 @@ def raw_converter_to_HDUList(converter):
         image_parts[i] = numpy.fliplr(image_parts[i])
 
     # TODO: Write parameters and flags to HDU header
-
-    # `+` concatenates regular python lists
     return HDUList(PrimaryHDU(header=converter.fits_metadata.header,
+                              # `+` concatenates python lists
                               data=numpy.hstack(left_dark_parts + image_parts + right_dark_parts)))
 
 
-def write_RAW_fits(converter, output_file):
+def write_raw_converter_to_calibrated_fits(converter, output_file):
     # type: (SingleCCDRawConverter, str) -> NoneType
     """
-    Write a completed :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter` to a (simulated) raw FITS file
+    Write a completed :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
+    to a calibrated FITS file
 
     :param converter:
     :type converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
@@ -57,7 +57,7 @@ def write_RAW_fits(converter, output_file):
     :type output_file: :py:class:`file` or :py:class:`str`
     :rtype: NoneType
     """
-    raw_converter_to_HDUList(converter).writeto(output_file)
+    raw_converter_to_calibrated_HDUList(converter).writeto(output_file, clobber=True)
 
 
 def raw_converter_flags_from_fits(input_file,
@@ -65,6 +65,7 @@ def raw_converter_flags_from_fits(input_file,
                                   undershoot_present=None,
                                   pattern_noise_present=None,
                                   start_of_line_ringing_present=None,
+                                  baseline_present=None,
                                   in_adu=None
                                   ):
     """
@@ -81,6 +82,8 @@ def raw_converter_flags_from_fits(input_file,
     :type pattern_noise_present: bool
     :param start_of_line_ringing_present:
     :type start_of_line_ringing_present: bool
+    :param baseline_present:
+    :type baseline_present: bool
     :param in_adu:
     :type in_adu: bool
     :param input_file: The file or file name to input
@@ -96,6 +99,7 @@ def raw_converter_flags_from_fits(input_file,
         undershoot_present=get_parameter('undershoot_present', undershoot_present),
         pattern_noise_present=get_parameter('pattern_noise_present', pattern_noise_present),
         start_of_line_ringing_present=get_parameter('start_of_line_ringing_present', start_of_line_ringing_present),
+        baseline_present=get_parameter('baseline_present', baseline_present),
         in_adu=get_parameter('in_adu', in_adu),
     )
 
@@ -106,9 +110,9 @@ def raw_converter_parameters_from_fits(input_file,
                                        ccd_number=None,
                                        number_of_exposures=None,
                                        video_scales=None,
-                                       left_dark_pixel_columns=None,
-                                       right_dark_pixel_columns=None,
-                                       top_dark_pixel_rows=None,
+                                       early_dark_pixel_columns=None,
+                                       late_dark_pixel_columns=None,
+                                       final_dark_pixel_rows=None,
                                        smear_rows=None,
                                        gain_loss=None,
                                        undershoot_parameter=None,
@@ -123,9 +127,9 @@ def raw_converter_parameters_from_fits(input_file,
     :param ccd_number:
     :param number_of_exposures:
     :param video_scales:
-    :param left_dark_pixel_columns:
-    :param right_dark_pixel_columns:
-    :param top_dark_pixel_rows:
+    :param early_dark_pixel_columns:
+    :param late_dark_pixel_columns:
+    :param final_dark_pixel_rows:
     :param smear_rows:
     :param gain_loss:
     :param undershoot_parameter:
@@ -142,9 +146,9 @@ def raw_converter_parameters_from_fits(input_file,
         ccd_number=get_parameter('ccd_number', ccd_number),
         number_of_exposures=get_parameter('number_of_exposures', number_of_exposures),
         video_scales=get_parameter('video_scales', video_scales),
-        left_dark_pixel_columns=get_parameter('left_dark_pixel_columns', left_dark_pixel_columns),
-        right_dark_pixel_columns=get_parameter('right_dark_pixel_columns', right_dark_pixel_columns),
-        top_dark_pixel_rows=get_parameter('top_dark_pixel_rows', top_dark_pixel_rows),
+        early_dark_pixel_columns=get_parameter('early_dark_pixel_columns', early_dark_pixel_columns),
+        late_dark_pixel_columns=get_parameter('late_dark_pixel_columns', late_dark_pixel_columns),
+        final_dark_pixel_rows=get_parameter('final_dark_pixel_rows', final_dark_pixel_rows),
         smear_rows=get_parameter('smear_rows', smear_rows),
         gain_loss=get_parameter('gain_loss', gain_loss),
         undershoot_parameter=get_parameter('undershoot_parameter', undershoot_parameter),
@@ -155,28 +159,28 @@ def raw_converter_parameters_from_fits(input_file,
 def make_slice_from_raw_data(
         image_and_smear_pixels,
         index,
-        left_dark_pixel_columns,
-        right_dark_pixel_columns):
+        early_dark_pixel_columns,
+        late_dark_pixel_columns):
     # type: (numpy.ndarray, int, numpy.ndarray, numpy.ndarray) -> Slice
     """
     Construct a slice from raw pixel data given a specified index.
 
     Result is in *Analogue to Digital Converter Units* (ADU).
 
-    :param image_and_smear_pixels: Image pixels from the calibrated data.
+    :param image_and_smear_pixels: Image pixels from the raw FITS data.
     :type image_and_smear_pixels: :py:class:`numpy.ndarray`
     :param index: The index of the slice to construct.
     :type index: int
-    :param left_dark_pixel_columns: The leftmost columns are dark pixels, to be placed on the \
+    :param early_dark_pixel_columns: The leftmost columns are dark pixels, to be placed on the \
     left of the slice.
-    :type left_dark_pixel_columns: :py:class:`numpy.ndarray`
-    :param right_dark_pixel_columns: The rightmost columns are dark pixels, to be placed on the \
+    :type early_dark_pixel_columns: :py:class:`numpy.ndarray`
+    :param late_dark_pixel_columns: The rightmost columns are dark pixels, to be placed on the \
     right of the slice.
-    :type right_dark_pixel_columns: :py:class:`numpy.ndarray`
+    :type late_dark_pixel_columns: :py:class:`numpy.ndarray`
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
     return Slice(
-        pixels=numpy.hstack([left_dark_pixel_columns, image_and_smear_pixels, right_dark_pixel_columns]),
+        pixels=numpy.hstack([early_dark_pixel_columns, image_and_smear_pixels, late_dark_pixel_columns]),
         index=index,
         units='ADU')
 
@@ -204,10 +208,10 @@ def raw_converter_from_HDUList(header_data_unit_list,
     assert header_data_unit_list[0].data.shape[1] % parameters.number_of_slices == 0, \
         "Image did not have the specified number of slices"
 
-    left_dark_pixel_count = parameters.number_of_slices * parameters.left_dark_pixel_columns
-    right_dark_pixel_count = parameters.number_of_slices * parameters.right_dark_pixel_columns
+    early_dark_pixel_count = parameters.number_of_slices * parameters.early_dark_pixel_columns
+    late_dark_pixel_count = parameters.number_of_slices * parameters.late_dark_pixel_columns
     sliced_image_smear_and_dark_pixels = hsplit(
-        header_data_unit_list[0].data[:, left_dark_pixel_count:-right_dark_pixel_count], parameters.number_of_slices)
+        header_data_unit_list[0].data[:, early_dark_pixel_count:-late_dark_pixel_count], parameters.number_of_slices)
 
     # TODO: Document this in layout.rst
     # Rows in odd numbered slices have to be reversed
@@ -215,17 +219,17 @@ def raw_converter_from_HDUList(header_data_unit_list,
         sliced_image_smear_and_dark_pixels[i] = fliplr(sliced_image_smear_and_dark_pixels[i])
 
     # Note that left and right dark pixels do not need to be reversed
-    sliced_left_dark_pixels = hsplit(header_data_unit_list[0].data[:, :left_dark_pixel_count],
+    sliced_early_dark_pixels = hsplit(header_data_unit_list[0].data[:, :early_dark_pixel_count],
                                      parameters.number_of_slices)
-    sliced_right_dark_pixels = hsplit(header_data_unit_list[0].data[:, -right_dark_pixel_count:],
+    sliced_late_dark_pixels = hsplit(header_data_unit_list[0].data[:, -late_dark_pixel_count:],
                                       parameters.number_of_slices)
 
     return SingleCCDRawConverter(
-        slices=map(make_slice_from_raw_data,
-                   sliced_image_smear_and_dark_pixels,
-                   range(parameters.number_of_slices),
-                   sliced_left_dark_pixels,
-                   sliced_right_dark_pixels),
+        slices=tuple(map(make_slice_from_raw_data,
+                         sliced_image_smear_and_dark_pixels,
+                         range(parameters.number_of_slices),
+                         sliced_early_dark_pixels,
+                         sliced_late_dark_pixels)),
         fits_metadata=FITSMetaData(origin_file_name=origin_file_name,
                                    header=header_data_unit_list[0].header),
         parameters=parameters,

@@ -63,7 +63,7 @@ parameters = OrderedDict([
         'forbidden_fits_keywords': ['READNOIS'],
         'required_keyword': False,
     }),
-    ('left_dark_pixel_columns', {
+    ('early_dark_pixel_columns', {
         'type': 'int',
         'documentation': 'Count of columns of pixels that have never traversed the image area '
                          'or frame store, and thus were never exposed to light. '
@@ -73,7 +73,7 @@ parameters = OrderedDict([
         'standard_fits_keyword': 'LDRKCLS',
         'required_keyword': False,
     }),
-    ('right_dark_pixel_columns', {
+    ('late_dark_pixel_columns', {
         'type': 'int',
         'documentation': 'Count of columns of pixels that have never traversed the image area '
                          'or frame store, and thus were never exposed to light. '
@@ -82,7 +82,7 @@ parameters = OrderedDict([
         'standard_fits_keyword': 'RDRKCLS',
         'required_keyword': False,
     }),
-    ('top_dark_pixel_rows', {
+    ('final_dark_pixel_rows', {
         'type': 'int',
         'documentation': 'Count of rows of pixels that have traversed the frame store area, '
                          'but not the image area, and thus were never exposed to light. ',
@@ -132,7 +132,7 @@ parameters = OrderedDict([
     ('undershoot_parameter', {
         'type': 'float',
         'documentation': 'The deficit in a pixel value relative to the value of its '
-                         'preceeding pixel. The electronics have a slight memory of the '
+                         'preceding pixel. The electronics have a slight memory of the '
                          'signal level which cause the pixel following a bright pixel '
                          'to appear slightly darker that it should.',
         'default': 0.0013,
@@ -168,8 +168,8 @@ parameters = OrderedDict([
     ('clip_level_adu', {
         'type': 'int',
         'documentation': 'The level in ADU where the CCD or the electronics will '
-                         'clip the video. The default is the maximum the ADC can '
-                         'deliver.',
+                         'clip the video. The default is the maximum the *Analogue to Digital Converter* (ADC) '
+                         'can deliver.',
         'default': FPE_MAX_ADU,
         'standard_fits_keyword': 'CLIP_ADU',
         'required_keyword': False,
@@ -177,22 +177,22 @@ parameters = OrderedDict([
     ('start_of_line_ringing', {
         'type': ':py:class:`str` or :py:class:`file`',
         'documentation': 'A vector to be read from an ``npz`` file, to be added to '
-                         'each row in the slice, representing the repeatable '
+                         'each row in of a slice, representing the repeatable '
                          'change in the video baseline caused by the disturbance '
-                         'in the data acquisition rhythm between rows. '
+                         'in the data acquisition rhythm between *rows*. '
                          'Units of the array are electrons.',
-        'default': ':httm_package:/data/start_of_line_ringing.npz',
+        'default': ':httm:/data/default_start_of_line_ringing.npz',
         'standard_fits_keyword': 'SOLRING',
         'required_keyword': False,
     }),
     ('pattern_noise', {
         'type': ':py:class:`str` or :py:class:`file`',
-        'documentation': 'A matrix to be read from an ``npz`` file, to be added to data '
-                         'array for the slice, representing the repeatable '
+        'documentation': 'A matrix to be read from an ``npz`` file, to be added to the pixel data '
+                         'array for each slice, representing the repeatable '
                          'change in the video baseline caused by the disturbance '
-                         'in the data acquisition rhythm between frames. '
+                         'in the data acquisition rhythm between *frames*. '
                          'Units of the matrix are electrons.',
-        'default': ':httm_package:/data/pattern_noise.npz',
+        'default': ':httm:/data/default_pattern_noise.npz',
         'standard_fits_keyword': 'PATNOISE',
         'required_keyword': False,
     })
@@ -205,15 +205,9 @@ transformation_flags = OrderedDict([
         'standard_fits_keyword': 'SMRPRES',
         'required_keyword': False,
     }),
-    ('readout_noise_present', {
-        'type': 'bool',
-        'documentation': 'Indicates whether *readout noise* has been added.',
-        'standard_fits_keyword': 'RDNOISEP',
-        'required_keyword': False,
-    }),
     ('shot_noise_present', {
         'type': 'bool',
-        'documentation': 'Indicates whether *shot noise* has been added.',
+        'documentation': 'Indicates whether *shot noise* is present.',
         'standard_fits_keyword': 'SHNOISEP',
         'required_keyword': False,
     }),
@@ -223,10 +217,22 @@ transformation_flags = OrderedDict([
         'standard_fits_keyword': 'BLOOMP',
         'required_keyword': False,
     }),
+    ('readout_noise_present', {
+        'type': 'bool',
+        'documentation': 'Indicates whether *readout noise* is present.',
+        'standard_fits_keyword': 'RDNOISEP',
+        'required_keyword': False,
+    }),
     ('undershoot_present', {
         'type': 'bool',
         'documentation': 'Indicates whether *undershoot* is present or otherwise compensated for.',
         'standard_fits_keyword': 'UNDRSP',
+        'required_keyword': False,
+    }),
+    ('start_of_line_ringing_present', {
+        'type': 'bool',
+        'documentation': 'Indicates whether *start of line ringing* is present or otherwise compensated for.',
+        'standard_fits_keyword': 'SOLRP',
         'required_keyword': False,
     }),
     ('pattern_noise_present', {
@@ -235,10 +241,10 @@ transformation_flags = OrderedDict([
         'standard_fits_keyword': 'PTNOISEP',
         'required_keyword': False,
     }),
-    ('start_of_line_ringing_present', {
+    ('baseline_present', {
         'type': 'bool',
-        'documentation': 'Indicates whether *start of line ringing* is present or otherwise compensated for.',
-        'standard_fits_keyword': 'SOLRP',
+        'documentation': 'Indicates whether a *baseline electron count* is present or otherwise compensated for.',
+        'standard_fits_keyword': 'BASELN',
         'required_keyword': False,
     }),
     ('in_adu', {

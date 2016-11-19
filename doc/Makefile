@@ -56,7 +56,7 @@ generated-sources: $(GENERATED_SOURCES)
 	(cd $(dir $@); jupyter nbconvert --to rst $(notdir $<))
 
 clean:
-	rm -rf $(BUILDDIR)/* $(GENERATED_SOURCES)
+	rm -rf $(BUILDDIR)/* $(GENERATED_SOURCES) source/notebooks/*_files/
 
 html: $(GENERATED_SOURCES)
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html

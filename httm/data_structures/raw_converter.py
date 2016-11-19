@@ -7,8 +7,8 @@ This module contains data structures for dealing with converting raw images to c
 
 from collections import namedtuple, OrderedDict
 
-from documentation import document_parameters
-from metadata import transformation_flags, parameters
+from .documentation import document_parameters
+from .metadata import transformation_flags, parameters
 
 raw_converter_parameters = OrderedDict((k, parameters[k])
                                        for k in ['number_of_slices',
@@ -16,19 +16,21 @@ raw_converter_parameters = OrderedDict((k, parameters[k])
                                                  'ccd_number',
                                                  'number_of_exposures',
                                                  'video_scales',
-                                                 'left_dark_pixel_columns',
-                                                 'right_dark_pixel_columns',
-                                                 'top_dark_pixel_rows',
+                                                 'early_dark_pixel_columns',
+                                                 'late_dark_pixel_columns',
+                                                 'final_dark_pixel_rows',
                                                  'smear_rows',
                                                  'gain_loss',
                                                  'undershoot_parameter',
                                                  'pattern_noise'])
 
+# TODO: Set blooming, shot noise, etc to True even though we can't scrub them
 raw_transformation_flags = OrderedDict((k, dict(default=True, **transformation_flags[k]))
                                        for k in ['smear_rows_present',
                                                  'undershoot_present',
                                                  'pattern_noise_present',
                                                  'start_of_line_ringing_present',
+                                                 'baseline_present',
                                                  'in_adu'])
 
 

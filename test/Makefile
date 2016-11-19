@@ -10,15 +10,17 @@ STD_OUT=/dev/stdout
 ERROR_OUT=/dev/stderr
 endif
 
+PYTHON_VERSION=3.5
 VIRTUAL_ENV=$(CURDIR)/venv
-PYTHON=$(VIRTUAL_ENV)/bin/python2.7
-PIP=$(VIRTUAL_ENV)/bin/pip2.7
+PYTHON=$(VIRTUAL_ENV)/bin/python$(PYTHON_VERSION)
+PIP=$(VIRTUAL_ENV)/bin/pip$(PYTHON_VERSION)
 RUNIPY=$(VIRTUAL_ENV)/bin/runipy
-SITE_PACKAGES=$(VIRTUAL_ENV)/lib/python2.7/site-packages
+SITE_PACKAGES=$(VIRTUAL_ENV)/lib/python$(PYTHON_VERSION)/site-packages
 VERSION=$(shell python -c "$(shell grep '^VERSION' $(CURDIR)/../setup.py) ; print VERSION")
-INSTALL=$(SITE_PACKAGES)/SPyFFI-$(VERSION)-py2.7.egg
+INSTALL=$(SITE_PACKAGES)/SPyFFI-$(VERSION)-py$(PYTHON_VERSION).egg
 TESTS=httm-check-type-references pyfits-check-type-references numpy-check-type-references \
-      astropy-check-type-references tutorial-test smoke-test command_line_utilities-test
+      astropy-check-type-references tutorial-test smoke-test command_line_utilities-test \
+      demo-test
 
 all: install
 
@@ -28,14 +30,18 @@ install: $(VIRTUAL_ENV)
 	@$(PIP) install $(QUIET) -r requirements.txt --quiet
 	@make -C .. clean > $(STD_OUT)
 	@(cd .. ; $(PYTHON) setup.py install > $(STD_OUT) 2> $(ERROR_OUT))
+	@make -C fits_data/ all > $(STD_OUT)
 	@echo done.
+
+$(INSTALL):
+	@make install
 
 documentation:
 	make -C ../doc {latexpdf,html}
 
 # This is a generic test to make sure that references to python objects in a particular module exist
 %-check-type-references: $(VIRTUAL_ENV)
-	@make -C ../doc generated-sources > /dev/null
+	@make -C ../doc generated-sources > $(STD_OUT)
 	@echo -n Checking files for broken docstring references for $(patsubst  %-check-type-references,%,$@)...
 	@find ../{httm,doc} -name "*.py" \
 	| xargs grep -E "\`[\~]?$(patsubst  %-check-type-references,%,$@)" \
@@ -51,7 +57,7 @@ documentation:
 	| xargs $(PYTHON) scripts/python_object_exists.py
 	@echo OK
 
-test: 
+test: $(INSTALL)
 	@make $(TESTS)
 
 %-test: notebooks/%.ipynb $(RUNIPY)
@@ -63,9 +69,10 @@ $(RUNIPY):
 	make install
 
 $(VIRTUAL_ENV):
-	virtualenv --python=python2.7 $@
+	virtualenv --python=python$(PYTHON_VERSION) $@
 	@[ -d $@ ]
 	@touch $@
 
 clean:
+	@make -C fits_data/ clean
 	rm -rf $(VIRTUAL_ENV)
