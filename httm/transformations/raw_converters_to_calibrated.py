@@ -26,8 +26,8 @@ def convert_adu_to_electrons(raw_converter):
 
     :param raw_converter: Should have *Analogue to Digital Converter Units* (ADU) \
     for units for each of its slices
-    :type raw_converter: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
-    :rtype: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
+    :type raw_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
     image_slices = raw_converter.slices
     video_scales = raw_converter.parameters.video_scales
@@ -49,8 +49,8 @@ def remove_pattern_noise(raw_converter):
     over each slice.
 
     :param raw_converter: Should have electrons for units for each of its slices
-    :type raw_converter: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
-    :rtype: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
+    :type raw_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
     pattern_noises = load_npz_resource(raw_converter.parameters.pattern_noise, 'pattern_noise')
     image_slices = raw_converter.slices
@@ -70,14 +70,14 @@ def remove_start_of_line_ringing(raw_converter):
     over each slice.
 
     :param raw_converter: Should have electrons for units for each of its slices
-    :type raw_converter: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
-    :rtype: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
+    :type raw_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
-    top_dark_pixel_rows = raw_converter.parameters.top_dark_pixel_rows
+    final_dark_pixel_rows = raw_converter.parameters.final_dark_pixel_rows
     image_slices = raw_converter.slices
     # noinspection PyProtectedMember
     return raw_converter._replace(
-        slices=tuple(remove_pattern_noise_from_slice(top_dark_pixel_rows, image_slice)
+        slices=tuple(remove_pattern_noise_from_slice(final_dark_pixel_rows, image_slice)
                      for image_slice in image_slices))
 
 
@@ -90,8 +90,8 @@ def remove_undershoot(raw_converter):
     over each slice.
 
     :param raw_converter: Should have electrons for units for each of its slices
-    :type raw_converter: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
-    :rtype: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
+    :type raw_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
     undershoot_parameter = raw_converter.parameters.undershoot_parameter
     image_slices = raw_converter.slices
@@ -110,18 +110,18 @@ def remove_smear(raw_converter):
     over each slice.
 
     :param raw_converter: Should have electrons for units for each of its slices
-    :type raw_converter: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
-    :rtype: :py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter`
+    :type raw_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
-    top_dark_pixel_rows = raw_converter.parameters.top_dark_pixel_rows
+    final_dark_pixel_rows = raw_converter.parameters.final_dark_pixel_rows
     smear_rows = raw_converter.parameters.smear_rows
-    right_dark_pixel_columns = raw_converter.parameters.right_dark_pixel_columns
-    left_dark_pixel_columns = raw_converter.parameters.left_dark_pixel_columns
+    late_dark_pixel_columns = raw_converter.parameters.late_dark_pixel_columns
+    early_dark_pixel_columns = raw_converter.parameters.early_dark_pixel_columns
     image_slices = raw_converter.slices
     # noinspection PyProtectedMember
     return raw_converter._replace(
-        slices=tuple(remove_smear_from_slice(left_dark_pixel_columns, right_dark_pixel_columns,
-                                             top_dark_pixel_rows, smear_rows, image_slice)
+        slices=tuple(remove_smear_from_slice(early_dark_pixel_columns, late_dark_pixel_columns,
+                                             final_dark_pixel_rows, smear_rows, image_slice)
                      for image_slice in image_slices))
 
 

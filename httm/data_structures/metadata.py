@@ -63,7 +63,7 @@ parameters = OrderedDict([
         'forbidden_fits_keywords': ['READNOIS'],
         'required_keyword': False,
     }),
-    ('left_dark_pixel_columns', {
+    ('early_dark_pixel_columns', {
         'type': 'int',
         'documentation': 'Count of columns of pixels that have never traversed the image area '
                          'or frame store, and thus were never exposed to light. '
@@ -73,7 +73,7 @@ parameters = OrderedDict([
         'standard_fits_keyword': 'LDRKCLS',
         'required_keyword': False,
     }),
-    ('right_dark_pixel_columns', {
+    ('late_dark_pixel_columns', {
         'type': 'int',
         'documentation': 'Count of columns of pixels that have never traversed the image area '
                          'or frame store, and thus were never exposed to light. '
@@ -82,7 +82,7 @@ parameters = OrderedDict([
         'standard_fits_keyword': 'RDRKCLS',
         'required_keyword': False,
     }),
-    ('top_dark_pixel_rows', {
+    ('final_dark_pixel_rows', {
         'type': 'int',
         'documentation': 'Count of rows of pixels that have traversed the frame store area, '
                          'but not the image area, and thus were never exposed to light. ',

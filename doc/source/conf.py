@@ -285,7 +285,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'httm', u'HTTM Documentation',
-     author, 'httm', 'The HTTM documentation for manipulating raw and calibrated TESS image files.',
+     author, 'httm', 'The HTTM documentation for manipulating raw and electron flux TESS image files.',
      'Miscellaneous'),
 ]
 

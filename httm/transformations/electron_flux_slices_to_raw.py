@@ -1,9 +1,9 @@
 """
-``httm.transformations.calibrated_slices_to_raw``
+``httm.transformations.electron_flux_slices_to_raw``
 =================================================
 
 Transformation functions for processing slices contained in a
-:py:class:`~httm.data_structures.calibrated_converter.SingleCCDCalibratedConverter` so that they are suitable
+:py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter` so that they are suitable
 for writing to a simulated raw FITS file.
 
 """
@@ -20,8 +20,8 @@ from ..data_structures.common import Slice
 def simulate_start_of_line_ringing_to_slice(start_of_line_ringing, image_slice):
     # type: (numpy.ndarray, Slice) -> Slice
     """
-    Every uncalibrated row of pixels (dark or otherwise) in a CCD slice
-    has been observed in the lab to start with a fixed pattern.
+    Every row of electron flux pixels (dark or otherwise) in a CCD slice
+    has been empirically observed to start with a fixed pattern.
 
     This pattern is referred to as the *start of line ringing*.
 
@@ -66,7 +66,7 @@ def add_pattern_noise_to_slice(pattern_noise, image_slice):
     return image_slice._replace(pixels=image_slice.pixels + pattern_noise)
 
 
-def introduce_smear_rows_to_slice(smear_ratio, left_dark_pixel_columns, right_dark_pixel_columns, top_dark_pixel_rows,
+def introduce_smear_rows_to_slice(smear_ratio, early_dark_pixel_columns, late_dark_pixel_columns, final_dark_pixel_rows,
                                   smear_rows, image_slice):
     # type: (float, Slice) -> Slice
     """
@@ -85,16 +85,16 @@ def introduce_smear_rows_to_slice(smear_ratio, left_dark_pixel_columns, right_da
     slice with the estimated smear row. Finally, it adds the estimated smear row to each image row.
 
     The pixels in the resulting smear rows should all be nonzero for reasonable input data,
-    but if this transformation has not been applied, they should always contain zeros for a slice of calibrated data.
+    but if this transformation has not been applied, they should always contain zeros for a slice of electron flux data.
 
     :param smear_ratio: Dimensionless ratio of smear exposure to nominal exposure
     :type smear_ratio: float
-    :param left_dark_pixel_columns: The number of dark pixel columns on the left side of the slice
-    :type left_dark_pixel_columns: int
-    :param right_dark_pixel_columns: The number of dark pixel columns on the right side of the slice
-    :type right_dark_pixel_columns: int
-    :param top_dark_pixel_rows: The number of dark pixel rows at the top of the slice
-    :type top_dark_pixel_rows: int
+    :param early_dark_pixel_columns: The number of dark pixel columns on the left side of the slice
+    :type early_dark_pixel_columns: int
+    :param late_dark_pixel_columns: The number of dark pixel columns on the right side of the slice
+    :type late_dark_pixel_columns: int
+    :param final_dark_pixel_rows: The number of dark pixel rows at the top of the slice
+    :type final_dark_pixel_rows: int
     :param smear_rows: The number of smear rows
     :type smear_rows: int
     :param image_slice: Input slice. Units: electrons
@@ -102,17 +102,17 @@ def introduce_smear_rows_to_slice(smear_ratio, left_dark_pixel_columns, right_da
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
     assert image_slice.units == "electrons", "units must be electrons"
-    top = (top_dark_pixel_rows + smear_rows)
-    smear_pixels = image_slice.pixels[-top:-top_dark_pixel_rows, left_dark_pixel_columns:-right_dark_pixel_columns]
+    top = (final_dark_pixel_rows + smear_rows)
+    smear_pixels = image_slice.pixels[-top:-final_dark_pixel_rows, early_dark_pixel_columns:-late_dark_pixel_columns]
 
     # noinspection PyTypeChecker
     assert numpy.all(smear_pixels == 0), "Smear rows are already introduced (should be set to 0)"
-    image_pixels = image_slice.pixels[0:-top, left_dark_pixel_columns:-right_dark_pixel_columns]
+    image_pixels = image_slice.pixels[0:-top, early_dark_pixel_columns:-late_dark_pixel_columns]
     estimated_smear = smear_ratio * numpy.sum(image_pixels, 0)
 
     working_pixels = numpy.copy(image_slice.pixels)
-    working_pixels[-top:-top_dark_pixel_rows, left_dark_pixel_columns:-right_dark_pixel_columns] = estimated_smear
-    working_pixels[0:-top, left_dark_pixel_columns:-right_dark_pixel_columns] += estimated_smear
+    working_pixels[-top:-final_dark_pixel_rows, early_dark_pixel_columns:-late_dark_pixel_columns] = estimated_smear
+    working_pixels[0:-top, early_dark_pixel_columns:-late_dark_pixel_columns] += estimated_smear
     # noinspection PyProtectedMember
     return image_slice._replace(pixels=working_pixels)
 

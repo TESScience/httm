@@ -7,5 +7,5 @@ This module contains data structures used throughout ``httm``.
    :maxdepth: 2
 
    data_structures/common
-   data_structures/calibrated_converter
+   data_structures/electron_flux_converter
    data_structures/raw_converter

@@ -1,10 +1,10 @@
 .PHONY: all clean
 
-FILES=calibrated_fits/spot50.fits
+FILES=electron_flux_fits/spot50.fits
 
 all: $(FILES)
 
-calibrated_fits/spot50.fits: ./scripts/make_spot50
+electron_flux_fits/spot50.fits: ./scripts/make_spot50
 	$< $@
 
 clean:

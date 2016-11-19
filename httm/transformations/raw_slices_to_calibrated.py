@@ -13,7 +13,7 @@ from .constants import FPE_MAX_ADU
 from ..data_structures.common import Slice
 
 
-def remove_start_of_line_ringing_from_slice(top_dark_pixel_rows, image_slice):
+def remove_start_of_line_ringing_from_slice(final_dark_pixel_rows, image_slice):
     # type: (int, Slice) -> Slice
     """
     This function estimates *start of line ringing* from the upper dark rows of a slice and compensates for this
@@ -25,21 +25,21 @@ def remove_start_of_line_ringing_from_slice(top_dark_pixel_rows, image_slice):
 
     This should not be necessary if smear is already being removed.
 
-    :param top_dark_pixel_rows: Number of top dark pixel rows
-    :type top_dark_pixel_rows: int
+    :param final_dark_pixel_rows: Number of top dark pixel rows
+    :type final_dark_pixel_rows: int
     :param image_slice: Input slice. Units: electrons
     :type image_slice: :py:class:`~httm.data_structures.common.Slice`
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
     assert image_slice.units == "electrons", "units must be electrons"
     working_pixels = numpy.copy(image_slice.pixels)
-    mean_ringing = numpy.sum(working_pixels[:-top_dark_pixel_rows], 0) / top_dark_pixel_rows
+    mean_ringing = numpy.sum(working_pixels[:-final_dark_pixel_rows], 0) / final_dark_pixel_rows
     working_pixels -= mean_ringing
     # noinspection PyProtectedMember
     return image_slice._replace(pixels=working_pixels)
 
 
-def remove_smear_from_slice(left_dark_pixel_columns, right_dark_pixel_columns, top_dark_pixel_rows, smear_rows,
+def remove_smear_from_slice(early_dark_pixel_columns, late_dark_pixel_columns, final_dark_pixel_rows, smear_rows,
                             image_slice):
     # type: (int, int, int, int, Slice) -> Slice
     """
@@ -52,12 +52,12 @@ def remove_smear_from_slice(left_dark_pixel_columns, right_dark_pixel_columns, t
 
     This transformation implicitly removes *start of line ringing* and the *baseline electron count*.
 
-    :param left_dark_pixel_columns: The number of dark pixel columns on the left side of the slice
-    :type left_dark_pixel_columns: int
-    :param right_dark_pixel_columns: The number of dark pixel columns on the right side of the slice
-    :type right_dark_pixel_columns: int
-    :param top_dark_pixel_rows: The number of top dark pixel rows
-    :type top_dark_pixel_rows: int
+    :param early_dark_pixel_columns: The number of dark pixel columns on the left side of the slice
+    :type early_dark_pixel_columns: int
+    :param late_dark_pixel_columns: The number of dark pixel columns on the right side of the slice
+    :type late_dark_pixel_columns: int
+    :param final_dark_pixel_rows: The number of top dark pixel rows
+    :type final_dark_pixel_rows: int
     :param smear_rows: The number of smear rows
     :type smear_rows: int
     :param image_slice: Input slice. Units: electrons
@@ -65,15 +65,15 @@ def remove_smear_from_slice(left_dark_pixel_columns, right_dark_pixel_columns, t
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
     assert image_slice.units == "electrons", "units must be electrons"
-    top = (top_dark_pixel_rows + smear_rows)
-    smear_pixels = image_slice.pixels[-top:-top_dark_pixel_rows, left_dark_pixel_columns:-right_dark_pixel_columns]
+    top = (final_dark_pixel_rows + smear_rows)
+    smear_pixels = image_slice.pixels[-top:-final_dark_pixel_rows, early_dark_pixel_columns:-late_dark_pixel_columns]
     # noinspection PyTypeChecker
     assert numpy.any(smear_pixels != 0), "Smear rows should not be zero"
     working_pixels = numpy.copy(image_slice.pixels)
     mean_ringing = numpy.sum(
-        working_pixels[-top_dark_pixel_rows:-top_dark_pixel_rows - smear_rows], 0) / smear_rows
+        working_pixels[-final_dark_pixel_rows:-final_dark_pixel_rows - smear_rows], 0) / smear_rows
     working_pixels -= mean_ringing
-    working_pixels[-top:-top_dark_pixel_rows, left_dark_pixel_columns:-right_dark_pixel_columns] = 0
+    working_pixels[-top:-final_dark_pixel_rows, early_dark_pixel_columns:-late_dark_pixel_columns] = 0
     # noinspection PyProtectedMember
     return image_slice._replace(pixels=working_pixels)
 
@@ -108,7 +108,7 @@ def remove_undershoot_from_slice(undershoot_parameter, image_slice):
     exhibit for the signal in the previous pixel.
 
     This transformation is the (approximate) inverse of
-    :py:func:`~httm.transformations.calibrated_slices_to_raw.simulate_undershoot_on_slice`.
+    :py:func:`~httm.transformations.electron_flux_slices_to_raw.simulate_undershoot_on_slice`.
 
     :param undershoot_parameter: Undershoot parameter from parameter structure, typically ~0.001, dimensionless
     :type undershoot_parameter: float
@@ -148,7 +148,7 @@ def convert_slice_adu_to_electrons(
     \\times \\mathtt{video\\_scale} \\times p - 1}}`
 
     This function is the inverse transform of
-    :py:func:`~httm.transformations.calibrated_slices_to_raw.convert_slice_electrons_to_adu`.
+    :py:func:`~httm.transformations.electron_flux_slices_to_raw.convert_slice_electrons_to_adu`.
 
     :param gain_loss: The relative decrease in video gain over the total ADC range
     :type gain_loss: float
