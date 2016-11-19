@@ -144,8 +144,8 @@ def convert_slice_adu_to_electrons(
 
     For each pixel :math:`p`, with units in ADU, this function applies the following transformation:
 
-    :math:`\\displaystyle{\\frac{\\mathtt{video\\_scale} \\times p}{\\mathtt{gain\\_loss\\_per\\_electron}
-    \\times \\mathtt{video\\_scale} \\times p - 1}}`
+    :math:`\\displaystyle{\\frac{\\mathtt{video\\_scale} \\times p}{1 - \\mathtt{gain\\_loss\\_per\\_electron}
+    \\times \\mathtt{video\\_scale} \\times p}}`
 
     This function is the inverse transform of
     :py:func:`~httm.transformations.calibrated_slices_to_raw.convert_slice_electrons_to_adu`.
@@ -167,7 +167,7 @@ def convert_slice_adu_to_electrons(
 
     def transform_adu_to_electron(adu):
         # type: (float) -> float
-        return (video_scale * adu) / (gain_loss_per_electron * video_scale * adu - 1)
+        return (video_scale * adu) / (1 - gain_loss_per_electron * video_scale * adu)
 
     return Slice(index=image_slice.index,
                  units="electrons",
