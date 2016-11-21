@@ -16,8 +16,7 @@ TESTS=httm-check-type-references pyfits-check-type-references numpy-check-type-r
 all: install
 
 install: $(VIRTUAL_ENV)
-	echo -n Installing httm...
-	$(PIP) install -r requirements.txt --quiet
+	$(PIP) install -r requirements.txt
 	make -C .. clean
 	(cd .. ; $(PYTHON) setup.py install
 	make -C fits_data/ all
