@@ -10,4 +10,4 @@ install:
 
 script:
   - make -C documentation
-  - make -C test
+  - DEBUG=1 make -C test
