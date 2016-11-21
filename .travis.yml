@@ -1,0 +1,13 @@
+language: python
+
+python:
+  - "3.5"
+
+install:
+  - apt-get install python-sphinx
+  - pip install -r test/requirements.txt
+  - make -C test install
+
+script:
+  - make -C documentation
+  - make -C test
