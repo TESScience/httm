@@ -18,7 +18,7 @@ all: install
 install: $(VIRTUAL_ENV)
 	$(PIP) install -r requirements.txt
 	make -C .. clean
-	(cd .. ; $(PYTHON) setup.py install
+	(cd .. ; $(PYTHON) setup.py install)
 	make -C fits_data/ all
 	echo done.
 
