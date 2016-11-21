@@ -16,7 +16,7 @@ PYTHON=$(VIRTUAL_ENV)/bin/python$(PYTHON_VERSION)
 PIP=$(VIRTUAL_ENV)/bin/pip$(PYTHON_VERSION)
 RUNIPY=$(VIRTUAL_ENV)/bin/runipy
 SITE_PACKAGES=$(VIRTUAL_ENV)/lib/python$(PYTHON_VERSION)/site-packages
-VERSION=$(shell python -c "$(shell grep '^VERSION' $(CURDIR)/../setup.py) ; print VERSION")
+VERSION=$(shell python3.5 -c "$(shell grep '^VERSION' $(CURDIR)/../setup.py) ; print(VERSION)")
 INSTALL=$(SITE_PACKAGES)/SPyFFI-$(VERSION)-py$(PYTHON_VERSION).egg
 TESTS=httm-check-type-references pyfits-check-type-references numpy-check-type-references \
       astropy-check-type-references tutorial-test smoke-test command_line_utilities-test \
