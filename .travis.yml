@@ -9,4 +9,4 @@ install:
 
 script:
   - make -C documentation
-  - DEBUG=1 make -C test
+  - make test VIRTUAL_ENV_OPTS=--system-site-packages DEBUG=1
