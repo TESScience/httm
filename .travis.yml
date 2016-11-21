@@ -5,7 +5,6 @@ python:
 
 install:
   - pip install travis-sphinx
-  - pip install -r test/requirements.txt
   - make -C test install
 
 script:
