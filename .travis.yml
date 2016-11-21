@@ -4,7 +4,7 @@ python:
   - "3.5"
 
 install:
-  - pip install travis-sphinx
+  - pip install travis-sphinx sphinx-rtd-theme
   - make -C test install VIRTUAL_ENV_OPTS=--system-site-packages
 
 script:
