@@ -26,7 +26,6 @@ all: install
 
 install: $(VIRTUAL_ENV)
 	@echo -n Installing httm...
-	@echo y | $(PIP) uninstall httm > $(STD_OUT) 2> $(ERROR_OUT) || true
 	@$(PIP) install $(QUIET) -r requirements.txt --quiet
 	@make -C .. clean > $(STD_OUT)
 	@(cd .. ; $(PYTHON) setup.py install > $(STD_OUT) 2> $(ERROR_OUT))
