@@ -5,9 +5,8 @@ python:
 
 install:
   - pip install travis-sphinx
-  - pip install -r test/requirements.txt
-  - make -C test install VIRTUAL_ENV_OPTS=--system-site-packages DEBUG=1
+  - make -C test install VIRTUAL_ENV_OPTS=--system-site-packages
 
 script:
+  - make test
   - make -C documentation
-  - make test DEBUG=1
