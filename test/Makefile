@@ -1,15 +1,6 @@
 ###################### Virtual Environment ######################
 .PHONY: install documentation clean test
 
-ifndef DEBUG
-QUIET=--quiet
-STD_OUT=/dev/null
-ERROR_OUT=/dev/null
-else
-STD_OUT=/dev/stdout
-ERROR_OUT=/dev/stderr
-endif
-
 PYTHON_VERSION=3.5
 VIRTUAL_ENV=$(CURDIR)/venv
 PYTHON=$(VIRTUAL_ENV)/bin/python$(PYTHON_VERSION)
@@ -25,12 +16,12 @@ TESTS=httm-check-type-references pyfits-check-type-references numpy-check-type-r
 all: install
 
 install: $(VIRTUAL_ENV)
-	@echo -n Installing httm...
-	@$(PIP) install $(QUIET) -r requirements.txt --quiet
-	@make -C .. clean > $(STD_OUT)
-	@(cd .. ; $(PYTHON) setup.py install > $(STD_OUT) 2> $(ERROR_OUT))
-	@make -C fits_data/ all > $(STD_OUT)
-	@echo done.
+	echo -n Installing httm...
+	$(PIP) install -r requirements.txt --quiet
+	make -C .. clean
+	(cd .. ; $(PYTHON) setup.py install
+	make -C fits_data/ all
+	echo done.
 
 $(INSTALL):
 	@make install
@@ -40,7 +31,7 @@ documentation:
 
 # This is a generic test to make sure that references to python objects in a particular module exist
 %-check-type-references: $(VIRTUAL_ENV)
-	@make -C ../doc generated-sources > $(STD_OUT)
+	@make -C ../doc generated-sources
 	@echo -n Checking files for broken docstring references for $(patsubst  %-check-type-references,%,$@)...
 	@find ../{httm,doc} -name "*.py" \
 	| xargs grep -E "\`[\~]?$(patsubst  %-check-type-references,%,$@)" \
