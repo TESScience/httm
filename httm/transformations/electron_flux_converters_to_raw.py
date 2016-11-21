@@ -1,6 +1,6 @@
 """
 ``httm.transformations.electron_flux_converters_to_raw``
-=====================================================
+========================================================
 
 Transformation functions for processing
 :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter` objects so that

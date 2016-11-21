@@ -4,7 +4,7 @@
 
 This module contains functions for marshalling and de-marshalling
 :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter` and the other book-keeping objects
-it contains to and from FITS files or :py:class:`astropy.io.fits.HDUList`s.
+it contains to and from FITS files or :py:class:`astropy.io.fits.HDUList` objects.
 """
 import astropy
 import numpy
