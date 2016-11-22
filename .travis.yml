@@ -1,6 +1,12 @@
 addons:
   apt_packages:
     - pandoc
+    - texlive 
+    - texlive-lang-german
+    - texlive-latex-recommended  
+    - texlive-latex-extra
+    - python-numpy
+    - python-matplotlib
 
 language: python
 
