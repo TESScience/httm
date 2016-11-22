@@ -9,9 +9,8 @@ RUNIPY=$(VIRTUAL_ENV)/bin/runipy
 SITE_PACKAGES=$(VIRTUAL_ENV)/lib/python$(PYTHON_VERSION)/site-packages
 VERSION=$(shell python3.5 -c "$(shell grep '^VERSION' $(CURDIR)/../setup.py) ; print(VERSION)")
 INSTALL=$(VIRTUAL_ENV)/bin/raw_to_calibrated
-TESTS=httm-check-type-references pyfits-check-type-references numpy-check-type-references \
-      astropy-check-type-references tutorial-test smoke-test command_line_utilities-test \
-      demo-test
+TESTS=httm-check-type-references numpy-check-type-references astropy-check-type-references \
+      tutorial-test smoke-test command_line_utilities-test demo-test
 
 all: install
 
