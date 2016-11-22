@@ -7,7 +7,9 @@ data:
 	make -C httm/data all
 
 documentation:
-	make -C doc {clean,html,latexpdf}
+	make -C doc/ clean
+	make -C doc/ html
+	make -C doc/ latexpdf
 
 test:
 	make -C test/ {install,test}
