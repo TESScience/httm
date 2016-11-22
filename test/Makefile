@@ -9,7 +9,7 @@ RUNIPY=$(VIRTUAL_ENV)/bin/runipy
 SITE_PACKAGES=$(VIRTUAL_ENV)/lib/python$(PYTHON_VERSION)/site-packages
 VERSION=$(shell python3.5 -c "$(shell grep '^VERSION' $(CURDIR)/../setup.py) ; print(VERSION)")
 INSTALL=$(VIRTUAL_ENV)/bin/raw_to_calibrated
-TESTS=httm-check-type-references numpy-check-type-references astropy-check-type-references \
+TESTS=httm-check-code-references httm-check-doc-references numpy-check-code-references astropy-check-code-references \
       tutorial-test smoke-test command_line_utilities-test demo-test
 
 all: install
@@ -29,18 +29,20 @@ documentation:
 	make -C ../doc latexpdf
 
 # This is a generic test to make sure that references to python objects in a particular module exist
-%-check-type-references: $(VIRTUAL_ENV)
+%-check-code-references: $(VIRTUAL_ENV)
 	@make -C ../doc generated-sources
-	@echo -n Checking files for broken docstring references for $(patsubst  %-check-type-references,%,$@)...
+	@echo -n Checking files for broken docstring references for $(patsubst  %-check-code-references,%,$@)...
 	@find ../httm -name "*.py" \
-	| xargs grep -E "\`[\~]?$(patsubst  %-check-type-references,%,$@)" \
-	| sed -e "s/.*\`[~]*\($(patsubst  %-check-type-references,%,$@)[^\`]*\)\`.*/\1/" \
+	| xargs grep -E "\`[\~]?$(patsubst  %-check-code-references,%,$@)" \
+	| sed -e "s/.*\`[~]*\($(patsubst  %-check-code-references,%,$@)[^\`]*\)\`.*/\1/" \
 	| sort \
 	| uniq \
 	| xargs $(PYTHON) scripts/python_object_exists.py
+
+%-check-doc-references: $(VIRTUAL_ENV)
 	@find ../doc -name "*.rst" \
-	| xargs grep -E "\`[\~]?$(patsubst  %-check-type-references,%,$@)" \
-	| sed -e "s/.*\`[~]*\($(patsubst  %-check-type-references,%,$@)[^\`]*\)\`.*/\1/" \
+	| xargs grep -E "\`[\~]?$(patsubst  %-check-code-references,%,$@)" \
+	| sed -e "s/.*\`[~]*\($(patsubst  %-check-code-references,%,$@)[^\`]*\)\`.*/\1/" \
 	| sort \
 	| uniq \
 	| xargs $(PYTHON) scripts/python_object_exists.py

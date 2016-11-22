@@ -32,6 +32,6 @@ def check_if_python_object_exists(full_python_object_name):
 
 
 if __name__ == "__main__":
-    assert len(sys.argv) >= 2, "An argume must be specified"
+    assert len(sys.argv) >= 2, "An argument must be specified"
     map(check_if_python_object_exists, sys.argv[1:])
     sys.exit(0)
