@@ -12,7 +12,8 @@ documentation:
 	make -C doc/ latexpdf
 
 test:
-	make -C test/ {install,test}
+	make -C test/ install
+	make -C test/ test
 
 clean:
 	rm -rf build/ dist/ httm.egg-info/ $(shell find httm -name "*.pyc")
