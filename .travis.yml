@@ -1,3 +1,7 @@
+addons:
+  apt_packages:
+    - pandoc
+
 language: python
 
 python:
