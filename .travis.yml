@@ -18,4 +18,3 @@ install:
 
 script:
   - make test
-  - make documentation
