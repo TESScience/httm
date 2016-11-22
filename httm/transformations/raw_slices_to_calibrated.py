@@ -70,9 +70,9 @@ def remove_smear_from_slice(early_dark_pixel_columns, late_dark_pixel_columns, f
     # noinspection PyTypeChecker
     assert numpy.any(smear_pixels != 0), "Smear rows should not be zero"
     working_pixels = numpy.copy(image_slice.pixels)
-    mean_ringing = numpy.sum(
-        working_pixels[-final_dark_pixel_rows:-final_dark_pixel_rows - smear_rows], 0) / smear_rows
-    working_pixels -= mean_ringing
+    mean_smear = numpy.sum(
+        working_pixels[-top:-final_dark_pixel_rows], 0) / smear_rows
+    working_pixels -= mean_smear
     working_pixels[-top:-final_dark_pixel_rows, early_dark_pixel_columns:-late_dark_pixel_columns] = 0
     # noinspection PyProtectedMember
     return image_slice._replace(pixels=working_pixels)
