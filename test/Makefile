@@ -30,19 +30,21 @@ documentation:
 
 # This is a generic test to make sure that references to python objects in a particular module exist
 %-check-code-references: $(VIRTUAL_ENV)
-	@make -C ../doc generated-sources
-	@echo -n Checking files for broken docstring references for $(patsubst  %-check-code-references,%,$@)...
+	@echo -n Checking python source files for broken docstring references for $(patsubst  %-check-code-references,%,$@)...
 	@find ../httm -name "*.py" \
 	| xargs grep -E "\`[\~]?$(patsubst  %-check-code-references,%,$@)" \
 	| sed -e "s/.*\`[~]*\($(patsubst  %-check-code-references,%,$@)[^\`]*\)\`.*/\1/" \
 	| sort \
 	| uniq \
 	| xargs $(PYTHON) scripts/python_object_exists.py
+	@echo OK
 
 %-check-doc-references: $(VIRTUAL_ENV)
+	@make -C ../doc generated-sources
+	@echo -n Checking documentation files for broken docstring references for $(patsubst  %-check-doc-references,%,$@)...
 	@find ../doc -name "*.rst" \
-	| xargs grep -E "\`[\~]?$(patsubst  %-check-code-references,%,$@)" \
-	| sed -e "s/.*\`[~]*\($(patsubst  %-check-code-references,%,$@)[^\`]*\)\`.*/\1/" \
+	| xargs grep -E "\`[\~]?$(patsubst  %-check-doc-references,%,$@)" \
+	| sed -e "s/.*\`[~]*\($(patsubst  %-check-doc-references,%,$@)[^\`]*\)\`.*/\1/" \
 	| sort \
 	| uniq \
 	| xargs $(PYTHON) scripts/python_object_exists.py
