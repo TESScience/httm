@@ -17,4 +17,5 @@ install:
   - make -C test install VIRTUAL_ENV_OPTS=--system-site-packages
 
 script:
+  - make documentation
   - make test

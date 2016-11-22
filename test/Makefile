@@ -26,19 +26,20 @@ $(INSTALL):
 	@make install
 
 documentation:
-	make -C ../doc {latexpdf,html}
+	make -C ../doc html
+	make -C ../doc latexpdf
 
 # This is a generic test to make sure that references to python objects in a particular module exist
 %-check-type-references: $(VIRTUAL_ENV)
 	@make -C ../doc generated-sources
 	@echo -n Checking files for broken docstring references for $(patsubst  %-check-type-references,%,$@)...
-	@find ../{httm,doc} -name "*.py" \
+	@find ../httm -name "*.py" \
 	| xargs grep -E "\`[\~]?$(patsubst  %-check-type-references,%,$@)" \
 	| sed -e "s/.*\`[~]*\($(patsubst  %-check-type-references,%,$@)[^\`]*\)\`.*/\1/" \
 	| sort \
 	| uniq \
 	| xargs $(PYTHON) scripts/python_object_exists.py
-	@find ../{httm,doc} -name "*.rst" \
+	@find ../doc -name "*.rst" \
 	| xargs grep -E "\`[\~]?$(patsubst  %-check-type-references,%,$@)" \
 	| sed -e "s/.*\`[~]*\($(patsubst  %-check-type-references,%,$@)[^\`]*\)\`.*/\1/" \
 	| sort \
