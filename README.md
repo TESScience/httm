@@ -2,6 +2,7 @@ HTTM
 ====
 
 [![Documentation Status](http://readthedocs.org/projects/httm/badge/?version=latest)](https://httm.readthedocs.io/en/latest/)
+[![Build Status](https://travis-ci.org/TESScience/httm.svg?branch=master)](https://travis-ci.org/TESScience/httm)
 
 This repository contains `httm`, a library for converting between raw *Transiting Exoplanet Survey Satellite* (TESS) FITS images to calibrated FITS images and back.
 

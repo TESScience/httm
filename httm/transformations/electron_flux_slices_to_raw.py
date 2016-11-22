@@ -1,6 +1,6 @@
 """
 ``httm.transformations.electron_flux_slices_to_raw``
-=================================================
+====================================================
 
 Transformation functions for processing slices contained in a
 :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter` so that they are suitable

@@ -1,10 +1,10 @@
 """
 ``httm.fits_utilities.electron_flux_fits``
-=======================================
+==========================================
 
 This module contains functions for marshalling and de-marshalling
-:py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter` and the other book-keeping objects
-it contains to and from FITS files or :py:class:`astropy.io.fits.HDUList`s.
+:py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+and the other book-keeping objects it contains to and from FITS files or :py:class:`astropy.io.fits.HDUList` objects.
 """
 import astropy
 import numpy

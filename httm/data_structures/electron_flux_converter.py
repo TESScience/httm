@@ -1,6 +1,6 @@
 """
 ``httm.data_structures.electron_flux_converter``
-=============================================
+================================================
 
 This module contains data structures for dealing with converting electron flux images to raw images.
 """
