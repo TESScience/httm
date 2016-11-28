@@ -107,7 +107,8 @@ def electron_flux_converter_flags_from_fits(input_file,
         in_adu=get_parameter('in_adu', in_adu),
     )
 
-
+# TODO: input file is not used
+# TODO: Documentation
 def electron_flux_converter_parameters_from_fits(input_file,
                                                  number_of_slices=None,
                                                  camera_number=None,
