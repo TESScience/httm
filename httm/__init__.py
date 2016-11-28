@@ -5,8 +5,6 @@
 This module contains top level transformations for converting electron flux
 to raw TESS full frame FITS images and raw to calibrated TESS full frame FITS images.
 """
-from collections import OrderedDict
-from functools import reduce
 
 from .fits_utilities.electron_flux_fits import electron_flux_converter_from_hdulist, \
     electron_flux_converter_to_simulated_raw_hdulist, electron_flux_converter_from_fits, \
@@ -20,7 +18,6 @@ from .transformations.raw_converters_to_calibrated import raw_transformation_def
 
 
 def derive_transformation_function_list(transformation_settings, default_settings, transformation_functions):
-    # type: (OrderedDict, OrderedDict) -> tuple
     if isinstance(transformation_settings, dict):
         for key, value in transformation_settings.items():
             if key not in default_settings:
@@ -41,6 +38,7 @@ def transform_raw_converter(single_ccd_raw_converter, transformation_settings=ra
     :param transformation_settings:
     :return:
     """
+    from functools import reduce
     return reduce(lambda converter, transformation_function: transformation_function(converter),
                   derive_transformation_function_list(transformation_settings, raw_transformation_default_settings,
                                                       raw_transformation_functions),
@@ -96,6 +94,7 @@ def transform_electron_flux_converter(single_ccd_electron_flux_converter,
     :param transformation_settings:
     :return:
     """
+    from functools import reduce
     return reduce(lambda converter, transformation_function: transformation_function(converter),
                   derive_transformation_function_list(transformation_settings,
                                                       electron_flux_transformation_default_settings,
