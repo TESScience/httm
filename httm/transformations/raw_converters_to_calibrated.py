@@ -156,7 +156,7 @@ raw_transformations = OrderedDict([
     }),
 ])
 
-raw_transformation_defaults = OrderedDict(
+raw_transformation_default_settings = OrderedDict(
     (key, raw_transformations[key]['default'])
     for key in raw_transformations.keys()
 )
@@ -165,4 +165,3 @@ raw_transformation_functions = OrderedDict(
     (key, raw_transformations[key]['function'])
     for key in raw_transformations.keys()
 )
-

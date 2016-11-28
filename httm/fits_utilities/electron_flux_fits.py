@@ -85,7 +85,7 @@ def electron_flux_converter_flags_from_fits(input_file,
     :type pattern_noise_present: bool
     :param start_of_line_ringing_present: Flag that indicates *start of line ringing* has been simulated
     :type start_of_line_ringing_present: bool
-    :param in_adu:
+    :param in_adu: Flag that indicates whether the units are in *Analogue to Digital Converter* units or not
     :type in_adu: bool
     :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverterFlags`
     """
@@ -188,7 +188,7 @@ def electron_flux_converter_parameters_from_fits(input_file,
     )
 
 
-def electron_flux_converter_to_HDUList(converter):
+def electron_flux_converter_to_simulated_raw_hdulist(converter):
     # type: (SingleCCDElectronFluxConverter) -> HDUList
     """
     This function converts a :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
@@ -212,7 +212,7 @@ def electron_flux_converter_to_HDUList(converter):
                               data=numpy.hstack(slices)))
 
 
-def write_electron_flux_converter_to_fits(converter, output_file):
+def write_electron_flux_converter_to_simulated_raw_fits(converter, output_file):
     # type: (SingleCCDElectronFluxConverter, str) -> NoneType
     """
     Write a :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
@@ -224,11 +224,11 @@ def write_electron_flux_converter_to_fits(converter, output_file):
     :type output_file: str
     :rtype: NoneType
     """
-    electron_flux_converter_to_HDUList(converter).writeto(output_file, clobber=True)
+    electron_flux_converter_to_simulated_raw_hdulist(converter).writeto(output_file, clobber=True)
 
 
 # noinspection PyUnresolvedReferences
-def electron_flux_converter_from_HDUList(header_data_unit_list, origin_file_name=None, flags=None, parameters=None):
+def electron_flux_converter_from_hdulist(header_data_unit_list, origin_file_name=None, flags=None, parameters=None):
     """
     TODO: Document me
 
@@ -277,7 +277,7 @@ def electron_flux_converter_from_fits(input_file, flags=None, parameters=None):
         origin_file_name = input_file
     if hasattr(input_file, 'name'):
         origin_file_name = input_file.name
-    return electron_flux_converter_from_HDUList(header_data_unit_list,
+    return electron_flux_converter_from_hdulist(header_data_unit_list,
                                                 origin_file_name=origin_file_name,
                                                 flags=flags,
                                                 parameters=parameters)

@@ -6,6 +6,7 @@ This module contains functions for marshalling and de-marshalling
 :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter` and the other book-keeping objects
 it contains to and from FITS files or :py:class:`astropy.io.fits.HDUList` objects.
 """
+
 import astropy
 import numpy
 from astropy.io.fits import HDUList, PrimaryHDU
@@ -15,14 +16,15 @@ from ..data_structures.raw_converter import SingleCCDRawConverterFlags, SingleCC
     raw_transformation_flags, SingleCCDRawConverterParameters, raw_converter_parameters
 
 
+# TODO: Documentation
 # noinspection PyUnresolvedReferences
-def raw_converter_to_calibrated_HDUList(converter):
+def raw_converter_to_calibrated_hdulist(converter):
     # type: (SingleCCDRawConverter) -> HDUList
     """
     TODO: Document me
 
     :param converter:
-    :return:
+    :rtype: NoneType
     """
     # noinspection PyTypeChecker
     early_dark_pixel_columns = converter.parameters.early_dark_pixel_columns  # type: int
@@ -45,6 +47,7 @@ def raw_converter_to_calibrated_HDUList(converter):
                               data=numpy.hstack(left_dark_parts + image_parts + right_dark_parts)))
 
 
+# TODO: Documentation
 def write_raw_converter_to_calibrated_fits(converter, output_file):
     # type: (SingleCCDRawConverter, str) -> NoneType
     """
@@ -57,16 +60,18 @@ def write_raw_converter_to_calibrated_fits(converter, output_file):
     :type output_file: :py:class:`file` or :py:class:`str`
     :rtype: NoneType
     """
-    raw_converter_to_calibrated_HDUList(converter).writeto(output_file, clobber=True)
+    raw_converter_to_calibrated_hdulist(converter).writeto(output_file, clobber=True)
 
 
+# TODO: Documentation
+# TODO: input_file is not used
 def raw_converter_flags_from_fits(input_file,
                                   smear_rows_present=None,
                                   undershoot_present=None,
                                   pattern_noise_present=None,
                                   start_of_line_ringing_present=None,
                                   baseline_present=None,
-                                  in_adu=None
+                                  in_adu=None,
                                   ):
     """
     Construct a :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverterFlags`
@@ -104,6 +109,7 @@ def raw_converter_flags_from_fits(input_file,
     )
 
 
+# TODO: Documentation
 def raw_converter_parameters_from_fits(input_file,
                                        number_of_slices=None,
                                        camera_number=None,
@@ -185,13 +191,17 @@ def make_slice_from_raw_data(
         units='ADU')
 
 
-# TODO write raw_converter_from_HDUList
+# TODO Documentation
 # noinspection PyUnresolvedReferences
-def raw_converter_from_HDUList(header_data_unit_list,
+def raw_converter_from_hdulist(header_data_unit_list,
                                origin_file_name=None,
                                flags=None,
                                parameters=None,
                                ):
+    # type: (astropy.io.fits.HDUList,
+    #        NoneType | str,
+    #        NoneType | SingleCCDRawConverterFlags,
+    #        object) -> SingleCCDRawConverter
     """
     TODO: Document this
 
@@ -199,7 +209,7 @@ def raw_converter_from_HDUList(header_data_unit_list,
     :param origin_file_name:
     :param flags:
     :param parameters:
-    :return:
+    :rtype:
     """
     from numpy import hsplit, fliplr
     flags = raw_converter_flags_from_fits(header_data_unit_list) if flags is None else flags
@@ -220,9 +230,9 @@ def raw_converter_from_HDUList(header_data_unit_list,
 
     # Note that left and right dark pixels do not need to be reversed
     sliced_early_dark_pixels = hsplit(header_data_unit_list[0].data[:, :early_dark_pixel_count],
-                                     parameters.number_of_slices)
-    sliced_late_dark_pixels = hsplit(header_data_unit_list[0].data[:, -late_dark_pixel_count:],
                                       parameters.number_of_slices)
+    sliced_late_dark_pixels = hsplit(header_data_unit_list[0].data[:, -late_dark_pixel_count:],
+                                     parameters.number_of_slices)
 
     return SingleCCDRawConverter(
         slices=tuple(map(make_slice_from_raw_data,
@@ -237,14 +247,18 @@ def raw_converter_from_HDUList(header_data_unit_list,
     )
 
 
+# TODO: Documentation
 def raw_converter_from_fits(input_file, flags=None, parameters=None):
+    # type: (str | file | astropy.io.fits.HDUList,
+    #        NoneType | SingleCCDRawConverterFlags,
+    #        NoneType | SingleCCDRawConverterParameters) -> SingleCCDRawConverter
     """
     TODO: Document this
 
     :param input_file:
     :param flags:
     :param parameters:
-    :return:
+    :rtype:
     """
     header_data_unit_list = astropy.io.fits.open(input_file) if not isinstance(input_file, astropy.io.fits.HDUList) \
         else input_file
@@ -253,7 +267,7 @@ def raw_converter_from_fits(input_file, flags=None, parameters=None):
         origin_file_name = input_file
     if hasattr(input_file, 'name'):
         origin_file_name = input_file.name
-    return raw_converter_from_HDUList(header_data_unit_list,
+    return raw_converter_from_hdulist(header_data_unit_list,
                                       origin_file_name=origin_file_name,
                                       flags=flags,
                                       parameters=parameters)
