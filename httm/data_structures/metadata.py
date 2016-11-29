@@ -253,5 +253,5 @@ transformation_flags = OrderedDict([
                          'or otherwise in electon counts.',
         'standard_fits_keyword': 'ADU',
         'required_keyword': False,
-    })
+    }),
 ])
