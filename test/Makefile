@@ -10,7 +10,7 @@ SITE_PACKAGES=$(VIRTUAL_ENV)/lib/python$(PYTHON_VERSION)/site-packages
 VERSION=$(shell python3.5 -c "$(shell grep '^VERSION' $(CURDIR)/../setup.py) ; print(VERSION)")
 INSTALL=$(VIRTUAL_ENV)/bin/raw_to_calibrated
 TESTS=httm-check-code-references httm-check-doc-references numpy-check-code-references astropy-check-code-references \
-      tutorial-test smoke-test command_line_utilities-test demo-test
+      tutorial-test smoke-test command_line_utilities-test demo-test raw_demo-test
 
 all: install
 
