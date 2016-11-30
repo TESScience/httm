@@ -32,15 +32,18 @@ def simulate_start_of_line_ringing_to_slice(start_of_line_ringing, image_slice):
     It is most prominent in the left dark pixel columns.
 
     :param start_of_line_ringing: One dimensional array of floats, representing a fixed pattern \
-    disturbance in each row of a slice.
+    disturbance in each row of a slice. If it is shorter than a row, it is padded with zeros, \
+    if longer it is truncated.
     :type start_of_line_ringing: row: :py:class:`numpy.ndarray`
     :param image_slice: input slice. Units: electrons
     :type image_slice: :py:class:`~httm.data_structures.common.Slice` units: electrons
     :rtype:  :py:class:`~httm.data_structures.common.Slice`
     """
     assert image_slice.units == "electrons", "units must be electrons"
+    row_len = len(image_slice.pixels[0])
+    ringing_row = numpy.resize(numpy.concatenate((start_of_line_ringing, numpy.zeros(row_len))), row_len)
     # noinspection PyProtectedMember
-    return image_slice._replace(pixels=image_slice.pixels + start_of_line_ringing)
+    return image_slice._replace(pixels=image_slice.pixels + ringing_row)
 
 
 def add_pattern_noise_to_slice(pattern_noise, image_slice):
