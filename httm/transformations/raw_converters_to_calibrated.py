@@ -62,7 +62,7 @@ def remove_baseline(raw_converter):
     # noinspection PyProtectedMember
     return raw_converter._replace(
         slices=tuple(remove_baseline_from_slice(early_dark_pixel_columns, late_dark_pixel_columns, image_slice)
-                     for image_slice in image_slices))
+                     for image_slice in image_slices), flags=raw_converter.flags._replace(baseline_present=False))
 
 
 def remove_pattern_noise(raw_converter):
