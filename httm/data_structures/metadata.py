@@ -12,8 +12,6 @@ This module contains metadata for use in transformation functions.
 from collections import OrderedDict
 from ..transformations.constants import FPE_MAX_ADU
 
-# TODO required FITS keyword
-
 parameters = OrderedDict([
     ('number_of_slices', {
         'type': 'int',
@@ -50,7 +48,7 @@ parameters = OrderedDict([
                          '*Analogue to Digital Converter Units* (ADU) to electron counts. '
                          'These have units of electrons per ADU.',
         'default': (5.5, 5.5, 5.5, 5.5),
-        'standard_fits_keyword': ['VSCALE1', 'VSCALE2', 'VSCALE3', 'VSCALE4'],
+        'standard_fits_keyword': ['VSCALE1', 'VSCALE2', 'VSCALE3', 'VSCALE4', ],
         'required_keyword': False,
     }),
     ('readout_noise_parameters', {
@@ -59,7 +57,7 @@ parameters = OrderedDict([
                          'Corresponds to fluctuations in electron counts for completely '
                          'dark pixel data.',
         'default': (9.5, 9.5, 9.5, 9.5),
-        'standard_fits_keyword': ['RNOISE1', 'RNOISE2', 'RNOISE3', 'RNOISE4'],
+        'standard_fits_keyword': ['RNOISE1', 'RNOISE2', 'RNOISE3', 'RNOISE4', ],
         'forbidden_fits_keywords': ['READNOIS'],
         'required_keyword': False,
     }),

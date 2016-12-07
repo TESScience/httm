@@ -10,6 +10,7 @@ import astropy
 import numpy
 from astropy.io.fits import HDUList, PrimaryHDU
 
+from .header_settings import get_header_setting
 from ..data_structures.common import Slice, FITSMetaData
 from ..data_structures.electron_flux_converter import SingleCCDElectronFluxConverterFlags, \
     electron_flux_transformation_flags, \
@@ -52,23 +53,23 @@ def make_slice_from_electron_flux_data(pixels,
                  units='electrons')
 
 
-def electron_flux_converter_flags_from_fits(input_file,
-                                            smear_rows_present=None,
-                                            readout_noise_present=None,
-                                            shot_noise_present=None,
-                                            blooming_present=None,
-                                            undershoot_present=None,
-                                            pattern_noise_present=None,
-                                            start_of_line_ringing_present=None,
-                                            baseline_present=None,
-                                            in_adu=None,
-                                            ):
+def electron_flux_converter_flags_from_fits_header(fits_header,
+                                                   smear_rows_present=None,
+                                                   readout_noise_present=None,
+                                                   shot_noise_present=None,
+                                                   blooming_present=None,
+                                                   undershoot_present=None,
+                                                   pattern_noise_present=None,
+                                                   start_of_line_ringing_present=None,
+                                                   baseline_present=None,
+                                                   in_adu=None,
+                                                   ):
     """
     Construct a :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverterFlags`
     from a file or file name.
 
-    :param input_file: The file or file name to input
-    :type input_file: :py:class:`file` or :py:class:`str`
+    :param fits_header: The file or file name to input
+    :type fits_header: :py:class:`astropy.io.fits.Header`
     :param smear_rows_present: Flag that indicates if *smear rows* are already present or have otherwise been \
     removed
     :type smear_rows_present: bool
@@ -85,57 +86,65 @@ def electron_flux_converter_flags_from_fits(input_file,
     :type pattern_noise_present: bool
     :param start_of_line_ringing_present: Flag that indicates *start of line ringing* has been simulated
     :type start_of_line_ringing_present: bool
+    :param baseline_present: Flag indicating whether the baseline has *not* been removed from the image
+    :type baseline_present: bool
     :param in_adu: Flag that indicates whether the units are in *Analogue to Digital Converter* units or not
     :type in_adu: bool
     :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverterFlags`
     """
 
-    def get_parameter(parameter_name, parameter):
-        return electron_flux_transformation_flags[parameter_name]['default'] if parameter is None else parameter
+    def get_flag(flag_name, override_value):
+        return get_header_setting(
+            flag_name,
+            electron_flux_transformation_flags,
+            fits_header,
+            override_value)
 
     # TODO try to read these from file
     return SingleCCDElectronFluxConverterFlags(
-        smear_rows_present=get_parameter('smear_rows_present', smear_rows_present),
-        readout_noise_present=get_parameter('readout_noise_present', readout_noise_present),
-        shot_noise_present=get_parameter('shot_noise_present', shot_noise_present),
-        blooming_present=get_parameter('blooming_present', blooming_present),
-        undershoot_present=get_parameter('undershoot_present', undershoot_present),
-        pattern_noise_present=get_parameter('pattern_noise_present', pattern_noise_present),
-        start_of_line_ringing_present=get_parameter('start_of_line_ringing_present',
+        smear_rows_present=get_flag('smear_rows_present', smear_rows_present),
+        readout_noise_present=get_flag('readout_noise_present', readout_noise_present),
+        shot_noise_present=get_flag('shot_noise_present', shot_noise_present),
+        blooming_present=get_flag('blooming_present', blooming_present),
+        undershoot_present=get_flag('undershoot_present', undershoot_present),
+        pattern_noise_present=get_flag('pattern_noise_present', pattern_noise_present),
+        start_of_line_ringing_present=get_flag('start_of_line_ringing_present',
                                                     start_of_line_ringing_present),
-        baseline_present=get_parameter('baseline_present', baseline_present),
-        in_adu=get_parameter('in_adu', in_adu),
+        baseline_present=get_flag('baseline_present', baseline_present),
+        in_adu=get_flag('in_adu', in_adu),
     )
+
 
 # TODO: input file is not used
 # TODO: Documentation
-def electron_flux_converter_parameters_from_fits(input_file,
-                                                 number_of_slices=None,
-                                                 camera_number=None,
-                                                 ccd_number=None,
-                                                 number_of_exposures=None,
-                                                 video_scales=None,
-                                                 readout_noise_parameters=None,
-                                                 early_dark_pixel_columns=None,
-                                                 late_dark_pixel_columns=None,
-                                                 final_dark_pixel_rows=None,
-                                                 smear_rows=None,
-                                                 random_seed=None,
-                                                 full_well=None,
-                                                 gain_loss=None,
-                                                 undershoot_parameter=None,
-                                                 single_frame_baseline_adus=None,
-                                                 single_frame_baseline_adu_drift_term=None,
-                                                 smear_ratio=None,
-                                                 clip_level_adu=None,
-                                                 start_of_line_ringing=None,
-                                                 pattern_noise=None,
-                                                 blooming_threshold=None,
-                                                 ):
+def electron_flux_converter_parameters_from_fits_header(fits_header,
+                                                        number_of_slices=None,
+                                                        camera_number=None,
+                                                        ccd_number=None,
+                                                        number_of_exposures=None,
+                                                        video_scales=None,
+                                                        readout_noise_parameters=None,
+                                                        early_dark_pixel_columns=None,
+                                                        late_dark_pixel_columns=None,
+                                                        final_dark_pixel_rows=None,
+                                                        smear_rows=None,
+                                                        random_seed=None,
+                                                        full_well=None,
+                                                        gain_loss=None,
+                                                        undershoot_parameter=None,
+                                                        single_frame_baseline_adus=None,
+                                                        single_frame_baseline_adu_drift_term=None,
+                                                        smear_ratio=None,
+                                                        clip_level_adu=None,
+                                                        start_of_line_ringing=None,
+                                                        pattern_noise=None,
+                                                        blooming_threshold=None,
+                                                        ):
     """
     TODO: Document me
 
-    :param input_file:
+    :param fits_header: FITS header to use for parsing parameters
+    :type fits_header: :py:class:`astropy.io.fits.Header`
     :param number_of_slices:
     :param camera_number:
     :param ccd_number:
@@ -160,8 +169,12 @@ def electron_flux_converter_parameters_from_fits(input_file,
     :return:
     """
 
-    def get_parameter(parameter_name, parameter):
-        return electron_flux_converter_parameters[parameter_name]['default'] if parameter is None else parameter
+    def get_parameter(parameter_name, override_value):
+        return get_header_setting(
+            parameter_name,
+            electron_flux_converter_parameters,
+            fits_header,
+            override_value)
 
     return SingleCCDElectronFluxConverterParameters(
         number_of_slices=get_parameter('number_of_slices', number_of_slices),
@@ -214,7 +227,7 @@ def electron_flux_converter_to_simulated_raw_hdulist(converter):
 
 
 def write_electron_flux_converter_to_simulated_raw_fits(converter, output_file):
-    # type: (SingleCCDElectronFluxConverter, str) -> NoneType
+    # type: (SingleCCDElectronFluxConverter, str) -> None
     """
     Write a :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     to a simulated raw FITS file.
@@ -239,9 +252,12 @@ def electron_flux_converter_from_hdulist(header_data_unit_list, origin_file_name
     :param parameters:
     :return:
     """
-    flags = electron_flux_converter_flags_from_fits(header_data_unit_list) if flags is None else flags
-    parameters = electron_flux_converter_parameters_from_fits(
-        header_data_unit_list) if parameters is None else parameters  # type: SingleCCDElectronFluxConverterParameters
+    fits_metadata = FITSMetaData(origin_file_name=origin_file_name,
+                                 header=header_data_unit_list[0].header)  # type: FITSMetaData
+    flags = electron_flux_converter_flags_from_fits_header(fits_metadata.header) \
+        if flags is None else flags  # type: SingleCCDElectronFluxConverterFlags
+    parameters = electron_flux_converter_parameters_from_fits_header(fits_metadata.header) \
+        if parameters is None else parameters  # type: SingleCCDElectronFluxConverterParameters
     assert len(header_data_unit_list) == 1, "Only a single image per FITS file is supported"
     assert header_data_unit_list[0].data.shape[1] % parameters.number_of_slices == 0, \
         "Image did not have the specified number of slices"
@@ -255,8 +271,7 @@ def electron_flux_converter_from_hdulist(header_data_unit_list, origin_file_name
                                                             index),
                          numpy.hsplit(header_data_unit_list[0].data, parameters.number_of_slices),
                          range(parameters.number_of_slices))),
-        fits_metadata=FITSMetaData(origin_file_name=origin_file_name,
-                                   header=header_data_unit_list[0].header),
+        fits_metadata=fits_metadata,
         parameters=parameters,
         flags=flags,
     )

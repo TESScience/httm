@@ -11,6 +11,7 @@ import astropy
 import numpy
 from astropy.io.fits import HDUList, PrimaryHDU
 
+from .header_settings import get_header_setting
 from ..data_structures.common import Slice, FITSMetaData
 from ..data_structures.raw_converter import SingleCCDRawConverterFlags, SingleCCDRawConverter, \
     raw_transformation_flags, SingleCCDRawConverterParameters, raw_converter_parameters
@@ -49,7 +50,7 @@ def raw_converter_to_calibrated_hdulist(converter):
 
 # TODO: Documentation
 def write_raw_converter_to_calibrated_fits(converter, output_file):
-    # type: (SingleCCDRawConverter, str) -> NoneType
+    # type: (SingleCCDRawConverter, str) -> None
     """
     Write a completed :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     to a calibrated FITS file
@@ -65,20 +66,22 @@ def write_raw_converter_to_calibrated_fits(converter, output_file):
 
 # TODO: Documentation
 # TODO: input_file is not used
-def raw_converter_flags_from_fits(input_file,
-                                  smear_rows_present=None,
-                                  undershoot_present=None,
-                                  pattern_noise_present=None,
-                                  start_of_line_ringing_present=None,
-                                  baseline_present=None,
-                                  in_adu=None,
-                                  ):
+def raw_converter_flags_from_fits_header(fits_header,
+                                         smear_rows_present=None,
+                                         undershoot_present=None,
+                                         pattern_noise_present=None,
+                                         start_of_line_ringing_present=None,
+                                         baseline_present=None,
+                                         in_adu=None,
+                                         ):
     """
     Construct a :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverterFlags`
-    from a FITS file, file name or HDUList.
+    from a FITS header.
 
     TODO: Document me
 
+    :param fits_header: FITS header to use for parsing parameters
+    :type fits_header: :py:class:`astropy.io.fits.Header`
     :param smear_rows_present:
     :type smear_rows_present: bool
     :param undershoot_present:
@@ -91,43 +94,46 @@ def raw_converter_flags_from_fits(input_file,
     :type baseline_present: bool
     :param in_adu:
     :type in_adu: bool
-    :param input_file: The file or file name to input
-    :type input_file: :py:class:`file` or :py:class:`str`
     :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverterFlags`
     """
 
-    def get_parameter(parameter_name, parameter):
-        return raw_transformation_flags[parameter_name]['default'] if parameter is None else parameter
+    def get_flag(flag_name, override_value):
+        return get_header_setting(
+            flag_name,
+            raw_transformation_flags,
+            fits_header,
+            override_value)
 
     return SingleCCDRawConverterFlags(
-        smear_rows_present=get_parameter('smear_rows_present', smear_rows_present),
-        undershoot_present=get_parameter('undershoot_present', undershoot_present),
-        pattern_noise_present=get_parameter('pattern_noise_present', pattern_noise_present),
-        start_of_line_ringing_present=get_parameter('start_of_line_ringing_present', start_of_line_ringing_present),
-        baseline_present=get_parameter('baseline_present', baseline_present),
-        in_adu=get_parameter('in_adu', in_adu),
+        smear_rows_present=get_flag('smear_rows_present', smear_rows_present),
+        undershoot_present=get_flag('undershoot_present', undershoot_present),
+        pattern_noise_present=get_flag('pattern_noise_present', pattern_noise_present),
+        start_of_line_ringing_present=get_flag('start_of_line_ringing_present', start_of_line_ringing_present),
+        baseline_present=get_flag('baseline_present', baseline_present),
+        in_adu=get_flag('in_adu', in_adu),
     )
 
 
 # TODO: Documentation
-def raw_converter_parameters_from_fits(input_file,
-                                       number_of_slices=None,
-                                       camera_number=None,
-                                       ccd_number=None,
-                                       number_of_exposures=None,
-                                       video_scales=None,
-                                       early_dark_pixel_columns=None,
-                                       late_dark_pixel_columns=None,
-                                       final_dark_pixel_rows=None,
-                                       smear_rows=None,
-                                       gain_loss=None,
-                                       undershoot_parameter=None,
-                                       pattern_noise=None,
-                                       ):
+def raw_converter_parameters_from_fits_header(fits_header,
+                                              number_of_slices=None,
+                                              camera_number=None,
+                                              ccd_number=None,
+                                              number_of_exposures=None,
+                                              video_scales=None,
+                                              early_dark_pixel_columns=None,
+                                              late_dark_pixel_columns=None,
+                                              final_dark_pixel_rows=None,
+                                              smear_rows=None,
+                                              gain_loss=None,
+                                              undershoot_parameter=None,
+                                              pattern_noise=None,
+                                              ):
     """
     TODO: Document this
 
-    :param input_file:
+    :param fits_header: FITS header to use for parsing parameters
+    :type fits_header: :py:class:`astropy.io.fits.Header`
     :param number_of_slices:
     :param camera_number:
     :param ccd_number:
@@ -143,8 +149,12 @@ def raw_converter_parameters_from_fits(input_file,
     :return:
     """
 
-    def get_parameter(parameter_name, parameter):
-        return raw_converter_parameters[parameter_name]['default'] if parameter is None else parameter
+    def get_parameter(parameter_name, override_value):
+        return get_header_setting(
+            parameter_name,
+            raw_converter_parameters,
+            fits_header,
+            override_value)
 
     return SingleCCDRawConverterParameters(
         number_of_slices=get_parameter('number_of_slices', number_of_slices),
@@ -198,10 +208,7 @@ def raw_converter_from_hdulist(header_data_unit_list,
                                flags=None,
                                parameters=None,
                                ):
-    # type: (astropy.io.fits.HDUList,
-    #        NoneType | str,
-    #        NoneType | SingleCCDRawConverterFlags,
-    #        object) -> SingleCCDRawConverter
+    # type: (astropy.io.fits.HDUList,NoneType|str,NoneType|SingleCCDRawConverterFlags,object) -> SingleCCDRawConverter
     """
     TODO: Document this
 
@@ -209,11 +216,13 @@ def raw_converter_from_hdulist(header_data_unit_list,
     :param origin_file_name:
     :param flags:
     :param parameters:
-    :rtype:
+    :rtype: SingleCCDRawConverter
     """
     from numpy import hsplit, fliplr
-    flags = raw_converter_flags_from_fits(header_data_unit_list) if flags is None else flags
-    parameters = raw_converter_parameters_from_fits(header_data_unit_list) if parameters is None else parameters
+    fits_metadata = FITSMetaData(origin_file_name=origin_file_name,
+                                 header=header_data_unit_list[0].header)  # type: FITSMetaData
+    flags = raw_converter_flags_from_fits_header(fits_metadata) if flags is None else flags
+    parameters = raw_converter_parameters_from_fits_header(fits_metadata) if parameters is None else parameters
     assert len(header_data_unit_list) == 1, "Only a single image per FITS file is supported"
     assert header_data_unit_list[0].data.shape[1] % parameters.number_of_slices == 0, \
         "Image did not have the specified number of slices"
@@ -240,8 +249,7 @@ def raw_converter_from_hdulist(header_data_unit_list,
                          range(parameters.number_of_slices),
                          sliced_early_dark_pixels,
                          sliced_late_dark_pixels)),
-        fits_metadata=FITSMetaData(origin_file_name=origin_file_name,
-                                   header=header_data_unit_list[0].header),
+        fits_metadata=fits_metadata,
         parameters=parameters,
         flags=flags,
     )
