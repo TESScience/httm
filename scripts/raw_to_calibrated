@@ -1,9 +1,16 @@
 #!/usr/bin/env python2.7
 import argparse
+import os
 import sys
 
-from httm import raw_converter_from_file, write_fits
-from httm.transformations.raw_slices_to_calibrated import convert_adu_to_electrons
+import logging
+
+from httm import raw_fits_to_calibrated
+
+logging.basicConfig(
+    format="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s",
+    datefmt="%H:%M:%S",
+    level=getattr(logging, os.getenv('LOG', 'WARNING').upper()))
 
 if __name__ == "__main__":
 
@@ -17,4 +24,4 @@ if __name__ == "__main__":
                         help="The name of the Calibrated FITS file to use as output (defaults to STDOUT)")
 
     args = parser.parse_args()
-    write_fits(args.output, reduce(lambda x, t: t(x), raw_converter_from_file(args.input), [convert_adu_to_electrons]))
+    raw_fits_to_calibrated(args.input, args.output,)
