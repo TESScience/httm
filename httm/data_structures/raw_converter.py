@@ -48,7 +48,6 @@ Constructed using :py:func:`~httm.fits_utilities.raw_fits.raw_converter_paramete
     __slots__ = ()
 
 
-# TODO derive SingleCCDRawConverterFlags from FITS header
 # noinspection PyClassHasNoInit
 class SingleCCDRawConverterFlags(
     namedtuple('SingleCCDRawConverterFlags',
