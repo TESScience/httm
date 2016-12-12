@@ -203,13 +203,10 @@ def simulate_blooming_on_slice(full_well, blooming_threshold, number_of_exposure
             column = diffusion_step(column)
         return column
 
-    # TODO: relative coordinates
     working_pixels = numpy.copy(image_slice.pixels)
-    image_pixels = working_pixels[0:2058, 11:523]
-    bloomed_pixels = numpy.apply_along_axis(bloom_column, 0, image_pixels)
-    working_pixels[0:2058, 11:523] = bloomed_pixels
+    bloomed_pixels = numpy.apply_along_axis(bloom_column, 0, working_pixels)
     # noinspection PyProtectedMember
-    return image_slice._replace(pixels=working_pixels)
+    return image_slice._replace(pixels=bloomed_pixels)
 
 
 def add_readout_noise_to_slice(readout_noise_parameter, number_of_exposures, image_slice):
