@@ -30,7 +30,6 @@ Constructed using :py:func:`~httm.fits_utilities.electron_flux_fits.electron_flu
     __slots__ = ()
 
 
-# TODO derive SingleCCDElectronFluxConverterFlags from FITS header
 # noinspection PyClassHasNoInit
 class SingleCCDElectronFluxConverterFlags(
     namedtuple('SingleCCDElectronFluxConverterFlags',
