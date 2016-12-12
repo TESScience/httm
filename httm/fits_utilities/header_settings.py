@@ -10,7 +10,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-# TODO: log an error, don't assert
 # TODO: Fall back to alternate FITS headers
 def get_header_setting(key_name, setting_dictionary, fits_header, override_value=None):
     assert key_name in setting_dictionary, "Unknown key: {}".format(key_name)
