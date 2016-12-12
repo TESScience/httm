@@ -65,7 +65,6 @@ def write_raw_converter_to_calibrated_fits(converter, output_file):
 
 
 # TODO: Documentation
-# TODO: input_file is not used
 def raw_converter_flags_from_fits_header(fits_header,
                                          smear_rows_present=None,
                                          undershoot_present=None,
