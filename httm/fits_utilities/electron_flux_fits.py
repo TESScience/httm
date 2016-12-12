@@ -100,7 +100,6 @@ def electron_flux_converter_flags_from_fits_header(fits_header,
             fits_header,
             override_value)
 
-    # TODO try to read these from file
     return SingleCCDElectronFluxConverterFlags(
         smear_rows_present=get_flag('smear_rows_present', smear_rows_present),
         readout_noise_present=get_flag('readout_noise_present', readout_noise_present),
@@ -109,7 +108,7 @@ def electron_flux_converter_flags_from_fits_header(fits_header,
         undershoot_present=get_flag('undershoot_present', undershoot_present),
         pattern_noise_present=get_flag('pattern_noise_present', pattern_noise_present),
         start_of_line_ringing_present=get_flag('start_of_line_ringing_present',
-                                                    start_of_line_ringing_present),
+                                               start_of_line_ringing_present),
         baseline_present=get_flag('baseline_present', baseline_present),
         in_adu=get_flag('in_adu', in_adu),
     )
@@ -202,6 +201,7 @@ def electron_flux_converter_parameters_from_fits_header(fits_header,
     )
 
 
+# TODO: Write flags and parameters to hdulist
 def electron_flux_converter_to_simulated_raw_hdulist(converter):
     # type: (SingleCCDElectronFluxConverter) -> HDUList
     """
@@ -212,7 +212,7 @@ def electron_flux_converter_to_simulated_raw_hdulist(converter):
     :type converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :rtype: :py:class:`astropy.io.fits.HDUList`
     """
-    # TODO: write parameters and flags to HDU Headers
+
     early_dark_pixel_columns = converter.parameters.early_dark_pixel_columns
     late_dark_pixel_columns = converter.parameters.late_dark_pixel_columns
     final_dark_pixel_rows = converter.parameters.final_dark_pixel_rows
