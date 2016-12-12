@@ -14,6 +14,9 @@ from .electron_flux_slices_to_raw import introduce_smear_rows_to_slice, add_shot
     add_baseline_to_slice, add_readout_noise_to_slice, simulate_undershoot_on_slice, \
     simulate_start_of_line_ringing_to_slice, add_pattern_noise_to_slice, convert_slice_electrons_to_adu
 from ..resource_utilities import load_npz_resource
+from ..data_structures.electron_flux_converter import SingleCCDElectronFluxConverter
+
+# TODO: Add flags
 
 
 def introduce_smear_rows(electron_flux_converter):
