@@ -10,6 +10,7 @@ This module contains metadata for use in transformation functions.
 """
 
 from collections import OrderedDict
+
 from ..transformations.constants import FPE_MAX_ADU
 
 parameters = OrderedDict([
@@ -18,6 +19,8 @@ parameters = OrderedDict([
         'documentation': 'The number of slices to use in the transformation, either ``1`` or ``4``',
         'default': 4,
         'standard_fits_keyword': 'N_SLICES',
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': False,
     }),
     ('camera_number', {
@@ -25,6 +28,8 @@ parameters = OrderedDict([
         'documentation': 'The number of the camera that took the image.',
         'default': 0,
         'standard_fits_keyword': 'CAMNUM',
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': True,
     }),
     ('ccd_number', {
@@ -32,6 +37,8 @@ parameters = OrderedDict([
         'default': 0,
         'documentation': 'The number of the CCD that took the image.',
         'standard_fits_keyword': 'CCDNUM',
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': True,
     }),
     ('number_of_exposures', {
@@ -39,6 +46,7 @@ parameters = OrderedDict([
         'documentation': 'The number of frames stacked in the image.',
         'default': 1,
         'standard_fits_keyword': 'N_FRAMES',
+        'forbidden_fits_keywords': [],
         'alternate_fits_keywords': ['NREADS'],
         'required_keyword': True,
     }),
@@ -49,6 +57,7 @@ parameters = OrderedDict([
                          'These have units of electrons per ADU.',
         'default': (5.5, 5.5, 5.5, 5.5),
         'standard_fits_keyword': ['VSCALE1', 'VSCALE2', 'VSCALE3', 'VSCALE4', ],
+        'forbidden_fits_keywords': [],
         'required_keyword': False,
     }),
     ('readout_noise_parameters', {
@@ -69,6 +78,8 @@ parameters = OrderedDict([
                          'are where most of the start of line ringing may be seen. ',
         'default': 11,
         'standard_fits_keyword': 'LDRKCLS',
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': False,
     }),
     ('late_dark_pixel_columns', {
@@ -78,6 +89,8 @@ parameters = OrderedDict([
                          'Read after the image pixels in a row. ',
         'default': 11,
         'standard_fits_keyword': 'RDRKCLS',
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': False,
     }),
     ('final_dark_pixel_rows', {
@@ -86,6 +99,8 @@ parameters = OrderedDict([
                          'but not the image area, and thus were never exposed to light. ',
         'default': 10,
         'standard_fits_keyword': 'TDRKCLS',
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': False,
     }),
     ('smear_rows', {
@@ -95,6 +110,8 @@ parameters = OrderedDict([
                          'These are for estimating the effect of smear on the imaging pixels.',
         'default': 10,
         'standard_fits_keyword': 'SMRROWS',
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': False,
     }),
     ('random_seed', {
@@ -102,6 +119,8 @@ parameters = OrderedDict([
         'documentation': 'The seed value to hand to the random number generator',
         'default': None,
         'standard_fits_keyword': 'RNGSEED',
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': False,
     }),
     ('full_well', {
@@ -109,6 +128,8 @@ parameters = OrderedDict([
         'documentation': 'The expected maximum number of electrons that a pixel can hold.',
         'default': 170000.0,
         'standard_fits_keyword': 'FULLWELL',
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': False,
     }),
     ('blooming_threshold', {
@@ -116,6 +137,8 @@ parameters = OrderedDict([
         'documentation': 'The expected maximum number of electrons before a pixel blooms.',
         'default': 140000.0,
         'standard_fits_keyword': 'BLMTHRSH',
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': False,
     }),
     ('gain_loss', {
@@ -125,6 +148,8 @@ parameters = OrderedDict([
                          'This is sometimes referred to as *compression* in the electrical engineering literature.',
         'default': 0.01,
         'standard_fits_keyword': 'GAINLOSS',
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': False,
     }),
     ('undershoot_parameter', {
@@ -135,6 +160,8 @@ parameters = OrderedDict([
                          'to appear slightly darker that it should.',
         'default': 0.0013,
         'standard_fits_keyword': 'UNDRSHUT',
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': False,
     }),
     ('single_frame_baseline_adus', {
@@ -142,6 +169,8 @@ parameters = OrderedDict([
         'documentation': 'The mean ADU for a pixel with zero electrons for a single frame exposure, per slice.',
         'default': (6000.0, 6000.0, 6000.0, 6000.0,),
         'standard_fits_keyword': ['BASEADU1', 'BASEADU2', 'BASEADU3', 'BASEADU4'],
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': False,
     }),
     ('single_frame_baseline_adu_drift_term', {
@@ -150,6 +179,8 @@ parameters = OrderedDict([
                          'per simulated frame, to stress the baseline determination code.',
         'default': 0.0,
         'standard_fits_keyword': 'DRIFTADU',
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': False,
     }),
     ('smear_ratio', {
@@ -161,15 +192,18 @@ parameters = OrderedDict([
                          'The default is derived from ``Hemiola.fpe``.',
         'default': 4.84836e-06,
         'standard_fits_keyword': 'SMRRATIO',
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': False,
     }),
     ('clip_level_adu', {
         'type': 'int',
-        'documentation': 'The level in ADU where the CCD or the electronics will '
-                         'clip the video. The default is the maximum the *Analogue to Digital Converter* (ADC) '
-                         'can deliver.',
+        'documentation': 'The level in ADU where the CCD or the electronics will clip the video. '
+                         'The default is the maximum the *Analogue to Digital Converter* (ADC) can deliver.',
         'default': FPE_MAX_ADU,
         'standard_fits_keyword': 'CLIP_ADU',
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': False,
     }),
     ('start_of_line_ringing', {
@@ -181,6 +215,8 @@ parameters = OrderedDict([
                          'Units of the array are electrons.',
         'default': ':httm:/data/default_start_of_line_ringing.npz',
         'standard_fits_keyword': 'SOLRING',
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': False,
     }),
     ('pattern_noise', {
@@ -192,8 +228,10 @@ parameters = OrderedDict([
                          'Units of the matrix are electrons.',
         'default': ':httm:/data/default_pattern_noise.npz',
         'standard_fits_keyword': 'PATNOISE',
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': False,
-    })
+    }),
 ])
 
 transformation_flags = OrderedDict([
@@ -201,55 +239,73 @@ transformation_flags = OrderedDict([
         'type': 'bool',
         'documentation': 'Indicates whether there is data in the smear rows.',
         'standard_fits_keyword': 'SMRPRES',
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': False,
     }),
     ('shot_noise_present', {
         'type': 'bool',
         'documentation': 'Indicates whether *shot noise* is present.',
         'standard_fits_keyword': 'SHNOISEP',
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': False,
     }),
     ('blooming_present', {
         'type': 'bool',
         'documentation': 'Indicates whether *blooming* has been simulated.',
         'standard_fits_keyword': 'BLOOMP',
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': False,
     }),
     ('readout_noise_present', {
         'type': 'bool',
         'documentation': 'Indicates whether *readout noise* is present.',
         'standard_fits_keyword': 'RDNOISEP',
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': False,
     }),
     ('undershoot_present', {
         'type': 'bool',
         'documentation': 'Indicates whether *undershoot* is present or otherwise compensated for.',
         'standard_fits_keyword': 'UNDRSP',
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': False,
     }),
     ('start_of_line_ringing_present', {
         'type': 'bool',
         'documentation': 'Indicates whether *start of line ringing* is present or otherwise compensated for.',
         'standard_fits_keyword': 'SOLRP',
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': False,
     }),
     ('pattern_noise_present', {
         'type': 'bool',
         'documentation': 'Indicates whether *pattern noise* is present or otherwise compensated for.',
         'standard_fits_keyword': 'PTNOISEP',
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': False,
     }),
     ('baseline_present', {
         'type': 'bool',
         'documentation': 'Indicates whether a *baseline electron count* is present or otherwise compensated for.',
         'standard_fits_keyword': 'BASELN',
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': False,
     }),
     ('in_adu', {
         'type': 'bool',
         'documentation': 'Indicates whether the data is in *Analogue to Digital Converter Units* '
-                         'or otherwise in electon counts.',
+                         'or otherwise in electron counts.',
         'standard_fits_keyword': 'ADU',
+        'forbidden_fits_keywords': [],
+        'alternate_fits_keywords': [],
         'required_keyword': False,
     }),
 ])
