@@ -12,24 +12,26 @@ from astropy.io.fits import HDUList, PrimaryHDU
 
 from .header_settings import get_header_setting
 from ..data_structures.common import Slice, FITSMetaData
-from ..data_structures.electron_flux_converter import SingleCCDElectronFluxConverterFlags, \
-    electron_flux_transformation_flags, \
-    SingleCCDElectronFluxConverterParameters, SingleCCDElectronFluxConverter, electron_flux_converter_parameters
+from ..data_structures.electron_flux_converter import \
+    SingleCCDElectronFluxConverterFlags, SingleCCDElectronFluxConverterParameters, \
+    SingleCCDElectronFluxConverter, electron_flux_transformation_flags, electron_flux_converter_parameters
 
 
-def make_slice_from_electron_flux_data(pixels,
-                                       early_dark_pixel_columns,
-                                       late_dark_pixel_columns,
-                                       final_dark_pixel_rows,
-                                       smear_rows,
-                                       index):
+# TODO: Documentation
+def make_slice_from_electron_flux_data(
+        pixels,
+        early_dark_pixel_columns,
+        late_dark_pixel_columns,
+        final_dark_pixel_rows,
+        smear_rows,
+        index):
     # type: (numpy.ndarray, int, int, int, int, int) -> Slice
     """
     Construct a slice from an array of electron flux pixel data given a specified index.
 
     Result is in *electron* counts.
 
-    :param pixels: Image pixels from the electron flux data.
+    :param pixels: Image pixels from the electron flux data
     :type pixels: :py:class:`numpy.ndarray`
     :param early_dark_pixel_columns:
     :type early_dark_pixel_columns: int
@@ -39,7 +41,7 @@ def make_slice_from_electron_flux_data(pixels,
     :type final_dark_pixel_rows: int
     :param smear_rows:
     :type smear_rows: int
-    :param index: The index of the slice to construct.
+    :param index: The index of the slice to construct
     :type index: int
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
@@ -48,9 +50,11 @@ def make_slice_from_electron_flux_data(pixels,
     row_count = image_and_smear_and_final_dark_pixels.shape[0]
     early_dark_pixels = numpy.zeros((row_count, early_dark_pixel_columns))
     late_dark_pixels = numpy.zeros((row_count, late_dark_pixel_columns))
-    return Slice(pixels=numpy.hstack([early_dark_pixels, image_and_smear_and_final_dark_pixels, late_dark_pixels]),
-                 index=index,
-                 units='electrons')
+    return Slice(
+        pixels=numpy.hstack([early_dark_pixels, image_and_smear_and_final_dark_pixels, late_dark_pixels]),
+        index=index,
+        units='electrons',
+    )
 
 
 def electron_flux_converter_flags_from_fits_header(fits_header,
