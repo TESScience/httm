@@ -2,7 +2,9 @@
 PYTHON=$(CURDIR)/../venv/bin/python
 INSTALL=$(CURDIR)/../venv/bin/raw_to_calibrated
 
-FILES=electron_flux_fits/spot50.fits
+SPOT50_FITS=electron_flux_fits/spot50.fits
+SPOT50_RAW_FITS=raw_fits/spot50_raw.fits
+FILES=$(SPOT50_FITS) $(SPOT50_RAW_FITS)
 
 all: $(FILES)
 
@@ -12,10 +14,13 @@ $(PYTHON):
 $(INSTALL):
 	make -C .. install
 
-electron_flux_fits/spot50.fits: ./scripts/make_spot50
+$(SPOT50_FITS): ./scripts/make_spot50
 	@make $(PYTHON)
 	@make $(INSTALL)
 	$(PYTHON) $< $@
+
+$(SPOT50_RAW_FITS): $(SPOT50_FITS)
+	$(PYTHON) ../venv/bin/electron_flux_to_raw $< $@
 
 clean:
 	rm -f $(FILES)

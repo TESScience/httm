@@ -290,14 +290,20 @@ def electron_flux_converter_from_fits(input_file, flags=None, parameters=None):
     :param parameters:
     :return:
     """
-    header_data_unit_list = astropy.io.fits.open(input_file) if not isinstance(input_file,
-                                                                               astropy.io.fits.HDUList) else input_file
     origin_file_name = None
     if isinstance(input_file, str):
         origin_file_name = input_file
     if hasattr(input_file, 'name'):
         origin_file_name = input_file.name
-    return electron_flux_converter_from_hdulist(header_data_unit_list,
-                                                origin_file_name=origin_file_name,
-                                                flags=flags,
-                                                parameters=parameters)
+    if origin_file_name:
+        header_data_unit_list = astropy.io.fits.open(origin_file_name)
+    elif isinstance(input_file, astropy.io.fits.HDUList):
+        header_data_unit_list = input_file
+    else:
+        raise RuntimeError("Cannot make HDU for object of type {}".format(str(type(input_file))))
+    return electron_flux_converter_from_hdulist(
+        header_data_unit_list,
+        origin_file_name=origin_file_name,
+        flags=flags,
+        parameters=parameters,
+    )

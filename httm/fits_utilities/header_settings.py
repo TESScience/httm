@@ -5,12 +5,13 @@
 This module contains functions for parsing settings, such as parameter or flags,
 from a FITS file header.
 """
-from __future__ import print_function
 
 import logging
 
 logger = logging.getLogger(__name__)
 
+
+# TODO: set_header
 
 # TODO: Documentation
 def get_header_setting(key_name, setting_dictionary, fits_header, override_value=None):
@@ -35,7 +36,7 @@ def get_header_setting(key_name, setting_dictionary, fits_header, override_value
 
     default_value = setting_dictionary[key_name]['default']
 
-    if isinstance(fits_keyword, str):
+    if isinstance(fits_keyword, str):  # if the fits_keyword is a string
         if setting_dictionary[key_name]['required_keyword'] and fits_keyword not in fits_header:
             logger.warning("Required FITS keyword not present: {}".format(fits_keyword))
         if fits_keyword in fits_header:
@@ -47,10 +48,12 @@ def get_header_setting(key_name, setting_dictionary, fits_header, override_value
             for alternate_key in setting_dictionary[key_name]['alternate_fits_keywords']:
                 if alternate_key in fits_header:
                     assert isinstance(fits_header[alternate_key], type(default_value))
+                    logger.warning(
+                        'Required FITS keyword "{}" falling back to "{}"'.format(fits_keyword, alternate_key))
                     return fits_header[alternate_key]
             return default_value
 
-    elif hasattr(fits_keyword, '__iter__'):
+    elif hasattr(fits_keyword, '__iter__'):  # if the fits_keyword is a list
         assert len(fits_keyword) is len(default_value)
         for unsorted_fits_keyword, sorted_fits_keyword in zip(fits_keyword, sorted(fits_keyword)):
             assert unsorted_fits_keyword is sorted_fits_keyword, \

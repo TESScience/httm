@@ -22,7 +22,8 @@ raw_converter_parameters = OrderedDict((k, parameters[k])
                                                  'smear_rows',
                                                  'gain_loss',
                                                  'undershoot_parameter',
-                                                 'pattern_noise'])
+                                                 'pattern_noise'
+                                                 ])
 
 # TODO: Set blooming, shot noise, etc to True even though we can't scrub them
 raw_transformation_flags = OrderedDict((k, dict(default=True, **transformation_flags[k]))

@@ -5,10 +5,11 @@
 This module contains functions for dealing with package data.
 """
 
+import io
+import os
 import pkgutil
 import re
 
-import io
 import numpy
 
 
@@ -27,9 +28,11 @@ def load_npz_resource(file_name, resource_key):
     :type resource_key: :py:class:`str`
     :rtype: :py:class:`numpy.ndarray`
     """
-    if isinstance(file_name, str):
-        pattern_match = re.match(r'^:httm:(.*)', file_name)
+
+    if isinstance(file_name, str) and not os.path.isfile(file_name):
+        pattern_match = re.match(r'^built-in (.*)', file_name)
         if pattern_match:
-            return numpy.load(io.BytesIO(pkgutil.get_data('httm', pattern_match.group(1))))[resource_key]
+            return numpy.load(io.BytesIO(pkgutil.get_data(
+                'httm', os.path.join('/data', pattern_match.group(1)))))[resource_key]
 
     return numpy.load(file_name)[resource_key]

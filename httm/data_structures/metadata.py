@@ -34,11 +34,11 @@ parameters = OrderedDict([
     }),
     ('ccd_number', {
         'type': 'int',
-        'default': 0,
+        'default': -1,
         'documentation': 'The number of the CCD that took the image.',
         'standard_fits_keyword': 'CCDNUM',
         'forbidden_fits_keywords': [],
-        'alternate_fits_keywords': [],
+        'alternate_fits_keywords': ['CCD'],
         'required_keyword': True,
     }),
     ('number_of_exposures', {
@@ -75,7 +75,7 @@ parameters = OrderedDict([
         'documentation': 'Count of columns of pixels that have never traversed the image area '
                          'or frame store, and thus were never exposed to light. '
                          'Read before the image pixels in the row, these '
-                         'are where most of the start of line ringing may be seen. ',
+                         'are where most of the start of line ringing may be seen.',
         'default': 11,
         'standard_fits_keyword': 'LDRKCLS',
         'forbidden_fits_keywords': [],
@@ -86,7 +86,7 @@ parameters = OrderedDict([
         'type': 'int',
         'documentation': 'Count of columns of pixels that have never traversed the image area '
                          'or frame store, and thus were never exposed to light. '
-                         'Read after the image pixels in a row. ',
+                         'Read after the image pixels in a row.',
         'default': 11,
         'standard_fits_keyword': 'RDRKCLS',
         'forbidden_fits_keywords': [],
@@ -96,7 +96,7 @@ parameters = OrderedDict([
     ('final_dark_pixel_rows', {
         'type': 'int',
         'documentation': 'Count of rows of pixels that have traversed the frame store area, '
-                         'but not the image area, and thus were never exposed to light. ',
+                         'but not the image area, and thus were never exposed to light.',
         'default': 10,
         'standard_fits_keyword': 'TDRKCLS',
         'forbidden_fits_keywords': [],
@@ -213,7 +213,7 @@ parameters = OrderedDict([
                          'change in the video baseline caused by the disturbance '
                          'in the data acquisition rhythm between *rows*. '
                          'Units of the array are electrons.',
-        'default': ':httm:/data/default_start_of_line_ringing.npz',
+        'default': 'built-in default_start_of_line_ringing.npz',
         'standard_fits_keyword': 'SOLRING',
         'forbidden_fits_keywords': [],
         'alternate_fits_keywords': [],
@@ -221,12 +221,11 @@ parameters = OrderedDict([
     }),
     ('pattern_noise', {
         'type': ':py:class:`str` or :py:class:`file`',
-        'documentation': 'A matrix to be read from an ``npz`` file, to be added to the pixel data '
-                         'array for each slice, representing the repeatable '
-                         'change in the video baseline caused by the disturbance '
+        'documentation': 'A matrix to be read from an ``npz`` file,'
+                         ' representing the repeatable change in the video baseline caused by the disturbance '
                          'in the data acquisition rhythm between *frames*. '
                          'Units of the matrix are electrons.',
-        'default': ':httm:/data/default_pattern_noise.npz',
+        'default': 'built-in default_pattern_noise.npz',
         'standard_fits_keyword': 'PATNOISE',
         'forbidden_fits_keywords': [],
         'alternate_fits_keywords': [],
@@ -237,7 +236,7 @@ parameters = OrderedDict([
 transformation_flags = OrderedDict([
     ('smear_rows_present', {
         'type': 'bool',
-        'documentation': 'Indicates whether there is data in the smear rows.',
+        'documentation': 'Flag indicating whether there is data in the smear rows.',
         'standard_fits_keyword': 'SMRPRES',
         'forbidden_fits_keywords': [],
         'alternate_fits_keywords': [],
@@ -245,7 +244,7 @@ transformation_flags = OrderedDict([
     }),
     ('shot_noise_present', {
         'type': 'bool',
-        'documentation': 'Indicates whether *shot noise* is present.',
+        'documentation': 'Flag indicating whether *shot noise* is present.',
         'standard_fits_keyword': 'SHNOISEP',
         'forbidden_fits_keywords': [],
         'alternate_fits_keywords': [],
@@ -253,7 +252,7 @@ transformation_flags = OrderedDict([
     }),
     ('blooming_present', {
         'type': 'bool',
-        'documentation': 'Indicates whether *blooming* has been simulated.',
+        'documentation': 'Flag indicating whether *blooming* has been simulated.',
         'standard_fits_keyword': 'BLOOMP',
         'forbidden_fits_keywords': [],
         'alternate_fits_keywords': [],
@@ -261,7 +260,7 @@ transformation_flags = OrderedDict([
     }),
     ('readout_noise_present', {
         'type': 'bool',
-        'documentation': 'Indicates whether *readout noise* is present.',
+        'documentation': 'Flag indicating whether *readout noise* is present.',
         'standard_fits_keyword': 'RDNOISEP',
         'forbidden_fits_keywords': [],
         'alternate_fits_keywords': [],
@@ -269,7 +268,7 @@ transformation_flags = OrderedDict([
     }),
     ('undershoot_present', {
         'type': 'bool',
-        'documentation': 'Indicates whether *undershoot* is present or otherwise compensated for.',
+        'documentation': 'Flag indicating whether *undershoot* is present or otherwise compensated for.',
         'standard_fits_keyword': 'UNDRSP',
         'forbidden_fits_keywords': [],
         'alternate_fits_keywords': [],
@@ -277,7 +276,7 @@ transformation_flags = OrderedDict([
     }),
     ('start_of_line_ringing_present', {
         'type': 'bool',
-        'documentation': 'Indicates whether *start of line ringing* is present or otherwise compensated for.',
+        'documentation': 'Flag indicating whether *start of line ringing* is present or otherwise compensated for.',
         'standard_fits_keyword': 'SOLRP',
         'forbidden_fits_keywords': [],
         'alternate_fits_keywords': [],
@@ -285,7 +284,7 @@ transformation_flags = OrderedDict([
     }),
     ('pattern_noise_present', {
         'type': 'bool',
-        'documentation': 'Indicates whether *pattern noise* is present or otherwise compensated for.',
+        'documentation': 'Flag indicating whether *pattern noise* is present or otherwise compensated for.',
         'standard_fits_keyword': 'PTNOISEP',
         'forbidden_fits_keywords': [],
         'alternate_fits_keywords': [],
@@ -293,7 +292,7 @@ transformation_flags = OrderedDict([
     }),
     ('baseline_present', {
         'type': 'bool',
-        'documentation': 'Indicates whether a *baseline electron count* is present or otherwise compensated for.',
+        'documentation': 'Flag indicating whether a *baseline electron count* is present or otherwise compensated for.',
         'standard_fits_keyword': 'BASELN',
         'forbidden_fits_keywords': [],
         'alternate_fits_keywords': [],
@@ -301,7 +300,7 @@ transformation_flags = OrderedDict([
     }),
     ('in_adu', {
         'type': 'bool',
-        'documentation': 'Indicates whether the data is in *Analogue to Digital Converter Units* '
+        'documentation': 'Flag indicating whether the data is in *Analogue to Digital Converter Units* '
                          'or otherwise in electron counts.',
         'standard_fits_keyword': 'ADU',
         'forbidden_fits_keywords': [],

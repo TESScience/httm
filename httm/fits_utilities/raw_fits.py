@@ -264,14 +264,9 @@ def raw_converter_from_fits(input_file, flags=None, parameters=None):
     :param parameters:
     :rtype:
     """
-    header_data_unit_list = astropy.io.fits.open(input_file) \
-        if not isinstance(input_file, astropy.io.fits.HDUList) else input_file
-    origin_file_name = None
-    if isinstance(input_file, str):
-        origin_file_name = input_file
-    if hasattr(input_file, 'name'):
-        origin_file_name = input_file.name
-    return raw_converter_from_hdulist(header_data_unit_list,
-                                      origin_file_name=origin_file_name,
-                                      flags=flags,
-                                      parameters=parameters)
+    return raw_converter_from_hdulist(
+        astropy.io.fits.open(input_file),
+        origin_file_name=input_file,
+        flags=flags,
+        parameters=parameters,
+    )

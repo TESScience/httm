@@ -42,7 +42,7 @@ def transform_raw_converter(single_ccd_raw_converter, transformation_settings=ra
     return reduce(lambda converter, transformation_function: transformation_function(converter),
                   derive_transformation_function_list(transformation_settings, raw_transformation_default_settings,
                                                       raw_transformation_functions),
-                  initial=single_ccd_raw_converter)
+                  single_ccd_raw_converter)
 
 
 # TODO: Documentation
@@ -95,11 +95,13 @@ def transform_electron_flux_converter(single_ccd_electron_flux_converter,
     :return:
     """
     from functools import reduce
+    import numpy.random
+    numpy.random.seed(single_ccd_electron_flux_converter.parameters.random_seed)
     return reduce(lambda converter, transformation_function: transformation_function(converter),
                   derive_transformation_function_list(transformation_settings,
                                                       electron_flux_transformation_default_settings,
                                                       electron_flux_transformation_functions),
-                  initial=single_ccd_electron_flux_converter)
+                  single_ccd_electron_flux_converter)
 
 
 # TODO: Documentation
