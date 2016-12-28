@@ -6,6 +6,8 @@ This module contains top level transformations for converting electron flux
 to raw TESS full frame FITS images and raw to calibrated TESS full frame FITS images.
 """
 
+import logging
+
 from .fits_utilities.electron_flux_fits import electron_flux_converter_from_hdulist, \
     electron_flux_converter_to_simulated_raw_hdulist, electron_flux_converter_from_fits, \
     write_electron_flux_converter_to_simulated_raw_fits
@@ -16,22 +18,39 @@ from .transformations.electron_flux_converters_to_raw import electron_flux_trans
 from .transformations.raw_converters_to_calibrated import raw_transformation_default_settings, \
     raw_transformation_functions
 
-
-def derive_transformation_function_list(transformation_settings, default_settings, transformation_functions):
-    if isinstance(transformation_settings, dict):
-        for key, value in transformation_settings.items():
-            if key not in default_settings:
-                raise ValueError("Unknown raw transformation: {key}".format(key=key))
-            if not isinstance(value, bool):
-                raise ValueError("Value for raw transformation {key} "
-                                 "must be True or False, was {value}".format(key=key, value=value))
-    return tuple(transformation_functions[k]
-                 for k in default_settings.keys() if
-                 k not in transformation_settings and default_settings[k] or transformation_settings.get(k, False))
+logger = logging.getLogger(__name__)
 
 
 # TODO: Documentation
-def transform_raw_converter(single_ccd_raw_converter, transformation_settings=raw_transformation_default_settings):
+def derive_transformation_function_list(transformation_settings, default_settings, transformation_functions):
+    """
+
+    :param transformation_settings:
+    :type transformation_settings: object
+    :param default_settings:
+    :type default_settings: dictionary
+    :param transformation_functions:
+    :type transformation_functions: dictionary
+    :rtype:
+    """
+
+    def check_if_specified_or_default(key):
+        if hasattr(transformation_settings, key):
+            value = getattr(transformation_settings, key)
+            if value is not None:
+                if value is True or value is False:
+                    logger.info('Key "{key}" was set to {value}'.format(key=key, value=value))
+                    return value
+                else:
+                    raise Exception("Value must be either True or False, was: {}".format(value))
+        logger.info('Key "{key}" using default: {value}'.format(key=key, value=default_settings[key]))
+        return default_settings[key]
+
+    return tuple(transformation_functions[k] for k in default_settings.keys() if check_if_specified_or_default(k))
+
+
+# TODO: Documentation
+def transform_raw_converter(single_ccd_raw_converter, transformation_settings=None):
     """
 
     :param single_ccd_raw_converter:
@@ -59,8 +78,9 @@ def raw_hdulist_to_calibrated(hdulist, origin_file_name=None, flags=None, parame
     :param parameters:
     :param transformation_settings:
     """
-    single_ccd_raw_converter = raw_converter_from_hdulist(hdulist, origin_file_name=origin_file_name, flags=flags,
-                                                          parameters=parameters)
+    single_ccd_raw_converter = raw_converter_from_hdulist(hdulist, origin_file_name=origin_file_name,
+                                                          flag_overrides=flags,
+                                                          parameter_overrides=parameters)
     return raw_converter_to_calibrated_hdulist(
         transform_raw_converter(single_ccd_raw_converter, transformation_settings=transformation_settings))
 
@@ -79,7 +99,8 @@ def raw_fits_to_calibrated(fits_input_file, fits_output_file, flags=None, parame
     :param parameters:
     :param transformation_settings:
     """
-    single_ccd_raw_converter = raw_converter_from_fits(fits_input_file, flags=flags, parameters=parameters)
+    single_ccd_raw_converter = raw_converter_from_fits(fits_input_file, flag_overrides=flags,
+                                                       parameter_overrides=parameters)
     write_raw_converter_to_calibrated_fits(
         transform_raw_converter(single_ccd_raw_converter, transformation_settings=transformation_settings),
         fits_output_file)
@@ -87,7 +108,7 @@ def raw_fits_to_calibrated(fits_input_file, fits_output_file, flags=None, parame
 
 # TODO: Documentation
 def transform_electron_flux_converter(single_ccd_electron_flux_converter,
-                                      transformation_settings=electron_flux_transformation_default_settings):
+                                      transformation_settings=None):
     """
 
     :param single_ccd_electron_flux_converter:
@@ -119,8 +140,8 @@ def electron_flux_hdulist_to_simulated_raw(hdulist, origin_file_name=None, flags
     """
     single_ccd_electron_flux_converter = electron_flux_converter_from_hdulist(hdulist,
                                                                               origin_file_name=origin_file_name,
-                                                                              flags=flags,
-                                                                              parameters=parameters)
+                                                                              flag_overrides=flags,
+                                                                              parameter_overrides=parameters)
     return electron_flux_converter_to_simulated_raw_hdulist(
         transform_electron_flux_converter(single_ccd_electron_flux_converter,
                                           transformation_settings=transformation_settings))
@@ -139,8 +160,8 @@ def electron_flux_fits_to_raw(fits_input_file, fits_output_file, flags=None, par
     :param parameters:
     :param transformation_settings:
     """
-    single_ccd_electron_flux_converter = electron_flux_converter_from_fits(fits_input_file, flags=flags,
-                                                                           parameters=parameters)
+    single_ccd_electron_flux_converter = electron_flux_converter_from_fits(fits_input_file, flag_overrides=flags,
+                                                                           parameter_overrides=parameters)
     write_electron_flux_converter_to_simulated_raw_fits(
         transform_electron_flux_converter(single_ccd_electron_flux_converter,
                                           transformation_settings=transformation_settings),
@@ -212,8 +233,8 @@ def simulate_electronic_effects_on_fits(
     """
     single_ccd_electron_flux_converter = electron_flux_converter_from_fits(
         fits_input_file,
-        flags=electron_flux_flags,
-        parameters=electron_flux_parameters,
+        flag_overrides=electron_flux_flags,
+        parameter_overrides=electron_flux_parameters,
     )
     simulated_raw_hdulist = electron_flux_converter_to_simulated_raw_hdulist(
         transform_electron_flux_converter(single_ccd_electron_flux_converter,
@@ -221,8 +242,8 @@ def simulate_electronic_effects_on_fits(
     single_ccd_raw_converter = raw_converter_from_hdulist(
         simulated_raw_hdulist,
         origin_file_name=single_ccd_electron_flux_converter.fits_metadata.origin_file_name,
-        flags=raw_flags,
-        parameters=raw_parameters,
+        flag_overrides=raw_flags,
+        parameter_overrides=raw_parameters,
     )
     write_raw_converter_to_calibrated_fits(
         transform_raw_converter(single_ccd_raw_converter, transformation_settings=raw_transformation_settings),

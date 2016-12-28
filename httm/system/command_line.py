@@ -4,16 +4,6 @@
 
 This module contains utilities for parsing settings, such as parameter and flags, from the command line.
 """
-import re
-
-
-def tidy_default(default_argument):
-    if isinstance(default_argument, str):
-        pattern_match = re.match(r'^:httm:(.*)', default_argument)
-        if pattern_match:
-            return 'built-in ' + pattern_match.group(1)
-    else:
-        return default_argument
 
 
 # TODO: Documentation
@@ -25,29 +15,34 @@ def add_arguments_from_settings(argument_parser, setting_dictionary):
         documentation_no_defaults = setting_dictionary[key]['documentation'] \
             .replace('`', '') \
             .replace('*', '')  # type: str
-        if default is False:
+        if default is True or default is False:
+            negative_command_line_argument = '--no-' + key.replace('_', '-')
+            argument_parser.add_argument(
+                negative_command_line_argument,
+                default=None,
+                dest=key,
+                action='store_false')
             argument_parser.add_argument(
                 command_line_argument,
+                default=None,
+                dest=key,
                 action='store_true',
-                help=('{}'.format(documentation_no_defaults.rstrip('.') + ". Sets flag to True")))
-        elif default is True:
-            argument_parser.add_argument(
-                '--no-' + key.replace('_', '-'),
-                action='store_false',
-                help=('{}'.format(documentation_no_defaults.rstrip('.') + ". Sets flag to False")))
+                help='{}. Default: Set to {}'.format(
+                    documentation_no_defaults.rstrip('.'), str(default).upper()))
         elif hasattr(default, '__iter__') and not isinstance(default, str):
             argument_parser.add_argument(
                 command_line_argument,
+                default=None,
                 dest=key,
                 action='store',
                 nargs='+',
                 type=type(default[0]),
-                help=('{}. Default: {}'.format(documentation_no_defaults.rstrip('.'), default)))
+                help='{}. Default: {}'.format(documentation_no_defaults.rstrip('.'), default))
         else:
             argument_parser.add_argument(
                 command_line_argument,
                 dest=key,
                 action='store',
                 type=argument_type,
-                default=tidy_default(default),
-                help=('{}. Default: {}'.format(documentation_no_defaults.rstrip('.'), default)))
+                default=None,
+                help='{}. Default: {}'.format(documentation_no_defaults.rstrip('.'), default))

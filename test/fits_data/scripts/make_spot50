@@ -4,6 +4,7 @@
 # This puts 1000000 (implicitly electrons) in pixel [25, 25]. The rest of the image is 100.
 
 import sys
+import os
 
 import numpy
 from astropy.io import fits
@@ -13,4 +14,13 @@ if __name__ == "__main__":
     image_data[25, 25] = 1000000
     header = fits.Header()
     header['CCDNUM'] = -1
-    fits.writeto(sys.argv[1], image_data, header, clobber=True)
+    header['CAMNUM'] = -1
+    header['N_FRAMES'] = 1
+    output_file = sys.argv[1]
+
+    try:
+        os.remove(output_file)
+    except OSError:
+        pass
+
+    fits.writeto(output_file, image_data, header)

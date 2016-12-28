@@ -1,5 +1,5 @@
 ###################### Virtual Environment ######################
-.PHONY: install documentation clean test
+.PHONY: install test_images documentation clean test
 
 PYTHON_VERSION=3.5
 VIRTUAL_ENV=$(CURDIR)/venv
@@ -50,8 +50,12 @@ documentation:
 	| xargs $(PYTHON) scripts/python_object_exists.py
 	@echo OK
 
-test: $(INSTALL)
+test: $(INSTALL) test_images
 	@make $(TESTS)
+
+test_images:
+	make -C fits_data/ clean
+	make -C fits_data/
 
 %-test: notebooks/%.ipynb $(RUNIPY)
 	@echo -n Testing $<...

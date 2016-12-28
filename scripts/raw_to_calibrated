@@ -11,7 +11,7 @@ from httm.transformations.raw_converters_to_calibrated import raw_transformation
 log_level = os.getenv('LOG', 'WARNING').upper()
 logging.basicConfig(
     format="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s"
-    if log_level is "DEBUG" else "%(levelname)s %(message)s",
+    if log_level == "DEBUG" else "%(levelname)s %(message)s",
     datefmt="%H:%M:%S",
     level=getattr(logging, log_level))
 
@@ -19,13 +19,12 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Transform a RAW FITS file into a Calibrated FITS file')
 
-    parser.add_argument('input', type=str, help="The name of the RAW FITS file to use as input (defaults to STDIN)")
-    parser.add_argument('output', type=str,
-                        help="The name of the Calibrated FITS file to use as output (defaults to STDOUT)")
+    parser.add_argument('input', type=str, help="The name of the RAW FITS file to use as input")
+    parser.add_argument('output', type=str, help="The name of the Calibrated FITS file to use as output")
 
     add_arguments_from_settings(parser, raw_transformation_flags)
     add_arguments_from_settings(parser, raw_transformations)
     add_arguments_from_settings(parser, raw_converter_parameters)
 
     args = parser.parse_args()
-    raw_fits_to_calibrated(args.input, args.output,)
+    raw_fits_to_calibrated(args.input, args.output, flags=args, parameters=args, transformation_settings=args)

@@ -162,7 +162,7 @@ raw_transformations = OrderedDict([
     }),
     ('remove_baseline', {
         'default': True,
-        'documentation': 'This averages the pixels in the dark columns and subtracts ' +
+        'documentation': 'Average the pixels in the dark columns and subtract ' +
                          'the result from each pixel in the image.',
         'function': remove_baseline,
     }),

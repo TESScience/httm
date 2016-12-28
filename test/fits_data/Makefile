@@ -20,7 +20,7 @@ $(SPOT50_FITS): ./scripts/make_spot50
 	$(PYTHON) $< $@
 
 $(SPOT50_RAW_FITS): $(SPOT50_FITS)
-	$(PYTHON) ../venv/bin/electron_flux_to_raw $< $@
+	../venv/bin/electron_flux_to_raw --no-add-pattern-noise $< $@
 
 clean:
 	rm -f $(FILES)

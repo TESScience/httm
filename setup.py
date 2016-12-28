@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 from glob import glob
 
-VERSION = '0.1.0'
+VERSION = '0.1.1'
 
 setup(
     name='httm',
@@ -13,6 +13,6 @@ setup(
     author_email='matthew.wampler.doty@gmail.com, jpd@noqsi.com',
     packages=find_packages('.'),
     package_data={'httm': ['data/*.npz']},
-    install_requires=['numpy', 'astropy'],
+    install_requires=['numpy', 'astropy>=1.3'],
     scripts=glob('scripts/*'),
 )
