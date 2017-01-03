@@ -1,7 +1,7 @@
 ###################### Virtual Environment ######################
 .PHONY: install test_images documentation clean test
 
-PYTHON_VERSION=3.5
+PYTHON_VERSION=2.7
 VIRTUAL_ENV=$(CURDIR)/venv
 PYTHON=$(VIRTUAL_ENV)/bin/python$(PYTHON_VERSION)
 PIP=$(VIRTUAL_ENV)/bin/pip$(PYTHON_VERSION)
