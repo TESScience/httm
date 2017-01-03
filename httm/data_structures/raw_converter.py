@@ -42,7 +42,7 @@ class SingleCCDRawConverterParameters(
     __doc__ = """
 Converter parameters for converting a raw FITS image into a calibrated FITS image.
 
-Constructed using :py:func:`~httm.fits_utilities.raw_fits.raw_converter_parameters_from_fits`.
+Constructed using :py:func:`~httm.fits_utilities.raw_fits.raw_converter_parameters_from_fits_header`.
 
 {parameter_documentation}
 """.format(parameter_documentation=document_parameters(raw_converter_parameters))

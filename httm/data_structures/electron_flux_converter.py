@@ -23,7 +23,7 @@ class SingleCCDElectronFluxConverterParameters(namedtuple('SingleCCDElectronFlux
 Converter parameters for converting a electron flux FITS image into a simulated raw FITS image.
 
 Constructed using :py:func:`~httm.fits_utilities.electron_flux_fits.electron_flux_converter_from_fits` or
-:py:func:`~httm.fits_utilities.electron_flux_fits.electron_flux_converter_from_HDUList`.
+:py:func:`~httm.fits_utilities.electron_flux_fits.electron_flux_converter_from_hdulist`.
 
 {parameter_documentation}
 """.format(parameter_documentation=document_parameters(electron_flux_converter_parameters))
@@ -37,8 +37,8 @@ class SingleCCDElectronFluxConverterFlags(
     __doc__ = """
 Flags indicating which raw transformations have been performed.
 
-{parameter_documentation}
-""".format(parameter_documentation=document_parameters(electron_flux_transformation_flags))
+{flags_documentation}
+""".format(flags_documentation=document_parameters(electron_flux_transformation_flags))
     __slots__ = ()
 
 
