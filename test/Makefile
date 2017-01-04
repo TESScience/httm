@@ -9,8 +9,9 @@ RUNIPY=$(VIRTUAL_ENV)/bin/runipy
 SITE_PACKAGES=$(VIRTUAL_ENV)/lib/python$(PYTHON_VERSION)/site-packages
 VERSION=$(shell python3.5 -c "$(shell grep '^VERSION' $(CURDIR)/../setup.py) ; print(VERSION)")
 INSTALL=$(VIRTUAL_ENV)/bin/raw_to_calibrated
+CONFIG_TEST_FITS=output/json_raw.fits output/yaml_raw.fits output/toml_raw.fits output/tsv_raw.fits
 TESTS=httm-check-code-references httm-check-doc-references numpy-check-code-references astropy-check-code-references \
-      tutorial-test smoke-test command_line_utilities-test demo-test raw_demo-test
+      tutorial-test smoke-test command_line_utilities-test demo-test raw_demo-test $(CONFIG_TEST_FITS)
 
 all: install
 
@@ -19,7 +20,7 @@ install: $(VIRTUAL_ENV)
 	make -C .. clean
 	(cd .. ; $(PYTHON) setup.py install)
 	make -C fits_data/ all
-	echo done.
+	@echo done.
 
 $(INSTALL):
 	@make install
@@ -57,6 +58,21 @@ test_images:
 	make -C fits_data/ clean
 	make -C fits_data/
 
+output/:
+	mkdir -p $@
+
+output/json_raw.fits: output/ $(VIRTUAL_ENV)
+	$(PYTHON) ./venv/bin/electron_flux_to_raw fits_data/electron_flux_fits/spot50.fits $@ --config config/electron_flux_to_raw/config.json
+
+output/yaml_raw.fits: output/ $(VIRTUAL_ENV)
+	$(PYTHON) ./venv/bin/electron_flux_to_raw fits_data/electron_flux_fits/spot50.fits $@ --config config/electron_flux_to_raw/config.yaml
+
+output/toml_raw.fits: output/ $(VIRTUAL_ENV)
+	$(PYTHON) ./venv/bin/electron_flux_to_raw fits_data/electron_flux_fits/spot50.fits $@ --config config/electron_flux_to_raw/config.toml
+
+output/tsv_raw.fits: output/ $(VIRTUAL_ENV)
+	$(PYTHON) ./venv/bin/electron_flux_to_raw fits_data/electron_flux_fits/spot50.fits $@ --config config/electron_flux_to_raw/config.tsv
+
 %-test: notebooks/%.ipynb $(RUNIPY)
 	@echo -n Testing $<...
 	@$(PYTHON) $(RUNIPY) $(QUIET) $<
@@ -72,4 +88,4 @@ $(VIRTUAL_ENV):
 
 clean:
 	@make -C fits_data/ clean
-	rm -rf $(VIRTUAL_ENV)
+	rm -rf $(VIRTUAL_ENV) $(CONFIG_TEST_FITS)

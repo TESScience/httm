@@ -29,7 +29,7 @@ def load_npz_resource(file_name, resource_key):
     :rtype: :py:class:`numpy.ndarray`
     """
 
-    if isinstance(file_name, str) and not os.path.isfile(file_name):
+    if isinstance(file_name, str) or isinstance(file_name, unicode) and not os.path.isfile(file_name):
         pattern_match = re.match(r'^built-in (.*)', file_name)
         if pattern_match:
             return numpy.load(io.BytesIO(pkgutil.get_data(

@@ -13,6 +13,6 @@ setup(
     author_email='matthew.wampler.doty@gmail.com, jpd@noqsi.com',
     packages=find_packages('.'),
     package_data={'httm': ['data/*.npz']},
-    install_requires=['numpy', 'astropy>=1.3'],
+    install_requires=['numpy', 'astropy>=1.3', 'toml', 'pyyaml'],
     scripts=glob('scripts/*'),
 )

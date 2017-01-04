@@ -6,6 +6,7 @@ import os
 from httm import raw_fits_to_calibrated
 from httm.data_structures.raw_converter import raw_converter_parameters, raw_transformation_flags
 from httm.system.command_line import add_arguments_from_settings
+from httm.system.config_file import parse_config
 from httm.transformations.raw_converters_to_calibrated import raw_transformations
 
 log_level = os.getenv('LOG', 'WARNING').upper()
@@ -22,9 +23,19 @@ if __name__ == "__main__":
     parser.add_argument('input', type=str, help="The name of the RAW FITS file to use as input")
     parser.add_argument('output', type=str, help="The name of the Calibrated FITS file to use as output")
 
+    parser.add_argument('--config', default=None, type=str, dest='config',
+                        help='Set an optional JSON, TSV, TOML or YAML configuration file')
     add_arguments_from_settings(parser, raw_transformation_flags)
     add_arguments_from_settings(parser, raw_transformations)
     add_arguments_from_settings(parser, raw_converter_parameters)
 
     args = parser.parse_args()
-    raw_fits_to_calibrated(args.input, args.output, flags=args, parameters=args, transformation_settings=args)
+    settings = parse_config(args.config, [raw_transformation_flags,
+                                          raw_transformations,
+                                          raw_converter_parameters],
+                            override=args) if args.config is not None else args
+    raw_fits_to_calibrated(args.input,
+                           args.output,
+                           flags=settings,
+                           parameters=settings,
+                           transformation_settings=settings)
