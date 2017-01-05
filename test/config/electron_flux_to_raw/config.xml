@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <flags>
+    <baseline-present>false</baseline-present>
+    <blooming-present>false</blooming-present>
+    <in-adu>false</in-adu>
+    <pattern-noise-present>false</pattern-noise-present>
+    <readout-noise-present>false</readout-noise-present>
+    <shot-noise-present>false</shot-noise-present>
+    <smear-rows-present>false</smear-rows-present>
+    <start-of-line-ringing-present>false</start-of-line-ringing-present>
+    <undershoot-present>false</undershoot-present>
+  </flags>
+  <parameters>
+    <blooming-threshold>140000</blooming-threshold>
+    <camera-number>0</camera-number>
+    <ccd-number>-1</ccd-number>
+    <clip-level-adu>65535</clip-level-adu>
+    <early-dark-pixel-columns>11</early-dark-pixel-columns>
+    <final-dark-pixel-rows>10</final-dark-pixel-rows>
+    <full-well>170000</full-well>
+    <gain-loss>0.01</gain-loss>
+    <late-dark-pixel-columns>11</late-dark-pixel-columns>
+    <number-of-exposures>1</number-of-exposures>
+    <number-of-slices>4</number-of-slices>
+    <pattern-noise>built-in default_pattern_noise.npz</pattern-noise>
+    <random-seed>20</random-seed>
+    <readout-noise-parameters>9.5</readout-noise-parameters>
+    <readout-noise-parameters>9.5</readout-noise-parameters>
+    <readout-noise-parameters>9.5</readout-noise-parameters>
+    <readout-noise-parameters>9.5</readout-noise-parameters>
+    <single-frame-baseline-adu-drift-term>0</single-frame-baseline-adu-drift-term>
+    <single-frame-baseline-adus>6000</single-frame-baseline-adus>
+    <single-frame-baseline-adus>6000</single-frame-baseline-adus>
+    <single-frame-baseline-adus>6000</single-frame-baseline-adus>
+    <single-frame-baseline-adus>6000</single-frame-baseline-adus>
+    <smear-ratio>0.00000484836</smear-ratio>
+    <smear-rows>10</smear-rows>
+    <start-of-line-ringing>built-in default_start_of_line_ringing.npz</start-of-line-ringing>
+    <undershoot-parameter>0.0013</undershoot-parameter>
+    <video-scales>5.5</video-scales>
+    <video-scales>5.5</video-scales>
+    <video-scales>5.5</video-scales>
+    <video-scales>5.5</video-scales>
+  </parameters>
+  <transformations>
+    <add-baseline>true</add-baseline>
+    <add-pattern-noise>false</add-pattern-noise>
+    <add-readout-noise>true</add-readout-noise>
+    <add-shot-noise>true</add-shot-noise>
+    <convert-electrons-to-adu>true</convert-electrons-to-adu>
+    <introduce-smear-rows>true</introduce-smear-rows>
+    <simulate-blooming>true</simulate-blooming>
+    <simulate-start-of-line-ringing>true</simulate-start-of-line-ringing>
+    <simulate-undershoot>true</simulate-undershoot>
+  </transformations>
+</root>

@@ -9,7 +9,9 @@ RUNIPY=$(VIRTUAL_ENV)/bin/runipy
 SITE_PACKAGES=$(VIRTUAL_ENV)/lib/python$(PYTHON_VERSION)/site-packages
 VERSION=$(shell python3.5 -c "$(shell grep '^VERSION' $(CURDIR)/../setup.py) ; print(VERSION)")
 INSTALL=$(VIRTUAL_ENV)/bin/raw_to_calibrated
-CONFIG_TEST_FITS=output/json_raw.fits output/yaml_raw.fits output/toml_raw.fits output/tsv_raw.fits
+CONFIG_TEST_FITS=output/json_raw.fits output/yaml_raw.fits output/toml_raw.fits output/tsv_raw.fits output/xml_raw.fits \
+		 output/toml_calibrated.fits output/json_calibrated.fits output/yaml_calibrated.fits output/tsv_calibrated.fits \
+		 output/xml_calibrated.fits
 TESTS=httm-check-code-references httm-check-doc-references numpy-check-code-references astropy-check-code-references \
       tutorial-test smoke-test command_line_utilities-test demo-test raw_demo-test $(CONFIG_TEST_FITS)
 
@@ -52,6 +54,7 @@ documentation:
 	@echo OK
 
 test: $(INSTALL) test_images
+	rm -f $(CONFIG_TEST_FITS)
 	@make $(TESTS)
 
 test_images:
@@ -72,6 +75,24 @@ output/toml_raw.fits: output/ $(VIRTUAL_ENV)
 
 output/tsv_raw.fits: output/ $(VIRTUAL_ENV)
 	$(PYTHON) ./venv/bin/electron_flux_to_raw fits_data/electron_flux_fits/spot50.fits $@ --config config/electron_flux_to_raw/config.tsv
+
+output/xml_raw.fits: output/ $(VIRTUAL_ENV)
+	$(PYTHON) ./venv/bin/electron_flux_to_raw fits_data/electron_flux_fits/spot50.fits $@ --config config/electron_flux_to_raw/config.xml
+
+output/toml_calibrated.fits: output/ $(VIRTUAL_ENV)
+	$(PYTHON) ./venv/bin/raw_to_calibrated fits_data/raw_fits/single_ccd.fits $@ --config config/raw_to_calibrated/config.toml
+
+output/json_calibrated.fits: output/ $(VIRTUAL_ENV)
+	$(PYTHON) ./venv/bin/raw_to_calibrated fits_data/raw_fits/single_ccd.fits $@ --config config/raw_to_calibrated/config.json
+
+output/yaml_calibrated.fits: output/ $(VIRTUAL_ENV)
+	$(PYTHON) ./venv/bin/raw_to_calibrated fits_data/raw_fits/single_ccd.fits $@ --config config/raw_to_calibrated/config.yaml
+
+output/tsv_calibrated.fits: output/ $(VIRTUAL_ENV)
+	$(PYTHON) ./venv/bin/raw_to_calibrated fits_data/raw_fits/single_ccd.fits $@ --config config/raw_to_calibrated/config.tsv
+
+output/xml_calibrated.fits: output/ $(VIRTUAL_ENV)
+	$(PYTHON) ./venv/bin/raw_to_calibrated fits_data/raw_fits/single_ccd.fits $@ --config config/raw_to_calibrated/config.xml
 
 %-test: notebooks/%.ipynb $(RUNIPY)
 	@echo -n Testing $<...

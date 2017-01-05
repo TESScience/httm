@@ -24,7 +24,7 @@ if __name__ == "__main__":
     parser.add_argument('output', type=str, help="The name of the Calibrated FITS file to use as output")
 
     parser.add_argument('--config', default=None, type=str, dest='config',
-                        help='Set an optional JSON, TSV, TOML or YAML configuration file')
+                        help='Set an optional configuration file')
     add_arguments_from_settings(parser, raw_transformation_flags)
     add_arguments_from_settings(parser, raw_transformations)
     add_arguments_from_settings(parser, raw_converter_parameters)

@@ -24,20 +24,22 @@ if __name__ == "__main__":
     parser.add_argument('input', type=str, help="The name of the RAW FITS file to use as input")
     parser.add_argument('output', type=str, help="The name of the Calibrated FITS file to use as output")
 
-    parser.add_argument('--config', default=None, type=str, dest='config',
-                        help='Set an optional JSON, TSV, TOML or YAML configuration file')
+    parser.add_argument('--config',
+                        default=None, type=str, dest='config',
+                        help='Set an optional configuration file')
+
     add_arguments_from_settings(parser, electron_flux_transformation_flags)
     add_arguments_from_settings(parser, electron_flux_transformations)
     add_arguments_from_settings(parser, electron_flux_converter_parameters)
 
     args = parser.parse_args()
-    settings = parse_config(args.config, [electron_flux_transformation_flags,
-                                          electron_flux_transformations,
-                                          electron_flux_converter_parameters],
+    settings = parse_config(args.config,
+                            [electron_flux_transformation_flags,
+                             electron_flux_transformations,
+                             electron_flux_converter_parameters],
                             override=args) if args.config is not None else args
 
-    electron_flux_fits_to_raw(args.input,
-                              args.output,
+    electron_flux_fits_to_raw(args.input, args.output,
                               flags=settings,
                               parameters=settings,
                               transformation_settings=settings)

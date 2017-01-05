@@ -9,35 +9,37 @@ parameter or flag data structures.
 import json
 import os
 import re
-from collections import namedtuple
+from collections import namedtuple, Iterable
 
 import toml
+import xmltodict
 # noinspection PyPackageRequirements
 import yaml
 
 
-def convert_to_type(string, value_type):
+def convert_to_type(input_data, value_type):
     """
     Convert a string value into a specified type
 
-    :param string: Input to parse
-    :type string: str
+    :param input_data: Input to parse
     :param value_type: Type of the result
     :type value_type: type
     :return: The parsed string
     """
     if value_type is str:
-        return str(string)
+        return str(input_data)
     if value_type is float:
-        return float(string)
+        return float(input_data)
     if value_type is int:
-        return int(string)
+        return int(input_data)
     if value_type is bool:
-        return bool(json.loads(string.lower()))
+        return bool(json.loads(input_data.lower()))
     if value_type is tuple:
-        return tuple(json.loads(string))
-    else:
-        raise Exception("Unknown type: {}".format(value_type))
+        if isinstance(input_data, str):
+            return tuple(json.loads(input_data))
+        if isinstance(input_data, Iterable):
+            return tuple(json.loads(datum) for datum in input_data)
+    raise Exception("Unknown type: {}".format(value_type))
 
 
 def flatten_dictionary(dictionary):
@@ -98,7 +100,7 @@ def parse_dict(dictionary, reference_dictionaries, convert=False, override=None)
             # Use the override value if it is set
             if hasattr(override, k) and getattr(override, k) is not None:
                 flat_dictionary[k] = getattr(override, k)
-            # Check the types, but be very liberal
+            # Check the type in the dictionary, but be very liberal
             if not isinstance(flat_dictionary[k], type(reference[k]['default'])) and \
                     not reference[k]['default'] is None and \
                     not (isinstance(flat_dictionary[k], unicode) and isinstance(reference[k]['default'], str)) and \
@@ -106,8 +108,8 @@ def parse_dict(dictionary, reference_dictionaries, convert=False, override=None)
                     not (isinstance(flat_dictionary[k], float) and isinstance(reference[k]['default'], int)) and \
                     not (isinstance(flat_dictionary[k], int) and isinstance(reference[k]['default'], float)):
                 raise Exception(
-                    'Expected key "{key}" with value {value} '
-                    'to have type {expected_type}, but had type {actual_type}'.format(
+                    'Expected key "{key}" with value {value} to have type {expected_type}, '
+                    'but had type {actual_type}'.format(
                         key=k,
                         value=flat_dictionary[k],
                         expected_type=type(reference[k]['default']),
@@ -161,7 +163,7 @@ def parse_tsv_line(line, separator_regex):
 
 def parse_tsv(filename, reference_dictionaries, override=None):
     """
-    Parses a TSV into a namedtuple; only uses the first two non-empty columns
+    Parses a TSV file into a namedtuple; only uses the first two non-empty columns
 
     :param filename: File to parse
     :type filename: str
@@ -218,9 +220,25 @@ def parse_yaml(filename, reference_dictionaries, override=None):
         return parse_dict(yaml.load(f), reference_dictionaries, override=override)
 
 
+def parse_xml(filename, reference_dictionaries, override=None):
+    """
+    Parse an XML file into a namedtuple
+
+    :param filename: File to parse
+    :type filename: str
+    :param reference_dictionaries: List of dictionaries to use when creating a namedtuple
+    :type reference_dictionaries: list
+    :param override: Object with attributes that override values set by the dictionary
+    :type override: object
+    :rtype: namedtuple
+    """
+    with open(filename, 'r') as f:
+        return parse_dict(xmltodict.parse(f.read()), reference_dictionaries, override=override, convert=True)
+
+
 def parse_json(filename, reference_dictionaries, override=None):
     """
-    Parse a JSON into a namedtuple
+    Parse a JSON file into a namedtuple
 
     :param filename: File to parse
     :type filename: str
@@ -238,7 +256,7 @@ def parse_config(filename, reference_dictionaries, override=None):
     """
     Parse a file into a named tuple, based on suffix.
 
-    Supported file types are: JSON, TSV, YAML, and TOML.
+    Supported file types are: JSON, XML, TSV, YAML, and TOML.
 
     :param filename: File to parse
     :type filename: str
@@ -248,6 +266,7 @@ def parse_config(filename, reference_dictionaries, override=None):
     :type override: object
     :rtype: namedtuple
     """
+
     _, suffix = os.path.splitext(filename.lower())
 
     if suffix == '.tsv':
@@ -258,6 +277,8 @@ def parse_config(filename, reference_dictionaries, override=None):
         return parse_toml(filename, reference_dictionaries, override=override)
     if suffix == '.json':
         return parse_json(filename, reference_dictionaries, override=override)
+    if suffix == '.xml':
+        return parse_xml(filename, reference_dictionaries, override=override)
 
     raise Exception('Unsupported file format for {filename} (inferred suffix as "{suffix}")'.format(
         filename=filename,
