@@ -59,7 +59,8 @@ def transform_raw_converter(single_ccd_raw_converter, transformation_settings=No
     """
     from functools import reduce
     return reduce(lambda converter, transformation_function: transformation_function(converter),
-                  derive_transformation_function_list(transformation_settings, raw_transformation_default_settings,
+                  derive_transformation_function_list(transformation_settings,
+                                                      raw_transformation_default_settings,
                                                       raw_transformation_functions),
                   single_ccd_raw_converter)
 
@@ -86,8 +87,7 @@ def raw_hdulist_to_calibrated(hdulist, origin_file_name=None, flags=None, parame
 
 
 # TODO: Documentation
-# TODO: Test
-def raw_fits_to_calibrated(fits_input_file, fits_output_file, flags=None, parameters=None,
+def raw_fits_to_calibrated(fits_input_file, fits_output_file, flag_overrides=None, parameter_overrides=None,
                            transformation_settings=raw_transformation_default_settings):
     """
     TODO
@@ -95,12 +95,12 @@ def raw_fits_to_calibrated(fits_input_file, fits_output_file, flags=None, parame
 
     :param fits_input_file:
     :param fits_output_file:
-    :param flags:
-    :param parameters:
+    :param flag_overrides:
+    :param parameter_overrides:
     :param transformation_settings:
     """
-    single_ccd_raw_converter = raw_converter_from_fits(fits_input_file, flag_overrides=flags,
-                                                       parameter_overrides=parameters)
+    single_ccd_raw_converter = raw_converter_from_fits(fits_input_file, flag_overrides=flag_overrides,
+                                                       parameter_overrides=parameter_overrides)
     write_raw_converter_to_calibrated_fits(
         transform_raw_converter(single_ccd_raw_converter, transformation_settings=transformation_settings),
         fits_output_file)
@@ -241,7 +241,7 @@ def simulate_electronic_effects_on_fits(
                                           transformation_settings=electron_flux_transformation_settings))
     single_ccd_raw_converter = raw_converter_from_hdulist(
         simulated_raw_hdulist,
-        origin_file_name=single_ccd_electron_flux_converter.fits_metadata.origin_file_name,
+        origin_file_name=single_ccd_electron_flux_converter.conversion_metadata.origin_file_name,
         flag_overrides=raw_flags,
         parameter_overrides=raw_parameters,
     )

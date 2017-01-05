@@ -14,7 +14,7 @@ import numpy
 from astropy.io.fits import HDUList, PrimaryHDU
 
 from .header_settings import get_header_setting
-from ..data_structures.common import Slice, FITSMetaData
+from ..data_structures.common import Slice, ConversionMetaData
 from ..data_structures.raw_converter import SingleCCDRawConverterFlags, SingleCCDRawConverter, \
     raw_transformation_flags, SingleCCDRawConverterParameters, raw_converter_parameters
 
@@ -45,7 +45,7 @@ def raw_converter_to_calibrated_hdulist(converter):
         image_parts[i] = numpy.fliplr(image_parts[i])
 
     # TODO: Write parameters and flags to HDU header
-    return HDUList(PrimaryHDU(header=converter.fits_metadata.header,
+    return HDUList(PrimaryHDU(header=converter.conversion_metadata.header,
                               # `+` concatenates python lists
                               data=numpy.hstack(left_dark_parts + image_parts + right_dark_parts)))
 
@@ -172,9 +172,10 @@ def make_slice_from_raw_data(
 # TODO Documentation
 # noinspection PyUnresolvedReferences
 def raw_converter_from_hdulist(header_data_unit_list,
+                               command=None,
                                origin_file_name=None,
                                flag_overrides=None,
-                               parameter_overrides=None):
+                               parameter_overrides=None,):
     """
     TODO: Document this
 
@@ -185,10 +186,10 @@ def raw_converter_from_hdulist(header_data_unit_list,
     :rtype: SingleCCDRawConverter
     """
     from numpy import hsplit, fliplr
-    fits_metadata = FITSMetaData(origin_file_name=origin_file_name,
-                                 header=header_data_unit_list[0].header)  # type: FITSMetaData
-    flag_overrides = raw_converter_flags_from_fits_header(fits_metadata, flag_overrides=flag_overrides)
-    parameter_overrides = raw_converter_parameters_from_fits_header(fits_metadata,
+    conversion_metadata = ConversionMetaData(origin_file_name=origin_file_name,
+                                 header=header_data_unit_list[0].header)  # type: ConversionMetaData
+    flag_overrides = raw_converter_flags_from_fits_header(conversion_metadata, flag_overrides=flag_overrides)
+    parameter_overrides = raw_converter_parameters_from_fits_header(conversion_metadata,
                                                                     parameter_overrides=parameter_overrides)
     assert len(header_data_unit_list) == 1, "Only a single image per FITS file is supported"
     assert header_data_unit_list[0].data.shape[1] % parameter_overrides.number_of_slices == 0, \
@@ -217,7 +218,7 @@ def raw_converter_from_hdulist(header_data_unit_list,
                          range(parameter_overrides.number_of_slices),
                          sliced_early_dark_pixels,
                          sliced_late_dark_pixels)),
-        fits_metadata=fits_metadata,
+        conversion_metadata=conversion_metadata,
         parameters=parameter_overrides,
         flags=flag_overrides,
     )

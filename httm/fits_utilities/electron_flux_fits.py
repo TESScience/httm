@@ -14,7 +14,7 @@ import numpy
 from astropy.io.fits import HDUList, PrimaryHDU
 
 from .header_settings import get_header_setting
-from ..data_structures.common import Slice, FITSMetaData
+from ..data_structures.common import Slice, ConversionMetaData
 from ..data_structures.electron_flux_converter import \
     SingleCCDElectronFluxConverterFlags, SingleCCDElectronFluxConverterParameters, \
     SingleCCDElectronFluxConverter, electron_flux_transformation_flags, electron_flux_converter_parameters
@@ -158,7 +158,7 @@ def electron_flux_converter_to_simulated_raw_hdulist(converter):
         for raw_slice in converter.slices]
     for i in range(1, len(slices), 2):
         slices[i] = numpy.fliplr(slices[i])
-    return HDUList(PrimaryHDU(header=converter.fits_metadata.header,
+    return HDUList(PrimaryHDU(header=converter.conversion_metadata.header,
                               data=numpy.hstack(slices)))
 
 
@@ -198,11 +198,11 @@ def electron_flux_converter_from_hdulist(header_data_unit_list, origin_file_name
     :param parameter_overrides:
     :return:
     """
-    fits_metadata = FITSMetaData(origin_file_name=origin_file_name,
-                                 header=header_data_unit_list[0].header)  # type: FITSMetaData
-    flag_overrides = electron_flux_converter_flags_from_fits_header(fits_metadata.header,
+    conversion_metadata = ConversionMetaData(origin_file_name=origin_file_name,
+                                 header=header_data_unit_list[0].header)  # type: ConversionMetaData
+    flag_overrides = electron_flux_converter_flags_from_fits_header(conversion_metadata.header,
                                                                     flag_overrides=flag_overrides)
-    parameter_overrides = electron_flux_converter_parameters_from_fits_header(fits_metadata.header,
+    parameter_overrides = electron_flux_converter_parameters_from_fits_header(conversion_metadata.header,
                                                                               parameter_overrides=parameter_overrides)
     assert len(header_data_unit_list) == 1, "Only a single image per FITS file is supported"
     assert header_data_unit_list[0].data.shape[1] % parameter_overrides.number_of_slices == 0, \
@@ -217,7 +217,7 @@ def electron_flux_converter_from_hdulist(header_data_unit_list, origin_file_name
                                                             index),
                          numpy.hsplit(header_data_unit_list[0].data, parameter_overrides.number_of_slices),
                          range(parameter_overrides.number_of_slices))),
-        fits_metadata=fits_metadata,
+        conversion_metadata=conversion_metadata,
         parameters=parameter_overrides,
         flags=flag_overrides,
     )

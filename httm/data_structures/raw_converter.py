@@ -65,7 +65,7 @@ Flags indicating which raw transformations have been performed.
 class SingleCCDRawConverter(
     namedtuple('SingleCCDRawConverter',
                ['slices',
-                'fits_metadata',
+                'conversion_metadata',
                 'parameters',
                 'flags'])):
     """
@@ -73,8 +73,8 @@ class SingleCCDRawConverter(
 
     :param slices: The slices of the image
     :type slices: list of :py:class:`~httm.data_structures.common.Slice` objects
-    :param fits_metadata: Meta data associated with the image
-    :type fits_metadata: :py:class:`~httm.data_structures.common.FITSMetaData`
+    :param conversion_metadata: Meta data associated with the image transformation
+    :type conversion_metadata: :py:class:`~httm.data_structures.common.ConversionMetaData`
     :param parameters: The parameters of the transformation
     :type parameters: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverterParameters`
     :param flags: Flags indicating the state of the transformation

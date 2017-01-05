@@ -36,6 +36,6 @@ if __name__ == "__main__":
                             override=args) if args.config is not None else args
     raw_fits_to_calibrated(args.input,
                            args.output,
-                           flags=settings,
-                           parameters=settings,
+                           flag_overrides=settings,
+                           parameter_overrides=settings,
                            transformation_settings=settings)

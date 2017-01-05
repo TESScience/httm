@@ -45,17 +45,14 @@ Flags indicating which raw transformations have been performed.
 # noinspection PyUnresolvedReferences,PyClassHasNoInit
 class SingleCCDElectronFluxConverter(
     namedtuple('SingleCCDElectronFluxConverter',
-               ['slices',
-                'fits_metadata',
-                'parameters',
-                'flags'])):
+               ['slices', 'conversion_metadata', 'parameters', 'flags'])):
     """
     An immutable object for managing a transformation from a electron flux FITS image into a simulated raw image.
 
     :param slices: The slices of the image
     :type slices: tuple of :py:class:`~httm.data_structures.common.Slice` objects
-    :param fits_metadata: Meta data associated with the image
-    :type fits_metadata: :py:class:`~httm.data_structures.common.FITSMetaData`
+    :param conversion_metadata: Meta data associated with the image conversion
+    :type conversion_metadata: :py:class:`~httm.data_structures.common.ConversionMetaData`
     :param parameters: The parameters of the transformation
     :type parameters: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverterParameters`
     :param flags: Flags indicating the state of the transformation
