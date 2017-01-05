@@ -45,7 +45,7 @@ def remove_smear_from_slice(early_dark_pixel_columns, late_dark_pixel_columns, f
     """
     This function estimates *smear* from the *smear rows* of a slice and compensates for this
     effect.
-    
+
     This averages the smear rows and subtracts the result from each row in the image.
 
     Smear rows are then zeroed.
@@ -76,6 +76,30 @@ def remove_smear_from_slice(early_dark_pixel_columns, late_dark_pixel_columns, f
     working_pixels[-top:-final_dark_pixel_rows, early_dark_pixel_columns:-late_dark_pixel_columns] = 0
     # noinspection PyProtectedMember
     return image_slice._replace(pixels=working_pixels)
+
+
+def remove_baseline_from_slice(early_dark_pixel_columns, late_dark_pixel_columns, image_slice):
+    # type: (int, int, Slice) -> Slice
+    """
+    This function estimates *baseline* from the *dark pixels* of a slice and compensates for this
+    effect.
+
+    This averages the pixels in the dark columns and subtracts the result from each pixel in the image.
+
+    :param early_dark_pixel_columns: The number of dark pixel columns on the left side of the slice
+    :type early_dark_pixel_columns: int
+    :param late_dark_pixel_columns: The number of dark pixel columns on the right side of the slice
+    :type late_dark_pixel_columns: int
+    :param image_slice: Input slice. Units: electrons
+    :type image_slice: :py:class:`~httm.data_structures.common.Slice`
+    :rtype: :py:class:`~httm.data_structures.common.Slice`
+    """
+    assert image_slice.units == "electrons", "units must be electrons"
+    early = numpy.ravel(image_slice.pixels[:, :early_dark_pixel_columns])
+    late = numpy.ravel(image_slice.pixels[:, -late_dark_pixel_columns:])
+    mean = numpy.mean(numpy.concatenate((early, late)))
+    # noinspection PyProtectedMember
+    return image_slice._replace(pixels=image_slice.pixels - mean)
 
 
 def remove_pattern_noise_from_slice(pattern_noise, image_slice):

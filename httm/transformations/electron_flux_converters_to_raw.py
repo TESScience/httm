@@ -14,6 +14,9 @@ from .electron_flux_slices_to_raw import introduce_smear_rows_to_slice, add_shot
     add_baseline_to_slice, add_readout_noise_to_slice, simulate_undershoot_on_slice, \
     simulate_start_of_line_ringing_to_slice, add_pattern_noise_to_slice, convert_slice_electrons_to_adu
 from ..resource_utilities import load_npz_resource
+from ..data_structures.electron_flux_converter import SingleCCDElectronFluxConverter
+
+# TODO: Add flags
 
 
 def introduce_smear_rows(electron_flux_converter):
@@ -27,7 +30,8 @@ def introduce_smear_rows(electron_flux_converter):
     over each slice.
 
     :param electron_flux_converter: Should have electrons for units for each of its slices
-    :type electron_flux_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :type electron_flux_converter: \
+    :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
     smear_ratio = electron_flux_converter.parameters.smear_ratio
@@ -54,7 +58,8 @@ def add_shot_noise(electron_flux_converter):
     over each slice.
 
     :param electron_flux_converter: Should have electrons for units for each of its slices
-    :type electron_flux_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :type electron_flux_converter: \
+    :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
     image_slices = electron_flux_converter.slices
@@ -74,7 +79,8 @@ def simulate_blooming(electron_flux_converter):
     over each slice.
 
     :param electron_flux_converter: Should have electrons for units for each of its slices
-    :type electron_flux_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :type electron_flux_converter: \
+    :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
     full_well = electron_flux_converter.parameters.full_well
@@ -99,7 +105,8 @@ def add_baseline(electron_flux_converter):
     over each slice.
 
     :param electron_flux_converter: Should have electrons for units for each of its slices
-    :type electron_flux_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :type electron_flux_converter: \
+    :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
     image_slices = electron_flux_converter.slices
@@ -129,7 +136,8 @@ def add_readout_noise(electron_flux_converter):
     over each slice.
 
     :param electron_flux_converter: Should have electrons for units for each of its slices
-    :type electron_flux_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :type electron_flux_converter: \
+    :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
     readout_noise_parameters = electron_flux_converter.parameters.readout_noise_parameters
@@ -152,7 +160,8 @@ def simulate_undershoot(electron_flux_converter):
     over each slice.
 
     :param electron_flux_converter: Should have electrons for units for each of its slices
-    :type electron_flux_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :type electron_flux_converter: \
+    :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
     undershoot_parameter = electron_flux_converter.parameters.undershoot_parameter
@@ -173,7 +182,8 @@ def simulate_start_of_line_ringing(electron_flux_converter):
     over each slice.
 
     :param electron_flux_converter: Should have electrons for units for each of its slices
-    :type electron_flux_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :type electron_flux_converter: \
+    :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
     start_of_line_ringing_patterns = load_npz_resource(electron_flux_converter.parameters.start_of_line_ringing,
@@ -195,7 +205,8 @@ def add_pattern_noise(electron_flux_converter):
     :py:func:`~httm.transformations.electron_flux_slices_to_raw.add_pattern_noise_to_slice` over each slice.
 
     :param electron_flux_converter: Should have electrons for units for each of its slices
-    :type electron_flux_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :type electron_flux_converter: \
+    :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
     pattern_noises = load_npz_resource(electron_flux_converter.parameters.pattern_noise, 'pattern_noise')
@@ -216,7 +227,8 @@ def convert_electrons_to_adu(electron_flux_converter):
     :py:func:`~httm.transformations.electron_flux_slices_to_raw.convert_slice_electrons_to_adu` over each slice.
 
     :param electron_flux_converter: Should have electrons for units for each of its slices
-    :type electron_flux_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :type electron_flux_converter: \
+    :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
     video_scales = electron_flux_converter.parameters.video_scales
@@ -282,12 +294,12 @@ electron_flux_transformations = OrderedDict([
     }),
 ])
 
-electron_flux_transformation_functions = OrderedDict(
-    (key, electron_flux_transformations[key]['function'])
+electron_flux_transformation_default_settings = OrderedDict(
+    (key, electron_flux_transformations[key]['default'])
     for key in electron_flux_transformations.keys()
 )
 
-electron_flux_transformation_defaults = OrderedDict(
-    (key, electron_flux_transformations[key]['default'])
+electron_flux_transformation_functions = OrderedDict(
+    (key, electron_flux_transformations[key]['function'])
     for key in electron_flux_transformations.keys()
 )

@@ -1,0 +1,44 @@
+# Flags
+baseline-present			false
+blooming-present			false
+in-adu					false
+pattern-noise-present			false
+readout-noise-present			false
+shot-noise-present			false
+smear-rows-present			false
+start-of-line-ringing-present		false
+undershoot-present                      false
+
+# Parameters
+blooming-threshold      		140000
+camera-number   			0
+ccd-number      			-1
+clip-level-adu  			65535
+early-dark-pixel-columns        	11
+final-dark-pixel-rows   		10
+full-well       			170000
+gain-loss       			0.01
+late-dark-pixel-columns 		11                                    -- Shouldn't have to change this
+number-of-exposures     		1
+number-of-slices        		4
+pattern-noise   			"built-in default_pattern_noise.npz"  // Don't change this unless you know what you are doing
+random-seed	    			20
+readout-noise-parameters        	[   9.5,   9.5, 	  9.5, 	  9.5   ]
+single-frame-baseline-adu-drift-term    0.0
+single-frame-baseline-adus      	[6000, 6000, 6000, 6000]
+smear-ratio     	                0.00000484836
+smear-rows      			10
+start-of-line-ringing   		built-in default_start_of_line_ringing.npz
+undershoot-parameter    		0.0013
+video-scales    			[5.5, 5.5, 5.5, 5.5]
+
+# Transformations	
+add-baseline				true
+add-pattern-noise                       false                                 # Needs to be set to false for small image
+add-readout-noise			true
+add-shot-noise				true
+convert-electrons-to-adu		true
+introduce-smear-rows			true
+simulate-blooming			true
+simulate-start-of-line-ringing		true
+simulate-undershoot			true

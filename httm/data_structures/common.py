@@ -9,8 +9,8 @@ from collections import namedtuple
 
 
 # noinspection PyUnresolvedReferences,PyClassHasNoInit
-class FITSMetaData(
-    namedtuple('FITSMetaData',
+class ConversionMetaData(
+    namedtuple('ConversionMetaData',
                ['origin_file_name', 'header'])):
     """
     Meta data associated with data taken from a FITS file.

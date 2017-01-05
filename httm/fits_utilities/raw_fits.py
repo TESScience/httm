@@ -6,23 +6,28 @@ This module contains functions for marshalling and de-marshalling
 :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter` and the other book-keeping objects
 it contains to and from FITS files or :py:class:`astropy.io.fits.HDUList` objects.
 """
+
+import os
+
 import astropy
 import numpy
 from astropy.io.fits import HDUList, PrimaryHDU
 
-from ..data_structures.common import Slice, FITSMetaData
+from .header_settings import get_header_setting
+from ..data_structures.common import Slice, ConversionMetaData
 from ..data_structures.raw_converter import SingleCCDRawConverterFlags, SingleCCDRawConverter, \
     raw_transformation_flags, SingleCCDRawConverterParameters, raw_converter_parameters
 
 
+# TODO: Documentation
 # noinspection PyUnresolvedReferences
-def raw_converter_to_calibrated_HDUList(converter):
+def raw_converter_to_calibrated_hdulist(converter):
     # type: (SingleCCDRawConverter) -> HDUList
     """
     TODO: Document me
 
     :param converter:
-    :return:
+    :rtype: NoneType
     """
     # noinspection PyTypeChecker
     early_dark_pixel_columns = converter.parameters.early_dark_pixel_columns  # type: int
@@ -40,13 +45,14 @@ def raw_converter_to_calibrated_HDUList(converter):
         image_parts[i] = numpy.fliplr(image_parts[i])
 
     # TODO: Write parameters and flags to HDU header
-    return HDUList(PrimaryHDU(header=converter.fits_metadata.header,
+    return HDUList(PrimaryHDU(header=converter.conversion_metadata.header,
                               # `+` concatenates python lists
                               data=numpy.hstack(left_dark_parts + image_parts + right_dark_parts)))
 
 
+# TODO: Documentation
 def write_raw_converter_to_calibrated_fits(converter, output_file):
-    # type: (SingleCCDRawConverter, str) -> NoneType
+    # type: (SingleCCDRawConverter, str) -> None
     """
     Write a completed :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     to a calibrated FITS file
@@ -57,102 +63,80 @@ def write_raw_converter_to_calibrated_fits(converter, output_file):
     :type output_file: :py:class:`file` or :py:class:`str`
     :rtype: NoneType
     """
-    raw_converter_to_calibrated_HDUList(converter).writeto(output_file, clobber=True)
+    hdulist = raw_converter_to_calibrated_hdulist(converter)
+
+    try:
+        os.remove(output_file)
+    except OSError:
+        pass
+
+    hdulist.writeto(output_file)
 
 
-def raw_converter_flags_from_fits(input_file,
-                                  smear_rows_present=None,
-                                  undershoot_present=None,
-                                  pattern_noise_present=None,
-                                  start_of_line_ringing_present=None,
-                                  baseline_present=None,
-                                  in_adu=None
-                                  ):
+# TODO: Documentation
+def raw_converter_flags_from_fits_header(fits_header, flag_overrides=None):
     """
     Construct a :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverterFlags`
-    from a FITS file, file name or HDUList.
+    from a FITS header.
 
     TODO: Document me
 
-    :param smear_rows_present:
-    :type smear_rows_present: bool
-    :param undershoot_present:
-    :type undershoot_present: bool
-    :param pattern_noise_present:
-    :type pattern_noise_present: bool
-    :param start_of_line_ringing_present:
-    :type start_of_line_ringing_present: bool
-    :param baseline_present:
-    :type baseline_present: bool
-    :param in_adu:
-    :type in_adu: bool
-    :param input_file: The file or file name to input
-    :type input_file: :py:class:`file` or :py:class:`str`
+    :param fits_header: FITS header to use for parsing parameters
+    :type fits_header: :py:class:`astropy.io.fits.Header`
+    :param flag_overrides:
+    :type flag_overrides: object
     :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverterFlags`
     """
 
-    def get_parameter(parameter_name, parameter):
-        return raw_transformation_flags[parameter_name]['default'] if parameter is None else parameter
+    def get_flag(flag_name):
+        return get_header_setting(
+            flag_name,
+            raw_transformation_flags,
+            fits_header,
+            getattr(flag_overrides, flag_name) if hasattr(flag_overrides, flag_name) else None)
 
     return SingleCCDRawConverterFlags(
-        smear_rows_present=get_parameter('smear_rows_present', smear_rows_present),
-        undershoot_present=get_parameter('undershoot_present', undershoot_present),
-        pattern_noise_present=get_parameter('pattern_noise_present', pattern_noise_present),
-        start_of_line_ringing_present=get_parameter('start_of_line_ringing_present', start_of_line_ringing_present),
-        baseline_present=get_parameter('baseline_present', baseline_present),
-        in_adu=get_parameter('in_adu', in_adu),
+        smear_rows_present=get_flag('smear_rows_present'),
+        undershoot_present=get_flag('undershoot_present'),
+        pattern_noise_present=get_flag('pattern_noise_present'),
+        start_of_line_ringing_present=get_flag('start_of_line_ringing_present'),
+        baseline_present=get_flag('baseline_present'),
+        in_adu=get_flag('in_adu'),
     )
 
 
-def raw_converter_parameters_from_fits(input_file,
-                                       number_of_slices=None,
-                                       camera_number=None,
-                                       ccd_number=None,
-                                       number_of_exposures=None,
-                                       video_scales=None,
-                                       early_dark_pixel_columns=None,
-                                       late_dark_pixel_columns=None,
-                                       final_dark_pixel_rows=None,
-                                       smear_rows=None,
-                                       gain_loss=None,
-                                       undershoot_parameter=None,
-                                       pattern_noise=None,
-                                       ):
+# TODO: Documentation
+def raw_converter_parameters_from_fits_header(fits_header, parameter_overrides=None):
     """
     TODO: Document this
 
-    :param input_file:
-    :param number_of_slices:
-    :param camera_number:
-    :param ccd_number:
-    :param number_of_exposures:
-    :param video_scales:
-    :param early_dark_pixel_columns:
-    :param late_dark_pixel_columns:
-    :param final_dark_pixel_rows:
-    :param smear_rows:
-    :param gain_loss:
-    :param undershoot_parameter:
-    :param pattern_noise:
+    :param fits_header: FITS header to use for parsing parameters
+    :type fits_header: :py:class:`astropy.io.fits.Header`
+    :param parameter_overrides:
+    :type parameter_overrides: object
     :return:
     """
 
-    def get_parameter(parameter_name, parameter):
-        return raw_converter_parameters[parameter_name]['default'] if parameter is None else parameter
+    def get_parameter(parameter_name):
+        return get_header_setting(
+            parameter_name,
+            raw_converter_parameters,
+            fits_header,
+            getattr(parameter_overrides, parameter_name) if hasattr(parameter_overrides, parameter_name) else None)
 
     return SingleCCDRawConverterParameters(
-        number_of_slices=get_parameter('number_of_slices', number_of_slices),
-        camera_number=get_parameter('camera_number', camera_number),
-        ccd_number=get_parameter('ccd_number', ccd_number),
-        number_of_exposures=get_parameter('number_of_exposures', number_of_exposures),
-        video_scales=get_parameter('video_scales', video_scales),
-        early_dark_pixel_columns=get_parameter('early_dark_pixel_columns', early_dark_pixel_columns),
-        late_dark_pixel_columns=get_parameter('late_dark_pixel_columns', late_dark_pixel_columns),
-        final_dark_pixel_rows=get_parameter('final_dark_pixel_rows', final_dark_pixel_rows),
-        smear_rows=get_parameter('smear_rows', smear_rows),
-        gain_loss=get_parameter('gain_loss', gain_loss),
-        undershoot_parameter=get_parameter('undershoot_parameter', undershoot_parameter),
-        pattern_noise=get_parameter('pattern_noise', pattern_noise),
+        number_of_slices=get_parameter('number_of_slices'),
+        camera_number=get_parameter('camera_number'),
+        ccd_number=get_parameter('ccd_number'),
+        number_of_exposures=get_parameter('number_of_exposures'),
+        video_scales=get_parameter('video_scales'),
+        early_dark_pixel_columns=get_parameter('early_dark_pixel_columns'),
+        late_dark_pixel_columns=get_parameter('late_dark_pixel_columns'),
+        final_dark_pixel_rows=get_parameter('final_dark_pixel_rows'),
+        smear_rows=get_parameter('smear_rows'),
+        gain_loss=get_parameter('gain_loss'),
+        undershoot_parameter=get_parameter('undershoot_parameter'),
+        pattern_noise=get_parameter('pattern_noise'),
     )
 
 
@@ -185,75 +169,74 @@ def make_slice_from_raw_data(
         units='ADU')
 
 
-# TODO write raw_converter_from_HDUList
+# TODO Documentation
 # noinspection PyUnresolvedReferences
-def raw_converter_from_HDUList(header_data_unit_list,
+def raw_converter_from_hdulist(header_data_unit_list,
+                               command=None,
                                origin_file_name=None,
-                               flags=None,
-                               parameters=None,
-                               ):
+                               flag_overrides=None,
+                               parameter_overrides=None,):
     """
     TODO: Document this
 
     :param header_data_unit_list:
     :param origin_file_name:
-    :param flags:
-    :param parameters:
-    :return:
+    :param flag_overrides:
+    :param parameter_overrides:
+    :rtype: SingleCCDRawConverter
     """
     from numpy import hsplit, fliplr
-    flags = raw_converter_flags_from_fits(header_data_unit_list) if flags is None else flags
-    parameters = raw_converter_parameters_from_fits(header_data_unit_list) if parameters is None else parameters
+    conversion_metadata = ConversionMetaData(origin_file_name=origin_file_name,
+                                 header=header_data_unit_list[0].header)  # type: ConversionMetaData
+    flag_overrides = raw_converter_flags_from_fits_header(conversion_metadata, flag_overrides=flag_overrides)
+    parameter_overrides = raw_converter_parameters_from_fits_header(conversion_metadata,
+                                                                    parameter_overrides=parameter_overrides)
     assert len(header_data_unit_list) == 1, "Only a single image per FITS file is supported"
-    assert header_data_unit_list[0].data.shape[1] % parameters.number_of_slices == 0, \
+    assert header_data_unit_list[0].data.shape[1] % parameter_overrides.number_of_slices == 0, \
         "Image did not have the specified number of slices"
 
-    early_dark_pixel_count = parameters.number_of_slices * parameters.early_dark_pixel_columns
-    late_dark_pixel_count = parameters.number_of_slices * parameters.late_dark_pixel_columns
+    early_dark_pixel_count = parameter_overrides.number_of_slices * parameter_overrides.early_dark_pixel_columns
+    late_dark_pixel_count = parameter_overrides.number_of_slices * parameter_overrides.late_dark_pixel_columns
     sliced_image_smear_and_dark_pixels = hsplit(
-        header_data_unit_list[0].data[:, early_dark_pixel_count:-late_dark_pixel_count], parameters.number_of_slices)
+        header_data_unit_list[0].data[:, early_dark_pixel_count:-late_dark_pixel_count],
+        parameter_overrides.number_of_slices)
 
     # TODO: Document this in layout.rst
     # Rows in odd numbered slices have to be reversed
-    for i in range(1, parameters.number_of_slices, 2):
+    for i in range(1, parameter_overrides.number_of_slices, 2):
         sliced_image_smear_and_dark_pixels[i] = fliplr(sliced_image_smear_and_dark_pixels[i])
 
     # Note that left and right dark pixels do not need to be reversed
     sliced_early_dark_pixels = hsplit(header_data_unit_list[0].data[:, :early_dark_pixel_count],
-                                     parameters.number_of_slices)
+                                      parameter_overrides.number_of_slices)
     sliced_late_dark_pixels = hsplit(header_data_unit_list[0].data[:, -late_dark_pixel_count:],
-                                      parameters.number_of_slices)
+                                     parameter_overrides.number_of_slices)
 
     return SingleCCDRawConverter(
         slices=tuple(map(make_slice_from_raw_data,
                          sliced_image_smear_and_dark_pixels,
-                         range(parameters.number_of_slices),
+                         range(parameter_overrides.number_of_slices),
                          sliced_early_dark_pixels,
                          sliced_late_dark_pixels)),
-        fits_metadata=FITSMetaData(origin_file_name=origin_file_name,
-                                   header=header_data_unit_list[0].header),
-        parameters=parameters,
-        flags=flags,
+        conversion_metadata=conversion_metadata,
+        parameters=parameter_overrides,
+        flags=flag_overrides,
     )
 
 
-def raw_converter_from_fits(input_file, flags=None, parameters=None):
+# TODO: Documentation
+def raw_converter_from_fits(input_file, flag_overrides=None, parameter_overrides=None):
     """
     TODO: Document this
 
     :param input_file:
-    :param flags:
-    :param parameters:
-    :return:
+    :param flag_overrides:
+    :param parameter_overrides:
+    :rtype:
     """
-    header_data_unit_list = astropy.io.fits.open(input_file) if not isinstance(input_file, astropy.io.fits.HDUList) \
-        else input_file
-    origin_file_name = None
-    if isinstance(input_file, str):
-        origin_file_name = input_file
-    if hasattr(input_file, 'name'):
-        origin_file_name = input_file.name
-    return raw_converter_from_HDUList(header_data_unit_list,
-                                      origin_file_name=origin_file_name,
-                                      flags=flags,
-                                      parameters=parameters)
+    return raw_converter_from_hdulist(
+        astropy.io.fits.open(input_file),
+        origin_file_name=input_file,
+        flag_overrides=flag_overrides,
+        parameter_overrides=parameter_overrides,
+    )
