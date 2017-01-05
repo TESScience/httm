@@ -12,8 +12,8 @@ from .metadata import parameters, transformation_flags
 
 electron_flux_converter_parameters = parameters
 
-electron_flux_transformation_flags = OrderedDict((k, dict(default=False, **transformation_flags[k]))
-                                                 for k in transformation_flags.keys())
+electron_flux_transformation_flags = OrderedDict(
+    (k, dict(default=False, **transformation_flags[k])) for k in transformation_flags.keys())
 
 
 # noinspection PyClassHasNoInit
