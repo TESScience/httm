@@ -12,7 +12,7 @@ from collections import OrderedDict
 from .raw_slices_to_calibrated import convert_slice_adu_to_electrons, remove_pattern_noise_from_slice, \
     remove_undershoot_from_slice, remove_smear_from_slice, remove_baseline_from_slice
 from ..resource_utilities import load_npz_resource
-
+from ..data_structures.raw_converter import SingleCCDRawConverter
 
 # TODO: Add flags, specify which remove baseline electron count
 
@@ -162,7 +162,7 @@ raw_transformations = OrderedDict([
     }),
     ('remove_baseline', {
         'default': True,
-        'documentation': 'This averages the pixels in the dark columns and subtracts ' +
+        'documentation': 'Average the pixels in the dark columns and subtract ' +
                          'the result from each pixel in the image.',
         'function': remove_baseline,
     }),

@@ -14,29 +14,19 @@ Calibrated FITS images are converted from raw FITS images, or created synthetica
 
 To install `httm`, type at the command line:
 
-    pip install httm
+    pip install git+https://github.com/TESScience/httm.git
 
 ## Documentation
 
-[**Official Online Documentation**](https://httm.readthedocs.io/)
+See the [**Official Online Documentation**](https://httm.readthedocs.io/)
 
-To build the documentation, execute the following command at the command line in the directory this file is contained:
+## Development
 
-    make documentation
-
-You will need [pandoc](http://pandoc.org/ "Pandoc"), [jupyter](https://jupyter.org/ "Jupyter") and [sphinx](http://www.sphinx-doc.org/ "Sphinx"]) installed. If this is successful, you can view a PDF of the documentation in the directory:
-    
-    ./doc/build/latex/HTTM.pdf
-
-## Running Tests
-
-To run the unit tests for this software, execute the following command at the command line in the directory this file is contained:
-
-    make test
+See the [**Development Documentation**](Development.md "Development")
 
 ## Licensing
 
-HTTM is licensed under the  [MIT](http://opensource.org/licenses/MIT "The MIT License (MIT)") license: 
+HTTM is licensed under the [MIT](http://opensource.org/licenses/MIT "The MIT License (MIT)") license: 
 
 The MIT License (MIT)
 

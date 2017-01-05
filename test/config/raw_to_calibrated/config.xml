@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <flags>
+    <baseline-present>true</baseline-present>
+    <in-adu>true</in-adu>
+    <pattern-noise-present>true</pattern-noise-present>
+    <smear-rows-present>true</smear-rows-present>
+    <start-of-line-ringing-present>true</start-of-line-ringing-present>
+    <undershoot-present>true</undershoot-present>
+  </flags>
+  <parameters>
+    <camera-number>0</camera-number>
+    <ccd-number>-1</ccd-number>
+    <early-dark-pixel-columns>11</early-dark-pixel-columns>
+    <final-dark-pixel-rows>10</final-dark-pixel-rows>
+    <gain-loss>0.01</gain-loss>
+    <late-dark-pixel-columns>11</late-dark-pixel-columns>
+    <number-of-exposures>1</number-of-exposures>
+    <number-of-slices>4</number-of-slices>
+    <pattern-noise>built-in default_pattern_noise.npz</pattern-noise>
+    <smear-rows>10</smear-rows>
+    <undershoot-parameter>0.0013</undershoot-parameter>
+    <video-scales>5.5</video-scales>
+    <video-scales>5.5</video-scales>
+    <video-scales>5.5</video-scales>
+    <video-scales>5.5</video-scales>
+  </parameters>
+  <transformations>
+    <convert-adu-to-electrons>true</convert-adu-to-electrons>
+    <remove-baseline>true</remove-baseline>
+    <remove-pattern-noise>false</remove-pattern-noise>
+    <remove-smear>true</remove-smear>
+    <remove-start-of-line-ringing>true</remove-start-of-line-ringing>
+    <remove-undershoot>true</remove-undershoot>
+  </transformations>
+</root>

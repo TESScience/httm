@@ -22,9 +22,10 @@ raw_converter_parameters = OrderedDict((k, parameters[k])
                                                  'smear_rows',
                                                  'gain_loss',
                                                  'undershoot_parameter',
-                                                 'pattern_noise'])
+                                                 'pattern_noise'
+                                                 ])
 
-# TODO: Set blooming, shot noise, etc to True even though we can't scrub them
+# TODO: Set blooming, shot noise, etc to True even though we can't scrub them...?
 raw_transformation_flags = OrderedDict((k, dict(default=True, **transformation_flags[k]))
                                        for k in ['smear_rows_present',
                                                  'undershoot_present',
@@ -41,14 +42,13 @@ class SingleCCDRawConverterParameters(
     __doc__ = """
 Converter parameters for converting a raw FITS image into a calibrated FITS image.
 
-Constructed using :py:func:`~httm.fits_utilities.raw_fits.raw_converter_parameters_from_fits`.
+Constructed using :py:func:`~httm.fits_utilities.raw_fits.raw_converter_parameters_from_fits_header`.
 
 {parameter_documentation}
 """.format(parameter_documentation=document_parameters(raw_converter_parameters))
     __slots__ = ()
 
 
-# TODO derive SingleCCDRawConverterFlags from FITS header
 # noinspection PyClassHasNoInit
 class SingleCCDRawConverterFlags(
     namedtuple('SingleCCDRawConverterFlags',
@@ -65,7 +65,7 @@ Flags indicating which raw transformations have been performed.
 class SingleCCDRawConverter(
     namedtuple('SingleCCDRawConverter',
                ['slices',
-                'fits_metadata',
+                'conversion_metadata',
                 'parameters',
                 'flags'])):
     """
@@ -73,8 +73,8 @@ class SingleCCDRawConverter(
 
     :param slices: The slices of the image
     :type slices: list of :py:class:`~httm.data_structures.common.Slice` objects
-    :param fits_metadata: Meta data associated with the image
-    :type fits_metadata: :py:class:`~httm.data_structures.common.FITSMetaData`
+    :param conversion_metadata: Meta data associated with the image transformation
+    :type conversion_metadata: :py:class:`~httm.data_structures.common.ConversionMetaData`
     :param parameters: The parameters of the transformation
     :type parameters: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverterParameters`
     :param flags: Flags indicating the state of the transformation

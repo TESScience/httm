@@ -1,0 +1,33 @@
+flags:
+  baseline-present: true
+  in-adu: true
+  pattern-noise-present: true
+  smear-rows-present: true
+  start-of-line-ringing-present: true
+  undershoot-present: true
+
+parameters:
+  camera-number: 0
+  ccd-number: -1
+  early-dark-pixel-columns: 11
+  final-dark-pixel-rows: 10
+  gain-loss: 0.01
+  late-dark-pixel-columns: 11
+  number-of-exposures: 1
+  number-of-slices: 4
+  pattern-noise: built-in default_pattern_noise.npz
+  smear-rows: 10
+  undershoot-parameter: 0.0013
+  video-scales:
+  - 5.5
+  - 5.5
+  - 5.5
+  - 5.5
+
+transformations:
+  convert-adu-to-electrons: true
+  remove-baseline: true
+  remove-pattern-noise: false
+  remove-smear: true
+  remove-start-of-line-ringing: true
+  remove-undershoot: true
