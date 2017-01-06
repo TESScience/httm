@@ -3,6 +3,8 @@ import argparse
 import logging
 import os
 
+import sys
+
 from httm import raw_fits_to_calibrated
 from httm.data_structures.raw_converter import raw_converter_parameters, raw_transformation_flags
 from httm.system.command_line import add_arguments_from_settings
@@ -36,6 +38,7 @@ if __name__ == "__main__":
                             override=args) if args.config is not None else args
     raw_fits_to_calibrated(args.input,
                            args.output,
+                           command=" ".join(sys.argv),
                            flag_overrides=settings,
                            parameter_overrides=settings,
                            transformation_settings=settings)

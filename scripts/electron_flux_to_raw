@@ -4,6 +4,8 @@ import argparse
 import logging
 import os
 
+import sys
+
 from httm import electron_flux_fits_to_raw
 from httm.data_structures.electron_flux_converter import electron_flux_converter_parameters, \
     electron_flux_transformation_flags
@@ -40,6 +42,7 @@ if __name__ == "__main__":
                             override=args) if args.config is not None else args
 
     electron_flux_fits_to_raw(args.input, args.output,
-                              flags=settings,
-                              parameters=settings,
+                              command=" ".join(sys.argv),
+                              flag_overrides=settings,
+                              parameter_overrides=settings,
                               transformation_settings=settings)

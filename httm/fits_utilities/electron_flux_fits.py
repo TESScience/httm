@@ -80,17 +80,7 @@ def electron_flux_converter_flags_from_fits_header(fits_header, flag_overrides=N
             fits_header,
             getattr(flag_overrides, flag_name) if hasattr(flag_overrides, flag_name) else None)
 
-    return SingleCCDElectronFluxConverterFlags(
-        smear_rows_present=get_flag('smear_rows_present'),
-        readout_noise_present=get_flag('readout_noise_present'),
-        shot_noise_present=get_flag('shot_noise_present'),
-        blooming_present=get_flag('blooming_present'),
-        undershoot_present=get_flag('undershoot_present'),
-        pattern_noise_present=get_flag('pattern_noise_present'),
-        start_of_line_ringing_present=get_flag('start_of_line_ringing_present'),
-        baseline_present=get_flag('baseline_present'),
-        in_adu=get_flag('in_adu'),
-    )
+    return SingleCCDElectronFluxConverterFlags(**{k: get_flag(k) for k in electron_flux_transformation_flags})
 
 
 # TODO: Documentation
@@ -113,27 +103,7 @@ def electron_flux_converter_parameters_from_fits_header(fits_header, parameter_o
             getattr(parameter_overrides, parameter_name) if hasattr(parameter_overrides, parameter_name) else None)
 
     return SingleCCDElectronFluxConverterParameters(
-        number_of_slices=get_parameter('number_of_slices'),
-        camera_number=get_parameter('camera_number'),
-        ccd_number=get_parameter('ccd_number'),
-        number_of_exposures=get_parameter('number_of_exposures'),
-        video_scales=get_parameter('video_scales'),
-        readout_noise_parameters=get_parameter('readout_noise_parameters'),
-        early_dark_pixel_columns=get_parameter('early_dark_pixel_columns'),
-        late_dark_pixel_columns=get_parameter('late_dark_pixel_columns'),
-        final_dark_pixel_rows=get_parameter('final_dark_pixel_rows'),
-        smear_rows=get_parameter('smear_rows'),
-        random_seed=get_parameter('random_seed'),
-        full_well=get_parameter('full_well'),
-        gain_loss=get_parameter('gain_loss'),
-        undershoot_parameter=get_parameter('undershoot_parameter'),
-        single_frame_baseline_adus=get_parameter('single_frame_baseline_adus'),
-        single_frame_baseline_adu_drift_term=get_parameter('single_frame_baseline_adu_drift_term'),
-        smear_ratio=get_parameter('smear_ratio'),
-        clip_level_adu=get_parameter('clip_level_adu'),
-        start_of_line_ringing=get_parameter('start_of_line_ringing'),
-        pattern_noise=get_parameter('pattern_noise'),
-        blooming_threshold=get_parameter('blooming_threshold'),
+        **{k: get_parameter(k) for k in electron_flux_converter_parameters}
     )
 
 
@@ -187,48 +157,60 @@ def write_electron_flux_converter_to_simulated_raw_fits(converter, output_file):
 
 # TODO: Documentation
 # noinspection PyUnresolvedReferences
-def electron_flux_converter_from_hdulist(header_data_unit_list, origin_file_name=None,
-                                         flag_overrides=None, parameter_overrides=None):
+def electron_flux_converter_from_hdulist(
+        header_data_unit_list,
+        command=None,
+        origin_file_name=None,
+        flag_overrides=None,
+        parameter_overrides=None):
     """
     TODO: Document me
 
     :param header_data_unit_list:
+    :param command:
     :param origin_file_name:
     :param flag_overrides:
     :param parameter_overrides:
     :return:
     """
-    conversion_metadata = ConversionMetaData(origin_file_name=origin_file_name,
-                                 header=header_data_unit_list[0].header)  # type: ConversionMetaData
-    flag_overrides = electron_flux_converter_flags_from_fits_header(conversion_metadata.header,
-                                                                    flag_overrides=flag_overrides)
-    parameter_overrides = electron_flux_converter_parameters_from_fits_header(conversion_metadata.header,
-                                                                              parameter_overrides=parameter_overrides)
+    conversion_metadata = ConversionMetaData(
+        command=command,
+        origin_file_name=origin_file_name,
+        header=header_data_unit_list[0].header)  # type: ConversionMetaData
+    flag_overrides = electron_flux_converter_flags_from_fits_header(
+        conversion_metadata.header,
+        flag_overrides=flag_overrides)
+    parameters = electron_flux_converter_parameters_from_fits_header(
+        conversion_metadata.header,
+        parameter_overrides=parameter_overrides)
     assert len(header_data_unit_list) == 1, "Only a single image per FITS file is supported"
-    assert header_data_unit_list[0].data.shape[1] % parameter_overrides.number_of_slices == 0, \
+    assert header_data_unit_list[0].data.shape[1] % parameters.number_of_slices == 0, \
         "Image did not have the specified number of slices"
     return SingleCCDElectronFluxConverter(
-        slices=tuple(map(lambda pixel_data, index:
-                         make_slice_from_electron_flux_data(pixel_data,
-                                                            parameter_overrides.early_dark_pixel_columns,
-                                                            parameter_overrides.late_dark_pixel_columns,
-                                                            parameter_overrides.final_dark_pixel_rows,
-                                                            parameter_overrides.smear_rows,
-                                                            index),
-                         numpy.hsplit(header_data_unit_list[0].data, parameter_overrides.number_of_slices),
-                         range(parameter_overrides.number_of_slices))),
+        slices=tuple(
+            map(lambda pixel_data, index:
+                make_slice_from_electron_flux_data(
+                    pixel_data,
+                    parameters.early_dark_pixel_columns,
+                    parameters.late_dark_pixel_columns,
+                    parameters.final_dark_pixel_rows,
+                    parameters.smear_rows,
+                    index),
+                numpy.hsplit(header_data_unit_list[0].data, parameters.number_of_slices),
+                range(parameters.number_of_slices))),
         conversion_metadata=conversion_metadata,
-        parameters=parameter_overrides,
+        parameters=parameters,
         flags=flag_overrides,
     )
 
 
 # TODO: Documentation
-def electron_flux_converter_from_fits(input_file, flag_overrides=None, parameter_overrides=None):
+def electron_flux_converter_from_fits(input_file, command=None, flag_overrides=None, parameter_overrides=None):
     """
     TODO: Document me
 
     :param input_file:
+    :param command:
     :param flag_overrides:
     :param parameter_overrides:
     :return:
@@ -246,6 +228,7 @@ def electron_flux_converter_from_fits(input_file, flag_overrides=None, parameter
         raise RuntimeError("Cannot make HDU for object of type {}".format(str(type(input_file))))
     return electron_flux_converter_from_hdulist(
         header_data_unit_list,
+        command=command,
         origin_file_name=origin_file_name,
         flag_overrides=flag_overrides,
         parameter_overrides=parameter_overrides,

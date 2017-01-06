@@ -66,19 +66,25 @@ def transform_raw_converter(single_ccd_raw_converter, transformation_settings=No
 
 
 # TODO: Documentation
-def raw_fits_to_calibrated(fits_input_file, fits_output_file, flag_overrides=None, parameter_overrides=None,
+def raw_fits_to_calibrated(fits_input_file,
+                           fits_output_file,
+                           flag_overrides=None,
+                           parameter_overrides=None,
+                           command=None,
                            transformation_settings=raw_transformation_default_settings):
     """
     TODO
 
-
+    :param command:
     :param fits_input_file:
     :param fits_output_file:
     :param flag_overrides:
     :param parameter_overrides:
     :param transformation_settings:
     """
-    single_ccd_raw_converter = raw_converter_from_fits(fits_input_file, flag_overrides=flag_overrides,
+    single_ccd_raw_converter = raw_converter_from_fits(fits_input_file,
+                                                       command=command,
+                                                       flag_overrides=flag_overrides,
                                                        parameter_overrides=parameter_overrides)
     write_raw_converter_to_calibrated_fits(
         transform_raw_converter(single_ccd_raw_converter, transformation_settings=transformation_settings),
@@ -105,19 +111,27 @@ def transform_electron_flux_converter(single_ccd_electron_flux_converter,
 
 
 # TODO: Documentation
-def electron_flux_fits_to_raw(fits_input_file, fits_output_file, flags=None, parameters=None,
+def electron_flux_fits_to_raw(fits_input_file,
+                              fits_output_file,
+                              command=None,
+                              flag_overrides=None,
+                              parameter_overrides=None,
                               transformation_settings=electron_flux_transformation_default_settings):
     """
     TODO
 
     :param fits_input_file:
     :param fits_output_file:
-    :param flags:
-    :param parameters:
+    :param command:
+    :param flag_overrides:
+    :param parameter_overrides:
     :param transformation_settings:
     """
-    single_ccd_electron_flux_converter = electron_flux_converter_from_fits(fits_input_file, flag_overrides=flags,
-                                                                           parameter_overrides=parameters)
+    single_ccd_electron_flux_converter = electron_flux_converter_from_fits(
+        fits_input_file,
+        command=command,
+        flag_overrides=flag_overrides,
+        parameter_overrides=parameter_overrides)
     write_electron_flux_converter_to_simulated_raw_fits(
         transform_electron_flux_converter(single_ccd_electron_flux_converter,
                                           transformation_settings=transformation_settings),

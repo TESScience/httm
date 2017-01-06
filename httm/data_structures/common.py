@@ -10,8 +10,7 @@ from collections import namedtuple
 
 # noinspection PyUnresolvedReferences,PyClassHasNoInit
 class ConversionMetaData(
-    namedtuple('ConversionMetaData',
-               ['origin_file_name', 'header'])):
+    namedtuple('ConversionMetaData', ['origin_file_name', 'command', 'header'])):
     """
     Meta data associated with data taken from a FITS file.
 
@@ -25,10 +24,7 @@ class ConversionMetaData(
 
 # noinspection PyUnresolvedReferences,PyClassHasNoInit
 class Slice(
-    namedtuple('Slice',
-               ['index',
-                'units',
-                'pixels'])):
+    namedtuple('Slice', ['index', 'units', 'pixels'])):
     """
     A slice from a CCD. Includes all data associated with the slice in question
     from various parts of the raw CCD image.
