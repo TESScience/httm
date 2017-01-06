@@ -22,7 +22,7 @@ See the [**Official Online Documentation**](https://httm.readthedocs.io/)
 
 ## Development
 
-See the [**Development Documentation**](Development.md "Development")
+See the [**Development Documentation**](DEVELOPMENT.md "Development")
 
 ## Licensing
 
