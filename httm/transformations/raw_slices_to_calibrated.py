@@ -73,7 +73,6 @@ def remove_smear_from_slice(early_dark_pixel_columns, late_dark_pixel_columns, f
     mean_smear = numpy.sum(
         working_pixels[-top:-final_dark_pixel_rows], 0) / smear_rows
     working_pixels -= mean_smear
-    working_pixels[-top:-final_dark_pixel_rows, early_dark_pixel_columns:-late_dark_pixel_columns] = 0
     # noinspection PyProtectedMember
     return image_slice._replace(pixels=working_pixels)
 
