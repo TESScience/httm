@@ -16,7 +16,7 @@ from ..transformations.constants import FPE_MAX_ADU
 parameters = OrderedDict([
     ('number_of_slices', {
         'type': 'int',
-        'documentation': 'The number of slices to use in the transformation, either ``1`` or ``4``',
+        'documentation': 'The number of slices to use in the transformation, either ``1`` or ``4``.',
         'default': 4,
         'standard_fits_keyword': 'N_SLICES',
         'forbidden_fits_keywords': [],
@@ -25,8 +25,9 @@ parameters = OrderedDict([
     }),
     ('camera_number', {
         'type': 'int',
-        'documentation': 'The number of the camera that took the image.',
-        'default': 0,
+        'documentation': 'The number of the camera that took the image.'
+                         ' For real images, the serial number 0-31 of the FPE interface board is used.',
+        'default': -1,
         'standard_fits_keyword': 'CAMNUM',
         'forbidden_fits_keywords': [],
         'alternate_fits_keywords': [],
@@ -38,7 +39,7 @@ parameters = OrderedDict([
         'documentation': 'The number of the CCD that took the image.',
         'standard_fits_keyword': 'CCDNUM',
         'forbidden_fits_keywords': [],
-        'alternate_fits_keywords': ['CCD'],
+        'alternate_fits_keywords': ['CCD','CROPID'],
         'required_keyword': True,
     }),
     ('number_of_exposures', {
