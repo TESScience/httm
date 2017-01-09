@@ -81,7 +81,7 @@ def parse_dict(dictionary, reference_dictionaries, convert=False, override=None)
         reference.update(d)
     flat_dictionary = flatten_dictionary(dictionary)
     for raw_k in flat_dictionary:
-        k = raw_k.replace("-", "_")
+        k = raw_k.replace("-", "_").lower()
         if k not in reference:
             raise Exception('Unknown key: "{key}"\n'
                             'Available keys (with defaults): {keys}'.format(key=k,
