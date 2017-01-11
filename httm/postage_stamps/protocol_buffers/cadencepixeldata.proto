@@ -1,0 +1,30 @@
+package tess.protobuf ;
+option  java_package = "gov.nasa.tess.protobuf " ; 
+option  java_outer_classname = "CadencePixelData" ; 
+option  optimize_for = SPEED; 
+
+message  PixelHeader  {
+   required  int64  data_set_id = 1;
+   required  int32  camera_number = 2;
+   required  int32  ccd_number = 3;
+   required  int32  sector_number = 4;
+   required  int32  cadence_number = 5;
+   required  double start_tjd = 6;
+   required  double end_tjd = 7;
+   required  int32  config_map_id = 8;
+   required  int32  target_pixel_table_id = 9;
+   required  int32  collateral_pixel_table_id = 10;
+   //  repeated  int32  target_data = 11  [ packed=true ] ;
+   //  repeated  int32  collateral_data = 12  [ packed=true ] ;
+   optional  bool   requant_enabled = 13 ;
+   optional  bool   in_fine_point = 14 ;
+   optional  bool   in_coarse_point = 15 ;
+   optional  bool   in_momentum_dump = 16 ;    
+   optional  bool   cosmic_ray_mitigation_enabled = 17  [ default=false ] ;
+   optional  int32  cosmicRayRejectedExposures = 18  [ default=0 ] ;
+}
+
+message  PixelData { 
+   repeated  int32  target_data = 1  [ packed=true ] ;
+   repeated  int32  collateral_data = 2  [ packed=true ] ;
+}
