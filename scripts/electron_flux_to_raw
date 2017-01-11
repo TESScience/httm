@@ -1,8 +1,27 @@
 #!/usr/bin/env python2.7
 
+# HTTM: A transformation library for RAW and Electron Flux TESS Images
+# Copyright (C) 2016, 2017 John Doty and Matthew Wampler-Doty of Noqsi Aerospace, Ltd.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
 import argparse
 import logging
 import os
+
+import sys
 
 from httm import electron_flux_fits_to_raw
 from httm.data_structures.electron_flux_converter import electron_flux_converter_parameters, \
@@ -40,6 +59,7 @@ if __name__ == "__main__":
                             override=args) if args.config is not None else args
 
     electron_flux_fits_to_raw(args.input, args.output,
-                              flags=settings,
-                              parameters=settings,
+                              command=" ".join(sys.argv),
+                              flag_overrides=settings,
+                              parameter_overrides=settings,
                               transformation_settings=settings)

@@ -3,12 +3,12 @@
 from setuptools import setup, find_packages
 from glob import glob
 
-VERSION = '0.1.1'
+VERSION = '0.1.2'
 
 setup(
     name='httm',
     version=VERSION,
-    description='A transformation library for RAW and Calibrated TESS Images',
+    description='A transformation library for RAW and Electron Flux TESS Images',
     author='Matthew Wampler-Doty, John Doty',
     author_email='matthew.wampler.doty@gmail.com, jpd@noqsi.com',
     packages=find_packages('.'),
