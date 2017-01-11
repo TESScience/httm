@@ -2,12 +2,15 @@
 import sys
 from numpy import linspace, concatenate, savez, array
 
+
 if __name__ == "__main__":
     # Create default start of line ringing file
 
     # This zero-pads the ringing, makes a line for standard TESS format. 
-    # Units are electrons, although the linspace approximation came from
+    # Units are electrons, although the linear space approximation came from
     # inspecting an ADU plot of real data.
+
+    # Used to generate the file `default_start_of_line_ringing.npz`
 
     video_scale = 5.2
     start_of_line_ringing1 = video_scale * concatenate((linspace(-0.6, 0.4, num=40),
@@ -17,4 +20,4 @@ if __name__ == "__main__":
     savez(sys.argv[1], start_of_line_ringing=array([start_of_line_ringing1,
                                                     start_of_line_ringing1,
                                                     start_of_line_ringing1,
-                                                    start_of_line_ringing1,]))
+                                                    start_of_line_ringing1, ]))

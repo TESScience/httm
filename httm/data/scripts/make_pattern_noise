@@ -5,6 +5,8 @@ import sys
 if __name__ == "__main__":
     # Create default pattern noise file
 
+    # Used to generate the file `default_pattern_noise.npz`
+
     amplitude_electrons = 10
 
     # noinspection PyTypeChecker
