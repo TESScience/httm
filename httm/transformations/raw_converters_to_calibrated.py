@@ -14,8 +14,6 @@ from .raw_slices_to_calibrated import convert_slice_adu_to_electrons, remove_pat
 from ..resource_utilities import load_npz_resource
 from ..data_structures.raw_converter import SingleCCDRawConverter
 
-# TODO: Add flags, specify which remove baseline electron count
-
 
 def convert_adu_to_electrons(raw_converter):
     # type: (SingleCCDRawConverter) -> SingleCCDRawConverter
@@ -50,6 +48,9 @@ def remove_baseline(raw_converter):
     :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     and compensates for this effect. Calls
     :py:func:`~httm.transformations.raw_slices_to_calibrated.remove_baseline_from_slice` over each slice.
+
+    Note that if you do not remove baseline using this routine prior to removing undershoot, then artifacts
+    are introduced at the early edge of a row.
 
     :param raw_converter: Should have *Analogue to Digital Converter Units* (ADU) \
     for units for each of its slices
