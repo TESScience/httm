@@ -167,7 +167,8 @@ parameters = OrderedDict([
     ('undershoot_parameter', {
         'type': 'float',
         'documentation': 'The deficit in a pixel value relative to the value of its '
-                         'preceding pixel. The electronics have a slight memory of the '
+                         'preceding pixel.  This is a ratio and dimensionless. '
+                         'The electronics have a slight memory of the '
                          'signal level which cause the pixel following a bright pixel '
                          'to appear slightly darker that it should.',
         'short_documentation': 'Deficit of pixel relative to preceding',
