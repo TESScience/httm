@@ -13,7 +13,7 @@ import astropy
 import numpy
 from astropy.io.fits import HDUList, PrimaryHDU
 
-from .header_settings import get_header_setting
+from .header_settings import get_header_setting, set_header_settings
 from ..data_structures.common import Slice, ConversionMetaData
 from ..data_structures.raw_converter import SingleCCDRawConverterFlags, SingleCCDRawConverter, \
     raw_transformation_flags, SingleCCDRawConverterParameters, raw_converter_parameters
@@ -27,7 +27,6 @@ def raw_converter_to_calibrated_hdulist(converter):
     TODO: Document me
 
     :param converter:
-    :rtype: NoneType
     """
     # noinspection PyTypeChecker
     early_dark_pixel_columns = converter.parameters.early_dark_pixel_columns  # type: int
@@ -44,11 +43,22 @@ def raw_converter_to_calibrated_hdulist(converter):
         right_dark_parts[i] = numpy.fliplr(right_dark_parts[i])
         image_parts[i] = numpy.fliplr(image_parts[i])
 
-    # TODO: Write parameters and flags to HDU header
+    header_with_parameters = set_header_settings(
+        converter.parameters,
+        raw_converter_parameters,
+        converter.conversion_metadata.header,
+    )
+    header_with_transformation_flags = set_header_settings(
+        converter.flags,
+        raw_transformation_flags,
+        header_with_parameters,
+    )
+    # TODO: Add History
     return HDUList(PrimaryHDU(
-        header=converter.conversion_metadata.header,
+        header=header_with_transformation_flags,
         # `+` concatenates python lists
-        data=numpy.hstack(left_dark_parts + image_parts + right_dark_parts)))
+        data=numpy.hstack(left_dark_parts + image_parts + right_dark_parts),
+    ))
 
 
 # TODO: Documentation

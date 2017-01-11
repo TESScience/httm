@@ -13,7 +13,7 @@ import astropy
 import numpy
 from astropy.io.fits import HDUList, PrimaryHDU
 
-from .header_settings import get_header_setting
+from .header_settings import get_header_setting, set_header_settings
 from ..data_structures.common import Slice, ConversionMetaData
 from ..data_structures.electron_flux_converter import \
     SingleCCDElectronFluxConverterFlags, SingleCCDElectronFluxConverterParameters, \
@@ -107,7 +107,6 @@ def electron_flux_converter_parameters_from_fits_header(fits_header, parameter_o
     )
 
 
-# TODO: Write flags and parameters to hdulist
 def electron_flux_converter_to_simulated_raw_hdulist(converter):
     # type: (SingleCCDElectronFluxConverter) -> HDUList
     """
@@ -128,7 +127,14 @@ def electron_flux_converter_to_simulated_raw_hdulist(converter):
         for raw_slice in converter.slices]
     for i in range(1, len(slices), 2):
         slices[i] = numpy.fliplr(slices[i])
-    return HDUList(PrimaryHDU(header=converter.conversion_metadata.header,
+    # TODO: Write history
+    header_with_parameters = set_header_settings(converter.parameters,
+                                                 electron_flux_converter_parameters,
+                                                 converter.conversion_metadata.header)
+    header_with_transformation_flags = set_header_settings(converter.flags,
+                                                           electron_flux_transformation_flags,
+                                                           header_with_parameters)
+    return HDUList(PrimaryHDU(header=header_with_transformation_flags,
                               data=numpy.hstack(slices)))
 
 
@@ -139,7 +145,9 @@ def write_electron_flux_converter_to_simulated_raw_fits(converter, output_file):
     Write a :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     to a simulated raw FITS file.
 
-    :param converter:
+    Called for effect.
+
+    :param converter: An electron flux converter object
     :type converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :param output_file:
     :type output_file: str
@@ -213,7 +221,7 @@ def electron_flux_converter_from_fits(input_file, command=None, flag_overrides=N
     :param command:
     :param flag_overrides:
     :param parameter_overrides:
-    :return:
+    :rtype:
     """
     origin_file_name = None
     if isinstance(input_file, str):

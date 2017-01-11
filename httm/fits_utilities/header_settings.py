@@ -8,10 +8,44 @@ from a FITS file header.
 
 import logging
 
+from astropy.io.fits import Header
+
 logger = logging.getLogger(__name__)
 
 
-# TODO: set_header
+# TODO: Documentation
+def set_header_settings(settings, setting_dictionary, fits_header):
+    updated_header = Header(fits_header, copy=True)
+    for key_name in setting_dictionary:
+        value = getattr(settings, key_name)
+        fits_keyword = setting_dictionary[key_name]['standard_fits_keyword']
+        fits_documentation = setting_dictionary[key_name]['short_documentation'] \
+            if 'short_documentation' in setting_dictionary[key_name] \
+            else setting_dictionary[key_name]['documentation']
+        if isinstance(fits_keyword, str):  # if the fits_keyword is a string
+            if fits_keyword in updated_header and updated_header[fits_keyword] != value:
+                logger.warning(
+                    'FITS keyword "{fits_keyword}" is set to value "{fits_value}", '
+                    'overriding with value "{new_value}"'.format(
+                        fits_keyword=fits_keyword,
+                        fits_value=updated_header[fits_keyword],
+                        new_value=value))
+            updated_header[fits_keyword] = value, fits_documentation
+        elif hasattr(fits_keyword, '__iter__'):  # if the fits_keyword is a list
+            for k, slice_index, v in zip(fits_keyword, range(len(value)), value):
+                if k in updated_header and updated_header[k] != v:
+                    logger.warning(
+                        'FITS keyword "{fits_keyword}" is set to value "{fits_value}", '
+                        'overriding with value "{new_value}"'.format(
+                            fits_keyword=k,
+                            fits_value=updated_header[k],
+                            new_value=v))
+                updated_header[k] = v, "{documentation} Slice: {slice_index}".format(
+                    documentation=fits_documentation,
+                    slice_index=slice_index
+                )
+    return updated_header
+
 
 # TODO: Documentation
 def get_header_setting(key_name, setting_dictionary, fits_header, override_value=None):
@@ -63,4 +97,4 @@ def get_header_setting(key_name, setting_dictionary, fits_header, override_value
                      for subkeyword, default_subvalue in zip(fits_keyword, default_value))
 
     else:
-        raise Exception("Cannot handle fits keyword format: {}".format(fits_keyword))
+        raise Exception("Cannot handle fits keyword (invalid format): {}".format(fits_keyword))
