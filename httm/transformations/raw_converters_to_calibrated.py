@@ -118,7 +118,7 @@ def remove_undershoot(raw_converter):
     :type raw_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
-    assert raw_converter.flags.baseline_present == False, "Baseline should be removed before removing undershoot"
+    assert raw_converter.flags.baseline_present is False, "Baseline should be removed before removing undershoot"
 
     undershoot_parameter = raw_converter.parameters.undershoot_parameter
     image_slices = raw_converter.slices
