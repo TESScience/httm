@@ -200,17 +200,17 @@ def raw_converter_from_hdulist(header_data_unit_list,
     sliced_image_smear_and_dark_pixels = hsplit(
         header_data_unit_list[0].data[:, early_dark_pixel_count:-late_dark_pixel_count],
         parameter_overrides.number_of_slices)
+    sliced_early_dark_pixels = hsplit(header_data_unit_list[0].data[:, :early_dark_pixel_count],
+                                      parameter_overrides.number_of_slices)
+    sliced_late_dark_pixels = hsplit(header_data_unit_list[0].data[:, -late_dark_pixel_count:],
+                                     parameter_overrides.number_of_slices)
 
     # TODO: Document this in layout.rst
     # Rows in odd numbered slices have to be reversed
     for i in range(1, parameter_overrides.number_of_slices, 2):
         sliced_image_smear_and_dark_pixels[i] = fliplr(sliced_image_smear_and_dark_pixels[i])
-
-    # Note that left and right dark pixels do not need to be reversed
-    sliced_early_dark_pixels = hsplit(header_data_unit_list[0].data[:, :early_dark_pixel_count],
-                                      parameter_overrides.number_of_slices)
-    sliced_late_dark_pixels = hsplit(header_data_unit_list[0].data[:, -late_dark_pixel_count:],
-                                     parameter_overrides.number_of_slices)
+        sliced_early_dark_pixels[i] = fliplr(sliced_early_dark_pixels[i])
+        sliced_late_dark_pixels[i] = fliplr(sliced_late_dark_pixels[i])
 
     return SingleCCDRawConverter(
         slices=tuple(map(make_slice_from_raw_data,
