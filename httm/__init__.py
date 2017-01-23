@@ -24,13 +24,6 @@ to raw TESS full frame FITS images and raw to calibrated TESS full frame FITS
 images.
 """
 
-from .fits_utilities.electron_flux_fits import \
-    electron_flux_converter_from_fits, \
-    write_electron_flux_converter_to_simulated_raw_fits
-from .fits_utilities.raw_fits import raw_converter_from_fits, write_raw_converter_to_calibrated_fits
-from .transformations.electron_flux_converters_to_raw import transform_electron_flux_converter
-from .transformations.raw_converters_to_calibrated import transform_raw_converter
-
 
 def raw_fits_to_calibrated(
         fits_input_file,
@@ -56,6 +49,8 @@ def raw_fits_to_calibrated(
     :param transformation_settings: An object which transformations should run, rather than the defaults
     :type transformation_settings: object
     """
+    from .fits_utilities.raw_fits import raw_converter_from_fits, write_raw_converter_to_calibrated_fits
+    from .transformations.raw_converters_to_calibrated import transform_raw_converter
     single_ccd_raw_converter = raw_converter_from_fits(
         fits_input_file,
         command=command,
@@ -92,6 +87,10 @@ def electron_flux_fits_to_raw(
     :param transformation_settings: An object which transformations should run, rather than the defaults
     :type transformation_settings: object
     """
+    from .fits_utilities.electron_flux_fits import \
+        electron_flux_converter_from_fits, \
+        write_electron_flux_converter_to_simulated_raw_fits
+    from .transformations.electron_flux_converters_to_raw import transform_electron_flux_converter
     single_ccd_electron_flux_converter = electron_flux_converter_from_fits(
         fits_input_file,
         command=command,
