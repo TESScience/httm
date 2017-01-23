@@ -43,8 +43,8 @@ parameters = OrderedDict([
     }),
     ('camera_number', {
         'type': 'int',
-        'documentation': 'The number of the camera that took the image.'
-                         ' For real images, the serial number 0-31 of the FPE interface board is used.',
+        'documentation': 'The number of the camera that took the image. '
+                         'For real images, the serial number 0-31 of the FPE interface board is used.',
         'short_documentation': 'The number of the camera that took the image.',
         'default': -1,
         'standard_fits_keyword': 'CAMNUM',
