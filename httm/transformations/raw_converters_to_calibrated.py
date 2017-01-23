@@ -41,8 +41,8 @@ def convert_adu_to_electrons(raw_converter):
 
     :param raw_converter: Should have *Analogue to Digital Converter Units* (ADU) \
     for units for each of its slices
-    :type raw_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
-    :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :type raw_converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
+    :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
     assert raw_converter.flags.in_adu, "Input should be in *Analogue to Digital Converter Units* (ADU)"
     image_slices = raw_converter.slices
@@ -62,7 +62,7 @@ def remove_baseline(raw_converter):
     # type: (SingleCCDRawConverter) -> SingleCCDRawConverter
     """
     This function estimates *baseline* from the *dark pixels* for each slice in a
-    :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     and compensates for this effect. Calls
     :py:func:`~httm.transformations.raw_slices_to_calibrated.remove_baseline_from_slice` over each slice.
 
@@ -71,8 +71,8 @@ def remove_baseline(raw_converter):
 
     :param raw_converter: Should have *Analogue to Digital Converter Units* (ADU) \
     for units for each of its slices
-    :type raw_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
-    :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :type raw_converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
+    :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
     image_slices = raw_converter.slices
     early_dark_pixel_columns = raw_converter.parameters.early_dark_pixel_columns
@@ -92,8 +92,8 @@ def remove_pattern_noise(raw_converter):
     over each slice.
 
     :param raw_converter: Should have electrons for units for each of its slices
-    :type raw_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
-    :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :type raw_converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
+    :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
     pattern_noises = load_npz_resource(raw_converter.parameters.pattern_noise, 'pattern_noise')
     image_slices = raw_converter.slices
@@ -113,8 +113,8 @@ def remove_start_of_line_ringing(raw_converter):
     over each slice.
 
     :param raw_converter: Should have electrons for units for each of its slices
-    :type raw_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
-    :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :type raw_converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
+    :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
     final_dark_pixel_rows = raw_converter.parameters.final_dark_pixel_rows
     image_slices = raw_converter.slices
@@ -133,8 +133,8 @@ def remove_undershoot(raw_converter):
     over each slice.
 
     :param raw_converter: Should have electrons for units for each of its slices
-    :type raw_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
-    :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :type raw_converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
+    :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
     assert raw_converter.flags.baseline_present is False, "Baseline should be removed before removing undershoot"
 
@@ -155,8 +155,8 @@ def remove_smear(raw_converter):
     over each slice.
 
     :param raw_converter: Should have electrons for units for each of its slices
-    :type raw_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
-    :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :type raw_converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
+    :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
     final_dark_pixel_rows = raw_converter.parameters.final_dark_pixel_rows
     smear_rows = raw_converter.parameters.smear_rows
