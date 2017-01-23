@@ -1,28 +1,50 @@
+# HTTM: A transformation library for RAW and Electron Flux TESS Images
+# Copyright (C) 2016, 2017 John Doty and Matthew Wampler-Doty of Noqsi Aerospace, Ltd.
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
 """
 ``httm``
 ========
 
 This module contains top level transformations for converting electron flux
-to raw TESS full frame FITS images and raw to calibrated TESS full frame FITS images.
+to raw TESS full frame FITS images and raw to calibrated TESS full frame FITS
+images.
 """
 
 import logging
 
-from .fits_utilities.electron_flux_fits import electron_flux_converter_from_hdulist, \
-    electron_flux_converter_to_simulated_raw_hdulist, electron_flux_converter_from_fits, \
+from .fits_utilities.electron_flux_fits import \
+    electron_flux_converter_from_fits, \
     write_electron_flux_converter_to_simulated_raw_fits
-from .fits_utilities.raw_fits import raw_converter_from_hdulist, raw_converter_to_calibrated_hdulist, \
-    raw_converter_from_fits, write_raw_converter_to_calibrated_fits
-from .transformations.electron_flux_converters_to_raw import electron_flux_transformation_default_settings, \
+from .fits_utilities.raw_fits import raw_converter_from_fits, \
+    write_raw_converter_to_calibrated_fits
+from .transformations.electron_flux_converters_to_raw import \
+    electron_flux_transformation_default_settings, \
     electron_flux_transformation_functions
-from .transformations.raw_converters_to_calibrated import raw_transformation_default_settings, \
+from .transformations.raw_converters_to_calibrated import \
+    raw_transformation_default_settings, \
     raw_transformation_functions
 
 logger = logging.getLogger(__name__)
 
 
 # TODO: Documentation
-def derive_transformation_function_list(transformation_settings, default_settings, transformation_functions):
+def derive_transformation_function_list(transformation_settings,
+                                        default_settings,
+                                        transformation_functions):
     """
 
     :param transformation_settings:
@@ -39,18 +61,26 @@ def derive_transformation_function_list(transformation_settings, default_setting
             value = getattr(transformation_settings, key)
             if value is not None:
                 if value is True or value is False:
-                    logger.info('Key "{key}" was set to {value}'.format(key=key, value=value))
+                    logger.info('Key "{key}" was set to {value}'.format(
+                        key=key,
+                        value=value))
                     return value
                 else:
                     raise Exception("Value must be either True or False, was: {}".format(value))
-        logger.info('Key "{key}" using default: {value}'.format(key=key, value=default_settings[key]))
+        logger.info(
+            'Key "{key}" using default: {value}'.format(
+                key=key,
+                value=default_settings[key]))
         return default_settings[key]
 
-    return tuple(transformation_functions[k] for k in default_settings.keys() if check_if_specified_or_default(k))
+    return tuple(transformation_functions[k]
+                 for k in default_settings.keys() if
+                 check_if_specified_or_default(k))
 
 
 # TODO: Documentation
-def transform_raw_converter(single_ccd_raw_converter, transformation_settings=None):
+def transform_raw_converter(single_ccd_raw_converter,
+                            transformation_settings=None):
     """
 
     :param single_ccd_raw_converter:
@@ -58,30 +88,42 @@ def transform_raw_converter(single_ccd_raw_converter, transformation_settings=No
     :return:
     """
     from functools import reduce
-    return reduce(lambda converter, transformation_function: transformation_function(converter),
-                  derive_transformation_function_list(transformation_settings,
-                                                      raw_transformation_default_settings,
-                                                      raw_transformation_functions),
-                  single_ccd_raw_converter)
+    return reduce(
+        lambda converter, transformation_function: transformation_function(
+            converter),
+        derive_transformation_function_list(transformation_settings,
+                                            raw_transformation_default_settings,
+                                            raw_transformation_functions),
+        single_ccd_raw_converter)
 
 
 # TODO: Documentation
-def raw_fits_to_calibrated(fits_input_file, fits_output_file, flag_overrides=None, parameter_overrides=None,
-                           transformation_settings=raw_transformation_default_settings):
+def raw_fits_to_calibrated(
+        fits_input_file,
+        fits_output_file,
+        flag_overrides=None,
+        parameter_overrides=None,
+        command=None,
+        transformation_settings=raw_transformation_default_settings):
     """
     TODO
 
-
+    :param command:
     :param fits_input_file:
     :param fits_output_file:
     :param flag_overrides:
     :param parameter_overrides:
     :param transformation_settings:
     """
-    single_ccd_raw_converter = raw_converter_from_fits(fits_input_file, flag_overrides=flag_overrides,
-                                                       parameter_overrides=parameter_overrides)
+    single_ccd_raw_converter = raw_converter_from_fits(
+        fits_input_file,
+        command=command,
+        flag_overrides=flag_overrides,
+        parameter_overrides=parameter_overrides)
     write_raw_converter_to_calibrated_fits(
-        transform_raw_converter(single_ccd_raw_converter, transformation_settings=transformation_settings),
+        transform_raw_converter(
+            single_ccd_raw_converter,
+            transformation_settings=transformation_settings),
         fits_output_file)
 
 
@@ -97,28 +139,41 @@ def transform_electron_flux_converter(single_ccd_electron_flux_converter,
     from functools import reduce
     import numpy.random
     numpy.random.seed(single_ccd_electron_flux_converter.parameters.random_seed)
-    return reduce(lambda converter, transformation_function: transformation_function(converter),
-                  derive_transformation_function_list(transformation_settings,
-                                                      electron_flux_transformation_default_settings,
-                                                      electron_flux_transformation_functions),
-                  single_ccd_electron_flux_converter)
+    return reduce(
+        lambda converter, transformation_function: transformation_function(
+            converter),
+        derive_transformation_function_list(
+            transformation_settings,
+            electron_flux_transformation_default_settings,
+            electron_flux_transformation_functions),
+        single_ccd_electron_flux_converter)
 
 
 # TODO: Documentation
-def electron_flux_fits_to_raw(fits_input_file, fits_output_file, flags=None, parameters=None,
-                              transformation_settings=electron_flux_transformation_default_settings):
+def electron_flux_fits_to_raw(
+        fits_input_file,
+        fits_output_file,
+        command=None,
+        flag_overrides=None,
+        parameter_overrides=None,
+        transformation_settings=electron_flux_transformation_default_settings):
     """
     TODO
 
     :param fits_input_file:
     :param fits_output_file:
-    :param flags:
-    :param parameters:
+    :param command:
+    :param flag_overrides:
+    :param parameter_overrides:
     :param transformation_settings:
     """
-    single_ccd_electron_flux_converter = electron_flux_converter_from_fits(fits_input_file, flag_overrides=flags,
-                                                                           parameter_overrides=parameters)
+    single_ccd_electron_flux_converter = electron_flux_converter_from_fits(
+        fits_input_file,
+        command=command,
+        flag_overrides=flag_overrides,
+        parameter_overrides=parameter_overrides)
     write_electron_flux_converter_to_simulated_raw_fits(
-        transform_electron_flux_converter(single_ccd_electron_flux_converter,
-                                          transformation_settings=transformation_settings),
+        transform_electron_flux_converter(
+            single_ccd_electron_flux_converter,
+            transformation_settings=transformation_settings),
         fits_output_file)

@@ -1,3 +1,20 @@
+# HTTM: A transformation library for RAW and Electron Flux TESS Images
+# Copyright (C) 2016, 2017 John Doty and Matthew Wampler-Doty of Noqsi Aerospace, Ltd.
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
 """
 ``httm.transformations.raw_converters_to_calibrated``
 =====================================================
@@ -13,8 +30,6 @@ from .raw_slices_to_calibrated import convert_slice_adu_to_electrons, remove_pat
     remove_undershoot_from_slice, remove_smear_from_slice, remove_baseline_from_slice
 from ..resource_utilities import load_npz_resource
 from ..data_structures.raw_converter import SingleCCDRawConverter
-
-# TODO: Add flags, specify which remove baseline electron count
 
 
 def convert_adu_to_electrons(raw_converter):
@@ -50,6 +65,9 @@ def remove_baseline(raw_converter):
     :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     and compensates for this effect. Calls
     :py:func:`~httm.transformations.raw_slices_to_calibrated.remove_baseline_from_slice` over each slice.
+
+    Note that if you do not remove baseline using this routine prior to removing undershoot, then artifacts
+    are introduced at the early edge of a row.
 
     :param raw_converter: Should have *Analogue to Digital Converter Units* (ADU) \
     for units for each of its slices
@@ -118,7 +136,7 @@ def remove_undershoot(raw_converter):
     :type raw_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
-    assert raw_converter.flags.baseline_present == False, "Baseline should be removed before removing undershoot"
+    assert raw_converter.flags.baseline_present is False, "Baseline should be removed before removing undershoot"
 
     undershoot_parameter = raw_converter.parameters.undershoot_parameter
     image_slices = raw_converter.slices

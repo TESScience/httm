@@ -1,3 +1,20 @@
+# HTTM: A transformation library for RAW and Electron Flux TESS Images
+# Copyright (C) 2016, 2017 John Doty and Matthew Wampler-Doty of Noqsi Aerospace, Ltd.
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
 """
 ``httm.system.config_file``
 ===========================
@@ -9,11 +26,11 @@ parameter or flag data structures.
 import json
 import os
 import re
+import sys
 from collections import namedtuple, Iterable
 
 import toml
 import xmltodict
-# noinspection PyPackageRequirements
 import yaml
 
 
@@ -81,7 +98,7 @@ def parse_dict(dictionary, reference_dictionaries, convert=False, override=None)
         reference.update(d)
     flat_dictionary = flatten_dictionary(dictionary)
     for raw_k in flat_dictionary:
-        k = raw_k.replace("-", "_")
+        k = raw_k.replace("-", "_").lower()
         if k not in reference:
             raise Exception('Unknown key: "{key}"\n'
                             'Available keys (with defaults): {keys}'.format(key=k,
@@ -101,9 +118,12 @@ def parse_dict(dictionary, reference_dictionaries, convert=False, override=None)
             if hasattr(override, k) and getattr(override, k) is not None:
                 flat_dictionary[k] = getattr(override, k)
             # Check the type in the dictionary, but be very liberal
+            # Note: Unicode is deprecated in Python 3, but strings are sometimes parsed as unicode in Python 2.7
             if not isinstance(flat_dictionary[k], type(reference[k]['default'])) and \
                     not reference[k]['default'] is None and \
-                    not (isinstance(flat_dictionary[k], unicode) and isinstance(reference[k]['default'], str)) and \
+                    not (sys.version_info <= (3, 0) and
+                         isinstance(flat_dictionary[k], unicode) and
+                         isinstance(reference[k]['default'], str)) and \
                     not (isinstance(flat_dictionary[k], list) and isinstance(reference[k]['default'], tuple)) and \
                     not (isinstance(flat_dictionary[k], float) and isinstance(reference[k]['default'], int)) and \
                     not (isinstance(flat_dictionary[k], int) and isinstance(reference[k]['default'], float)):
@@ -178,7 +198,7 @@ def parse_tsv(filename, reference_dictionaries, override=None):
         separator = re.compile(r'(\t[\t ]*|[ ][ ]+)')
         for l in f.readlines():
             try:
-                key_value = parse_tsv_line(l, separator)
+                key_value = tuple(parse_tsv_line(l, separator))
                 if len(key_value) is 0:
                     continue
                 value_dictionary[key_value[0].strip()] = key_value[1].strip()

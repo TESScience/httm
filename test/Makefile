@@ -1,7 +1,7 @@
 ###################### Virtual Environment ######################
 .PHONY: install test_images documentation clean test
 
-PYTHON_VERSION=2.7
+PYTHON_VERSION=3
 VIRTUAL_ENV=$(CURDIR)/venv
 PYTHON=$(VIRTUAL_ENV)/bin/python$(PYTHON_VERSION)
 PIP=$(VIRTUAL_ENV)/bin/pip$(PYTHON_VERSION)
@@ -13,7 +13,7 @@ CONFIG_TEST_FITS=output/json_raw.fits output/yaml_raw.fits output/toml_raw.fits 
 		 output/toml_calibrated.fits output/json_calibrated.fits output/yaml_calibrated.fits output/tsv_calibrated.fits \
 		 output/xml_calibrated.fits
 TESTS=httm-check-code-references httm-check-doc-references numpy-check-code-references astropy-check-code-references \
-      tutorial-test smoke-test command_line_utilities-test demo-test raw_demo-test $(CONFIG_TEST_FITS)
+      tutorial-test smoke-test command_line_utilities-test demo-test raw_demo-test order-test $(CONFIG_TEST_FITS)
 
 all: install
 

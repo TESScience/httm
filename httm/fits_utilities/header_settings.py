@@ -1,3 +1,20 @@
+# HTTM: A transformation library for RAW and Electron Flux TESS Images
+# Copyright (C) 2016, 2017 John Doty and Matthew Wampler-Doty of Noqsi Aerospace, Ltd.
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
 """
 ``httm.fits_utilities.header_settings``
 =======================================
@@ -8,10 +25,44 @@ from a FITS file header.
 
 import logging
 
+from astropy.io.fits import Header
+
 logger = logging.getLogger(__name__)
 
 
-# TODO: set_header
+# TODO: Documentation
+def set_header_settings(settings, setting_dictionary, fits_header):
+    updated_header = Header(fits_header, copy=True)
+    for key_name in setting_dictionary:
+        value = getattr(settings, key_name)
+        fits_keyword = setting_dictionary[key_name]['standard_fits_keyword']
+        fits_documentation = setting_dictionary[key_name]['short_documentation'] \
+            if 'short_documentation' in setting_dictionary[key_name] \
+            else setting_dictionary[key_name]['documentation']
+        if isinstance(fits_keyword, str):  # if the fits_keyword is a string
+            if fits_keyword in updated_header and updated_header[fits_keyword] != value:
+                logger.warning(
+                    'FITS keyword "{fits_keyword}" is set to value "{fits_value}", '
+                    'overriding with value "{new_value}"'.format(
+                        fits_keyword=fits_keyword,
+                        fits_value=updated_header[fits_keyword],
+                        new_value=value))
+            updated_header[fits_keyword] = value, fits_documentation
+        elif hasattr(fits_keyword, '__iter__'):  # if the fits_keyword is a list
+            for k, slice_index, v in zip(fits_keyword, range(len(value)), value):
+                if k in updated_header and updated_header[k] != v:
+                    logger.warning(
+                        'FITS keyword "{fits_keyword}" is set to value "{fits_value}", '
+                        'overriding with value "{new_value}"'.format(
+                            fits_keyword=k,
+                            fits_value=updated_header[k],
+                            new_value=v))
+                updated_header[k] = v, "{documentation} Slice: {slice_index}".format(
+                    documentation=fits_documentation,
+                    slice_index=slice_index
+                )
+    return updated_header
+
 
 # TODO: Documentation
 def get_header_setting(key_name, setting_dictionary, fits_header, override_value=None):
@@ -63,4 +114,4 @@ def get_header_setting(key_name, setting_dictionary, fits_header, override_value
                      for subkeyword, default_subvalue in zip(fits_keyword, default_value))
 
     else:
-        raise Exception("Cannot handle fits keyword format: {}".format(fits_keyword))
+        raise Exception("Cannot handle fits keyword (invalid format): {}".format(fits_keyword))
