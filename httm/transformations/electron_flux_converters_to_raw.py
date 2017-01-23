@@ -26,12 +26,13 @@ they are suitable  for writing to a simulated raw FITS file.
 """
 from collections import OrderedDict
 
+from .common import derive_transformation_function_list
 from .electron_flux_slices_to_raw import introduce_smear_rows_to_slice, add_shot_noise_to_slice, \
-    simulate_blooming_on_slice, \
-    add_baseline_to_slice, add_readout_noise_to_slice, simulate_undershoot_on_slice, \
+    simulate_blooming_on_slice, add_baseline_to_slice, add_readout_noise_to_slice, simulate_undershoot_on_slice, \
     simulate_start_of_line_ringing_to_slice, add_pattern_noise_to_slice, convert_slice_electrons_to_adu
-from ..resource_utilities import load_npz_resource
 from ..data_structures.electron_flux_converter import SingleCCDElectronFluxConverter
+from ..resource_utilities import load_npz_resource
+
 
 # TODO: Add flags
 
@@ -311,12 +312,36 @@ electron_flux_transformations = OrderedDict([
     }),
 ])
 
-electron_flux_transformation_default_settings = OrderedDict(
-    (key, electron_flux_transformations[key]['default'])
-    for key in electron_flux_transformations.keys()
-)
 
-electron_flux_transformation_functions = OrderedDict(
-    (key, electron_flux_transformations[key]['function'])
-    for key in electron_flux_transformations.keys()
-)
+def transform_electron_flux_converter(single_ccd_electron_flux_converter,
+                                      transformation_settings=None):
+    # type: (SingleCCDElectronFluxConverter, object) -> SingleCCDElectronFluxConverter
+    """
+    Take a :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter` and run specified
+    transformations over it.
+
+    :param single_ccd_electron_flux_converter: A \
+    :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter` to run a series of \
+    transformations over
+    :type single_ccd_electron_flux_converter: \
+    :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :param transformation_settings: An object specifying which transformations to run; if not specified defaults are \
+    used
+    :type transformation_settings: object
+    :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    """
+    from functools import reduce
+    import numpy.random
+    numpy.random.seed(single_ccd_electron_flux_converter.parameters.random_seed)
+    return reduce(
+        lambda converter, transformation_function: transformation_function(
+            converter),
+        derive_transformation_function_list(
+            transformation_settings,
+            OrderedDict(
+                (key, electron_flux_transformations[key]['default'])
+                for key in electron_flux_transformations.keys()
+            ),
+            {key: electron_flux_transformations[key]['function']
+             for key in electron_flux_transformations.keys()}),
+        single_ccd_electron_flux_converter)

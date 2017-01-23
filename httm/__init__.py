@@ -24,96 +24,37 @@ to raw TESS full frame FITS images and raw to calibrated TESS full frame FITS
 images.
 """
 
-import logging
-
 from .fits_utilities.electron_flux_fits import \
     electron_flux_converter_from_fits, \
     write_electron_flux_converter_to_simulated_raw_fits
-from .fits_utilities.raw_fits import raw_converter_from_fits, \
-    write_raw_converter_to_calibrated_fits
-from .transformations.electron_flux_converters_to_raw import \
-    electron_flux_transformation_default_settings, \
-    electron_flux_transformation_functions
-from .transformations.raw_converters_to_calibrated import \
-    raw_transformation_default_settings, \
-    raw_transformation_functions
-
-logger = logging.getLogger(__name__)
+from .fits_utilities.raw_fits import raw_converter_from_fits, write_raw_converter_to_calibrated_fits
+from .transformations.electron_flux_converters_to_raw import transform_electron_flux_converter
+from .transformations.raw_converters_to_calibrated import transform_raw_converter
 
 
-# TODO: Documentation
-def derive_transformation_function_list(transformation_settings,
-                                        default_settings,
-                                        transformation_functions):
-    """
-
-    :param transformation_settings:
-    :type transformation_settings: object
-    :param default_settings:
-    :type default_settings: dictionary
-    :param transformation_functions:
-    :type transformation_functions: dict
-    :rtype:
-    """
-
-    def check_if_specified_or_default(key):
-        if hasattr(transformation_settings, key):
-            value = getattr(transformation_settings, key)
-            if value is not None:
-                if value is True or value is False:
-                    logger.info('Key "{key}" was set to {value}'.format(
-                        key=key,
-                        value=value))
-                    return value
-                else:
-                    raise Exception("Value must be either True or False, was: {}".format(value))
-        logger.info(
-            'Key "{key}" using default: {value}'.format(
-                key=key,
-                value=default_settings[key]))
-        return default_settings[key]
-
-    return tuple(transformation_functions[k]
-                 for k in default_settings.keys() if
-                 check_if_specified_or_default(k))
-
-
-# TODO: Documentation
-def transform_raw_converter(single_ccd_raw_converter,
-                            transformation_settings=None):
-    """
-
-    :param single_ccd_raw_converter:
-    :param transformation_settings:
-    :return:
-    """
-    from functools import reduce
-    return reduce(
-        lambda converter, transformation_function: transformation_function(
-            converter),
-        derive_transformation_function_list(transformation_settings,
-                                            raw_transformation_default_settings,
-                                            raw_transformation_functions),
-        single_ccd_raw_converter)
-
-
-# TODO: Documentation
 def raw_fits_to_calibrated(
         fits_input_file,
         fits_output_file,
+        command=None,
         flag_overrides=None,
         parameter_overrides=None,
-        command=None,
-        transformation_settings=raw_transformation_default_settings):
+        transformation_settings=None):
     """
-    TODO
+    Read a raw FITS file in as input, with units specified in *Analogue to Digital Converter Units* (ADU),
+    run a series of transformations over it, and output the results to a specified file.
 
-    :param command:
-    :param fits_input_file:
-    :param fits_output_file:
-    :param flag_overrides:
-    :param parameter_overrides:
-    :param transformation_settings:
+    :param fits_input_file: A raw FITS file to use as input
+    :type fits_input_file: str
+    :param fits_output_file: A FITS file to use as output; will be clobbered if it exists
+    :type fits_output_file: str
+    :param command: The command issued to be recorded in the ``HISTORY`` header keyword in the output
+    :type command: str
+    :param flag_overrides: An object specifying values transformation flags should take rather than their defaults
+    :type flag_overrides: object
+    :param parameter_overrides: An object specifying values parameters should take rather than their defaults
+    :type parameter_overrides: object
+    :param transformation_settings: An object which transformations should run, rather than the defaults
+    :type transformation_settings: object
     """
     single_ccd_raw_converter = raw_converter_from_fits(
         fits_input_file,
@@ -127,45 +68,29 @@ def raw_fits_to_calibrated(
         fits_output_file)
 
 
-# TODO: Documentation
-def transform_electron_flux_converter(single_ccd_electron_flux_converter,
-                                      transformation_settings=None):
-    """
-
-    :param single_ccd_electron_flux_converter:
-    :param transformation_settings:
-    :return:
-    """
-    from functools import reduce
-    import numpy.random
-    numpy.random.seed(single_ccd_electron_flux_converter.parameters.random_seed)
-    return reduce(
-        lambda converter, transformation_function: transformation_function(
-            converter),
-        derive_transformation_function_list(
-            transformation_settings,
-            electron_flux_transformation_default_settings,
-            electron_flux_transformation_functions),
-        single_ccd_electron_flux_converter)
-
-
-# TODO: Documentation
 def electron_flux_fits_to_raw(
         fits_input_file,
         fits_output_file,
         command=None,
         flag_overrides=None,
         parameter_overrides=None,
-        transformation_settings=electron_flux_transformation_default_settings):
+        transformation_settings=None):
     """
-    TODO
+    Read an electron flux FITS file in as input, with units specified in electron counts,
+    run a series of transformations over it, and output the results to a specified file.
 
-    :param fits_input_file:
-    :param fits_output_file:
-    :param command:
-    :param flag_overrides:
-    :param parameter_overrides:
-    :param transformation_settings:
+    :param fits_input_file: A FITS file with electron counts
+    :type fits_input_file: str
+    :param fits_output_file: A FITS file to use as output; will be clobbered if it exists
+    :type fits_output_file: str
+    :param command: The command issued to be recorded in the ``HISTORY`` header keyword in the output
+    :type command: str
+    :param flag_overrides: An object specifying values transformation flags should take rather than their defaults
+    :type flag_overrides: object
+    :param parameter_overrides: An object specifying values parameters should take rather than their defaults
+    :type parameter_overrides: object
+    :param transformation_settings: An object which transformations should run, rather than the defaults
+    :type transformation_settings: object
     """
     single_ccd_electron_flux_converter = electron_flux_converter_from_fits(
         fits_input_file,

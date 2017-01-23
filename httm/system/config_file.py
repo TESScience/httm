@@ -78,7 +78,7 @@ def flatten_dictionary(dictionary):
 
 def parse_dict(dictionary, reference_dictionaries, convert=False, override=None):
     """
-    Parse a dictionary into a namedtuple with specified attributes given by the reference dictionaries
+    Parse a dictionary into a ``namedtuple`` with specified attributes given by the reference dictionaries
 
     Recursively flattens a dictionary prior to parsing
 

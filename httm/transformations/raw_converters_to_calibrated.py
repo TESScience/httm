@@ -26,10 +26,11 @@ they are suitable for writing to a calibrated FITS file.
 """
 from collections import OrderedDict
 
+from .common import derive_transformation_function_list
 from .raw_slices_to_calibrated import convert_slice_adu_to_electrons, remove_pattern_noise_from_slice, \
     remove_undershoot_from_slice, remove_smear_from_slice, remove_baseline_from_slice
-from ..resource_utilities import load_npz_resource
 from ..data_structures.raw_converter import SingleCCDRawConverter
+from ..resource_utilities import load_npz_resource
 
 
 def convert_adu_to_electrons(raw_converter):
@@ -39,8 +40,8 @@ def convert_adu_to_electrons(raw_converter):
     having *Analogue to Digital Converter Units* (ADU) to estimated electron counts by calling
     :py:func:`~httm.transformations.raw_slices_to_calibrated.convert_slice_adu_to_electrons` over each slice.
 
-    :param raw_converter: Should have *Analogue to Digital Converter Units* (ADU) \
-    for units for each of its slices
+    :param raw_converter: A :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter` which should \
+    have electrons for units for each of its slices
     :type raw_converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
@@ -69,8 +70,8 @@ def remove_baseline(raw_converter):
     Note that if you do not remove baseline using this routine prior to removing undershoot, then artifacts
     are introduced at the early edge of a row.
 
-    :param raw_converter: Should have *Analogue to Digital Converter Units* (ADU) \
-    for units for each of its slices
+    :param raw_converter: A :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter` which should \
+    have *Analogue to Digital Converter Units* (ADU) for units for each of its slices
     :type raw_converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
@@ -91,7 +92,8 @@ def remove_pattern_noise(raw_converter):
     by calling :py:func:`~httm.transformations.raw_slices_to_calibrated.remove_pattern_noise_from_slice`
     over each slice.
 
-    :param raw_converter: Should have electrons for units for each of its slices
+    :param raw_converter: A :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter` which should \
+    have electrons for units for each of its slices
     :type raw_converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
@@ -112,7 +114,8 @@ def remove_start_of_line_ringing(raw_converter):
     by calling :py:func:`~httm.transformations.raw_slices_to_calibrated.remove_start_of_line_ringing_from_slice`
     over each slice.
 
-    :param raw_converter: Should have electrons for units for each of its slices
+    :param raw_converter: A :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter` which should \
+    have electrons for units for each of its slices
     :type raw_converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
@@ -132,7 +135,8 @@ def remove_undershoot(raw_converter):
     by calling :py:func:`~httm.transformations.raw_slices_to_calibrated.remove_undershoot_from_slice`
     over each slice.
 
-    :param raw_converter: Should have electrons for units for each of its slices
+    :param raw_converter: A :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter` which should \
+    have electrons for units for each of its slices
     :type raw_converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
@@ -154,7 +158,8 @@ def remove_smear(raw_converter):
     by calling :py:func:`~httm.transformations.raw_slices_to_calibrated.remove_smear_from_slice`
     over each slice.
 
-    :param raw_converter: Should have electrons for units for each of its slices
+    :param raw_converter: A :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter` which should \
+    have electrons for units for each of its slices
     :type raw_converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
@@ -207,12 +212,28 @@ raw_transformations = OrderedDict([
     }),
 ])
 
-raw_transformation_default_settings = OrderedDict(
-    (key, raw_transformations[key]['default'])
-    for key in raw_transformations.keys()
-)
 
-raw_transformation_functions = OrderedDict(
-    (key, raw_transformations[key]['function'])
-    for key in raw_transformations.keys()
-)
+def transform_raw_converter(raw_converter, transformation_settings=None):
+    # type: (SingleCCDRawConverter, object) -> SingleCCDRawConverter
+    """
+    Take a :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter` and run specified transformations
+    over it.
+
+    :param raw_converter: A :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter` to run a series of \
+    transformations over
+    :type raw_converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
+    :param transformation_settings: An object specifying which transformations to run; if not specified defaults are \
+    used
+    :type transformation_settings: object
+    :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
+    """
+    from functools import reduce
+    return reduce(
+        lambda converter, transformation_function: transformation_function(
+            converter),
+        derive_transformation_function_list(transformation_settings,
+                                            OrderedDict((key, raw_transformations[key]['default'])
+                                                        for key in raw_transformations.keys()),
+                                            {key: raw_transformations[key]['function']
+                                             for key in raw_transformations.keys()}),
+        raw_converter)
