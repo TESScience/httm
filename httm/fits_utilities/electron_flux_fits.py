@@ -35,6 +35,7 @@ from ..data_structures.common import Slice, ConversionMetaData
 from ..data_structures.electron_flux_converter import \
     SingleCCDElectronFluxConverterFlags, SingleCCDElectronFluxConverterParameters, \
     SingleCCDElectronFluxConverter, electron_flux_transformation_flags, electron_flux_converter_parameters
+from ..transformations.electron_flux_converters_to_raw import transform_electron_flux_converter
 
 
 # TODO: Documentation
@@ -49,7 +50,7 @@ def make_slice_from_electron_flux_data(
     """
     Construct a slice from an array of electron flux pixel data given a specified index.
 
-    Result is in *electron* counts.
+    Result is in *electron counts*.
 
     :param pixels: Image pixels from the electron flux data
     :type pixels: :py:class:`numpy.ndarray`
@@ -134,7 +135,6 @@ def electron_flux_converter_to_simulated_raw_hdulist(converter):
     :type converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :rtype: :py:class:`astropy.io.fits.HDUList`
     """
-
     early_dark_pixel_columns = converter.parameters.early_dark_pixel_columns
     late_dark_pixel_columns = converter.parameters.late_dark_pixel_columns
     final_dark_pixel_rows = converter.parameters.final_dark_pixel_rows
@@ -156,7 +156,7 @@ def electron_flux_converter_to_simulated_raw_hdulist(converter):
 
 
 # TODO: Documentation
-def write_electron_flux_converter_to_simulated_raw_fits(converter, output_file):
+def write_electron_flux_converter_to_simulated_raw_fits(converter, output_file, checksum=True):
     # type: (SingleCCDElectronFluxConverter, str) -> None
     """
     Write a :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
@@ -168,6 +168,8 @@ def write_electron_flux_converter_to_simulated_raw_fits(converter, output_file):
     :type converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :param output_file:
     :type output_file: str
+    :param checksum:
+    :type checksum: bool
     :rtype: NoneType
     """
     hdulist = electron_flux_converter_to_simulated_raw_hdulist(converter)
@@ -177,7 +179,7 @@ def write_electron_flux_converter_to_simulated_raw_fits(converter, output_file):
     except OSError:
         pass
 
-    hdulist.writeto(output_file)
+    hdulist.writeto(output_file, checksum=checksum)
 
 
 # TODO: Documentation
@@ -230,31 +232,72 @@ def electron_flux_converter_from_hdulist(
 
 
 # TODO: Documentation
-def electron_flux_converter_from_fits(input_file, command=None, flag_overrides=None, parameter_overrides=None):
+def electron_flux_converter_from_fits(
+        input_file,
+        command=None,
+        checksum=True,
+        flag_overrides=None,
+        parameter_overrides=None):
     """
     TODO: Document me
 
     :param input_file:
+    :type input_file: str
     :param command:
+    :type command: str
+    :param checksum:
+    :type checksum: bool
     :param flag_overrides:
+    :type flag_overrides: object
     :param parameter_overrides:
+    :type parameter_overrides: object
     :rtype:
     """
-    origin_file_name = None
-    if isinstance(input_file, str):
-        origin_file_name = input_file
-    if hasattr(input_file, 'name'):
-        origin_file_name = input_file.name
-    if origin_file_name:
-        header_data_unit_list = astropy.io.fits.open(origin_file_name)
-    elif isinstance(input_file, astropy.io.fits.HDUList):
-        header_data_unit_list = input_file
-    else:
-        raise RuntimeError("Cannot make HDU for object of type {}".format(str(type(input_file))))
     return electron_flux_converter_from_hdulist(
-        header_data_unit_list,
+        astropy.io.fits.open(input_file, checksum=checksum),
         command=command,
-        origin_file_name=origin_file_name,
+        origin_file_name=input_file,
         flag_overrides=flag_overrides,
         parameter_overrides=parameter_overrides,
     )
+
+
+def electron_flux_fits_to_raw(
+        fits_input_file,
+        fits_output_file,
+        command=None,
+        checksum=True,
+        flag_overrides=None,
+        parameter_overrides=None,
+        transformation_settings=None):
+    """
+    Read an electron flux FITS file in as input, with units specified in electron counts,
+    run a series of transformations over it, and output the results to a specified file.
+
+    :param fits_input_file: A FITS file with electron counts
+    :type fits_input_file: str
+    :param fits_output_file: A FITS file to use as output; will be clobbered if it exists
+    :type fits_output_file: str
+    :param command: The command issued to be recorded in the ``HISTORY`` header keyword in the output
+    :type command: str
+    :param checksum: Whether to use checksums for data validation in reading and writing
+    :type checksum: bool
+    :param flag_overrides: An object specifying values transformation flags should take rather than their defaults
+    :type flag_overrides: object
+    :param parameter_overrides: An object specifying values parameters should take rather than their defaults
+    :type parameter_overrides: object
+    :param transformation_settings: An object which specifies which transformations should run, rather than the defaults
+    :type transformation_settings: object
+    """
+    single_ccd_electron_flux_converter = electron_flux_converter_from_fits(
+        fits_input_file,
+        command=command,
+        checksum=checksum,
+        flag_overrides=flag_overrides,
+        parameter_overrides=parameter_overrides)
+    write_electron_flux_converter_to_simulated_raw_fits(
+        transform_electron_flux_converter(
+            single_ccd_electron_flux_converter,
+            transformation_settings=transformation_settings),
+        fits_output_file,
+        checksum=checksum)

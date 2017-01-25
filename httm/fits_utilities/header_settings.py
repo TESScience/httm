@@ -32,6 +32,20 @@ logger = logging.getLogger(__name__)
 
 # TODO: Documentation
 def set_header_settings(settings, setting_dictionary, fits_header):
+    # type: (object, dict, Header) -> Header
+    """
+    Add the settings specified in a ``settings`` object to a FITS header,
+    using a ``settings_dictionary`` to determine which attributes are associated with
+    which header keyword to set and what documentation should be associate with the keyword.
+
+    :param settings: An object containing header settings as attributes.
+    :type settings: object
+    :param setting_dictionary:
+    :type setting_dictionary: dict
+    :param fits_header:
+    :type fits_header: :py:class:`astropy.io.fits.Header`
+    :rtype: :py:class:`astropy.io.fits.Header`
+    """
     updated_header = Header(fits_header, copy=True)
     for key_name in setting_dictionary:
         value = getattr(settings, key_name)

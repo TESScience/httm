@@ -34,6 +34,7 @@ from .header_settings import get_header_setting, set_header_settings
 from ..data_structures.common import Slice, ConversionMetaData
 from ..data_structures.raw_converter import SingleCCDRawConverterFlags, SingleCCDRawConverter, \
     raw_transformation_flags, SingleCCDRawConverterParameters, raw_converter_parameters
+from ..transformations.raw_converters_to_calibrated import transform_raw_converter
 
 
 # TODO: Documentation
@@ -79,8 +80,8 @@ def raw_converter_to_calibrated_hdulist(converter):
 
 
 # TODO: Documentation
-def write_raw_converter_to_calibrated_fits(converter, output_file):
-    # type: (SingleCCDRawConverter, str) -> None
+def write_raw_converter_to_calibrated_fits(converter, output_file, checksum=True):
+    # type: (SingleCCDRawConverter, str, bool) -> None
     """
     Write a completed :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     to a calibrated FITS file.
@@ -89,6 +90,8 @@ def write_raw_converter_to_calibrated_fits(converter, output_file):
     :type converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     :param output_file:
     :type output_file: :py:class:`file` or :py:class:`str`
+    :param checksum:
+    :type checksum: bool
     :rtype: NoneType
     """
     hdulist = raw_converter_to_calibrated_hdulist(converter)
@@ -98,7 +101,7 @@ def write_raw_converter_to_calibrated_fits(converter, output_file):
     except OSError:
         pass
 
-    hdulist.writeto(output_file)
+    hdulist.writeto(output_file, checksum=checksum)
 
 
 # TODO: Documentation
@@ -242,21 +245,65 @@ def raw_converter_from_hdulist(header_data_unit_list,
 def raw_converter_from_fits(
         input_file,
         command=None,
+        checksum=True,
         flag_overrides=None,
         parameter_overrides=None):
     """
     TODO: Document this
 
+
     :param input_file:
+    :param command:
+    :param checksum:
     :param flag_overrides:
     :param parameter_overrides:
-    :param command:
     :rtype:
     """
     return raw_converter_from_hdulist(
-        astropy.io.fits.open(input_file),
+        astropy.io.fits.open(input_file, checksum=checksum),
         command=command,
         origin_file_name=input_file,
         flag_overrides=flag_overrides,
         parameter_overrides=parameter_overrides,
     )
+
+
+def raw_fits_to_calibrated(
+        fits_input_file,
+        fits_output_file,
+        command=None,
+        checksum=True,
+        flag_overrides=None,
+        parameter_overrides=None,
+        transformation_settings=None):
+    """
+    Read a raw FITS file in as input, with units specified in *Analogue to Digital Converter Units* (ADU),
+    run a series of transformations over it, and output the results to a specified file.
+
+    :param fits_input_file: A raw FITS file to use as input
+    :type fits_input_file: str
+    :param fits_output_file: A FITS file to use as output; will be clobbered if it exists
+    :type fits_output_file: str
+    :param command: The command issued to be recorded in the ``HISTORY`` header keyword in the output
+    :type command: str
+    :param checksum: Whether to use checksums for data validation in reading and writing
+    :type checksum: bool
+    :param flag_overrides: An object specifying values transformation flags should take rather than their defaults
+    :type flag_overrides: object
+    :param parameter_overrides: An object specifying values parameters should take rather than their defaults
+    :type parameter_overrides: object
+    :param transformation_settings: An object which specifies which transformations should run, rather than the defaults
+    :type transformation_settings: object
+    """
+    single_ccd_raw_converter = raw_converter_from_fits(
+        fits_input_file,
+        command=command,
+        checksum=checksum,
+        flag_overrides=flag_overrides,
+        parameter_overrides=parameter_overrides)
+    write_raw_converter_to_calibrated_fits(
+        transform_raw_converter(
+            single_ccd_raw_converter,
+            transformation_settings=transformation_settings),
+        fits_output_file,
+        checksum=checksum)
