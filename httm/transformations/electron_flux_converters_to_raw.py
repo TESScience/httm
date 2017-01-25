@@ -34,9 +34,6 @@ from ..data_structures.electron_flux_converter import SingleCCDElectronFluxConve
 from ..resource_utilities import load_npz_resource
 
 
-# TODO: Add flags
-
-
 def introduce_smear_rows(electron_flux_converter):
     # type: (SingleCCDElectronFluxConverter) -> SingleCCDElectronFluxConverter
     """
@@ -58,12 +55,14 @@ def introduce_smear_rows(electron_flux_converter):
     late_dark_pixel_columns = electron_flux_converter.parameters.late_dark_pixel_columns
     early_dark_pixel_columns = electron_flux_converter.parameters.early_dark_pixel_columns
     image_slices = electron_flux_converter.slices
+    assert electron_flux_converter.flags.smear_rows_present is False, "Smear rows must not be flagged as present"
     # noinspection PyProtectedMember
     return electron_flux_converter._replace(
         slices=tuple(introduce_smear_rows_to_slice(smear_ratio, early_dark_pixel_columns,
                                                    late_dark_pixel_columns,
                                                    final_dark_pixel_rows, smear_rows, image_slice)
-                     for image_slice in image_slices))
+                     for image_slice in image_slices),
+        flags=electron_flux_converter.flags._replace(smear_rows_present=True))
 
 
 def add_shot_noise(electron_flux_converter):
@@ -82,8 +81,10 @@ def add_shot_noise(electron_flux_converter):
     """
     image_slices = electron_flux_converter.slices
     # noinspection PyProtectedMember
+    assert electron_flux_converter.flags.shot_noise_present is False, "Shot noise must not be flagged as present"
     return electron_flux_converter._replace(
-        slices=tuple(add_shot_noise_to_slice(image_slice) for image_slice in image_slices))
+        slices=tuple(add_shot_noise_to_slice(image_slice) for image_slice in image_slices),
+        flags=electron_flux_converter.flags._replace(shot_noise_present=True))
 
 
 def simulate_blooming(electron_flux_converter):
@@ -105,10 +106,12 @@ def simulate_blooming(electron_flux_converter):
     blooming_threshold = electron_flux_converter.parameters.blooming_threshold
     number_of_exposures = electron_flux_converter.parameters.number_of_exposures
     image_slices = electron_flux_converter.slices
+    assert electron_flux_converter.flags.blooming_present is False, "Blooming must not be flagged as present"
     # noinspection PyProtectedMember
     return electron_flux_converter._replace(
         slices=tuple(simulate_blooming_on_slice(full_well, blooming_threshold, number_of_exposures, image_slice)
-                     for image_slice in image_slices))
+                     for image_slice in image_slices),
+        flags=electron_flux_converter.flags._replace(blooming_present=True))
 
 
 def add_baseline(electron_flux_converter):
@@ -135,12 +138,14 @@ def add_baseline(electron_flux_converter):
     number_of_exposures = electron_flux_converter.parameters.number_of_exposures
     video_scales = electron_flux_converter.parameters.video_scales
     assert len(video_scales) >= len(image_slices), "There should be at least as many video scales as slices"
+    assert electron_flux_converter.flags.baseline_present is False, "Baseline must not be flagged as present"
     # noinspection PyProtectedMember
     return electron_flux_converter._replace(
         slices=tuple(add_baseline_to_slice(single_frame_baseline_adu, single_frame_baseline_adu_drift_term,
                                            number_of_exposures, video_scale, image_slice)
                      for (single_frame_baseline_adu, video_scale, image_slice)
-                     in zip(single_frame_baseline_adus, video_scales, image_slices)))
+                     in zip(single_frame_baseline_adus, video_scales, image_slices)),
+        flags=electron_flux_converter.flags._replace(baseline_present=True))
 
 
 def add_readout_noise(electron_flux_converter):
@@ -161,10 +166,12 @@ def add_readout_noise(electron_flux_converter):
     readout_noise_parameters = electron_flux_converter.parameters.readout_noise_parameters
     image_slices = electron_flux_converter.slices
     number_of_exposures = electron_flux_converter.parameters.number_of_exposures
+    assert electron_flux_converter.flags.readout_noise_present is False, "Readout noise must not be flagged as present"
     # noinspection PyProtectedMember
     return electron_flux_converter._replace(
         slices=tuple(add_readout_noise_to_slice(readout_noise_parameter, number_of_exposures, image_slice)
-                     for (readout_noise_parameter, image_slice) in zip(readout_noise_parameters, image_slices)))
+                     for (readout_noise_parameter, image_slice) in zip(readout_noise_parameters, image_slices)),
+        flags=electron_flux_converter.flags._replace(readout_noise_present=True))
 
 
 def simulate_undershoot(electron_flux_converter):
@@ -184,9 +191,11 @@ def simulate_undershoot(electron_flux_converter):
     """
     undershoot_parameter = electron_flux_converter.parameters.undershoot_parameter
     image_slices = electron_flux_converter.slices
+    assert electron_flux_converter.flags.undershoot_present is False, "Undershoot must not be flagged as present"
     # noinspection PyProtectedMember
     return electron_flux_converter._replace(
-        slices=tuple(simulate_undershoot_on_slice(undershoot_parameter, image_slice) for image_slice in image_slices))
+        slices=tuple(simulate_undershoot_on_slice(undershoot_parameter, image_slice) for image_slice in image_slices),
+        flags=electron_flux_converter.flags._replace(undershoot_present=True))
 
 
 def simulate_start_of_line_ringing(electron_flux_converter):
@@ -207,10 +216,13 @@ def simulate_start_of_line_ringing(electron_flux_converter):
     start_of_line_ringing_patterns = load_npz_resource(electron_flux_converter.parameters.start_of_line_ringing,
                                                        'start_of_line_ringing')
     image_slices = electron_flux_converter.slices
+    assert electron_flux_converter.flags.start_of_line_ringing_present is False, \
+        "Start of line ringing must not be flagged as present"
     # noinspection PyProtectedMember
     return electron_flux_converter._replace(
         slices=tuple(simulate_start_of_line_ringing_to_slice(start_of_line_ringing, image_slice)
-                     for (start_of_line_ringing, image_slice) in zip(start_of_line_ringing_patterns, image_slices)))
+                     for (start_of_line_ringing, image_slice) in zip(start_of_line_ringing_patterns, image_slices)),
+        flags=electron_flux_converter.flags._replace(start_of_line_ringing_present=True))
 
 
 def add_pattern_noise(electron_flux_converter):
@@ -229,10 +241,12 @@ def add_pattern_noise(electron_flux_converter):
     """
     pattern_noises = load_npz_resource(electron_flux_converter.parameters.pattern_noise, 'pattern_noise')
     image_slices = electron_flux_converter.slices
+    assert electron_flux_converter.flags.pattern_noise_present is False, "Pattern noise must not be flagged as present"
     # noinspection PyProtectedMember
     return electron_flux_converter._replace(
         slices=tuple(add_pattern_noise_to_slice(pattern_noise, image_slice)
-                     for (pattern_noise, image_slice) in zip(pattern_noises, image_slices)))
+                     for (pattern_noise, image_slice) in zip(pattern_noises, image_slices)),
+        flags=electron_flux_converter.flags._replace(pattern_noise_present=True))
 
 
 def convert_electrons_to_adu(electron_flux_converter):
@@ -255,12 +269,15 @@ def convert_electrons_to_adu(electron_flux_converter):
     gain_loss = electron_flux_converter.parameters.gain_loss
     clip_level_adu = electron_flux_converter.parameters.clip_level_adu
     assert len(video_scales) >= len(image_slices), \
-        "There should be at least as many Video scales as there are slices"
+        "There should be at least as many video scales as there are slices"
+    assert electron_flux_converter.flags.in_adu is False, \
+        "Image must not be in Analogue to Digital Converter Units (ADU)"
     # noinspection PyProtectedMember
     return electron_flux_converter._replace(
         slices=tuple(convert_slice_electrons_to_adu(gain_loss, number_of_exposures, video_scale,
                                                     clip_level_adu, image_slice)
-                     for (video_scale, image_slice) in zip(video_scales, image_slices)))
+                     for (video_scale, image_slice) in zip(video_scales, image_slices)),
+        flags=electron_flux_converter.flags._replace(in_adu=True))
 
 
 electron_flux_transformations = OrderedDict([
