@@ -20,8 +20,8 @@
 import argparse
 import logging
 import os
-
 import sys
+import pkg_resources
 
 from httm import electron_flux_fits_to_raw
 from httm.data_structures.electron_flux_converter import electron_flux_converter_parameters, \
@@ -43,9 +43,12 @@ if __name__ == "__main__":
     parser.add_argument('input', type=str, help="The name of the RAW FITS file to use as input")
     parser.add_argument('output', type=str, help="The name of the Calibrated FITS file to use as output")
 
+    parser.add_argument('--version', action='version', version=pkg_resources.get_distribution("httm").version)
+
     parser.add_argument('--config',
                         default=None, type=str, dest='config',
                         help='Set an optional configuration file')
+
 
     add_arguments_from_settings(parser, electron_flux_transformation_flags)
     add_arguments_from_settings(parser, electron_flux_transformations)
