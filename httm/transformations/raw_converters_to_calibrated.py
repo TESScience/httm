@@ -55,8 +55,7 @@ def convert_adu_to_electrons(raw_converter):
     return raw_converter._replace(
         slices=tuple(convert_slice_adu_to_electrons(gain_loss, number_of_exposures, video_scale, image_slice)
                      for (video_scale, image_slice) in zip(video_scales, image_slices)),
-        flags=raw_converter.flags._replace(in_adu=True)
-    )
+        flags=raw_converter.flags._replace(in_adu=True))
 
 
 def remove_baseline(raw_converter):
@@ -75,13 +74,15 @@ def remove_baseline(raw_converter):
     :type raw_converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
+    assert raw_converter.flags.baseline_present, "Baseline must be flagged as present"
     image_slices = raw_converter.slices
     early_dark_pixel_columns = raw_converter.parameters.early_dark_pixel_columns
     late_dark_pixel_columns = raw_converter.parameters.late_dark_pixel_columns
     # noinspection PyProtectedMember
     return raw_converter._replace(
         slices=tuple(remove_baseline_from_slice(early_dark_pixel_columns, late_dark_pixel_columns, image_slice)
-                     for image_slice in image_slices), flags=raw_converter.flags._replace(baseline_present=False))
+                     for image_slice in image_slices),
+        flags=raw_converter.flags._replace(baseline_present=False))
 
 
 def remove_pattern_noise(raw_converter):
@@ -97,13 +98,15 @@ def remove_pattern_noise(raw_converter):
     :type raw_converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
+    assert raw_converter.flags.pattern_noise_present, "Pattern noise must be flagged as present"
     pattern_noises = load_npz_resource(raw_converter.parameters.pattern_noise, 'pattern_noise')
     image_slices = raw_converter.slices
     assert len(pattern_noises) >= len(image_slices), "There should be at least as many noise patterns as slices"
     # noinspection PyProtectedMember
     return raw_converter._replace(
         slices=tuple(remove_pattern_noise_from_slice(pattern_noise, image_slice)
-                     for (pattern_noise, image_slice) in zip(pattern_noises, image_slices)))
+                     for (pattern_noise, image_slice) in zip(pattern_noises, image_slices)),
+        flags=raw_converter.flags._replace(pattern_noise_present=False))
 
 
 def remove_start_of_line_ringing(raw_converter):
@@ -119,12 +122,14 @@ def remove_start_of_line_ringing(raw_converter):
     :type raw_converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
+    assert raw_converter.flags.start_of_line_ringing_present, "Start of line ringing must be flagged as present"
     final_dark_pixel_rows = raw_converter.parameters.final_dark_pixel_rows
     image_slices = raw_converter.slices
     # noinspection PyProtectedMember
     return raw_converter._replace(
         slices=tuple(remove_pattern_noise_from_slice(final_dark_pixel_rows, image_slice)
-                     for image_slice in image_slices))
+                     for image_slice in image_slices),
+        flags=raw_converter.flags._replace(start_of_line_ringing_present=False))
 
 
 def remove_undershoot(raw_converter):
@@ -140,6 +145,7 @@ def remove_undershoot(raw_converter):
     :type raw_converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
+    assert raw_converter.flags.undershoot_present, "Undershoot must be flagged as present"
     assert raw_converter.flags.baseline_present is False, "Baseline should be removed before removing undershoot"
 
     undershoot_parameter = raw_converter.parameters.undershoot_parameter
@@ -147,7 +153,8 @@ def remove_undershoot(raw_converter):
     # noinspection PyProtectedMember
     return raw_converter._replace(
         slices=tuple(remove_undershoot_from_slice(undershoot_parameter, image_slice)
-                     for image_slice in image_slices))
+                     for image_slice in image_slices),
+        flags=raw_converter.flags._replace(undershoot_present=False))
 
 
 def remove_smear(raw_converter):
@@ -163,6 +170,7 @@ def remove_smear(raw_converter):
     :type raw_converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
+    assert raw_converter.flags.smear_rows_present, "Smear rows must be flagged as present"
     final_dark_pixel_rows = raw_converter.parameters.final_dark_pixel_rows
     smear_rows = raw_converter.parameters.smear_rows
     late_dark_pixel_columns = raw_converter.parameters.late_dark_pixel_columns
@@ -172,7 +180,8 @@ def remove_smear(raw_converter):
     return raw_converter._replace(
         slices=tuple(remove_smear_from_slice(early_dark_pixel_columns, late_dark_pixel_columns,
                                              final_dark_pixel_rows, smear_rows, image_slice)
-                     for image_slice in image_slices))
+                     for image_slice in image_slices),
+        flags=raw_converter.flags._replace(smear_rows_present=False))
 
 
 raw_transformations = OrderedDict([
@@ -229,8 +238,8 @@ def transform_raw_converter(raw_converter, transformation_settings=None):
     """
     from functools import reduce
     return reduce(
-        lambda converter, transformation_function: transformation_function(
-            converter),
+        lambda converter, transformation_function:
+        transformation_function(converter),
         derive_transformation_function_list(transformation_settings,
                                             OrderedDict((key, raw_transformations[key]['default'])
                                                         for key in raw_transformations.keys()),
