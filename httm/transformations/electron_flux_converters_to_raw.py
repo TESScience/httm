@@ -49,13 +49,13 @@ def introduce_smear_rows(electron_flux_converter):
     :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
+    assert electron_flux_converter.flags.smear_rows_present is False, "Smear rows must not be flagged as present"
     smear_ratio = electron_flux_converter.parameters.smear_ratio
     smear_rows = electron_flux_converter.parameters.smear_rows
     final_dark_pixel_rows = electron_flux_converter.parameters.final_dark_pixel_rows
     late_dark_pixel_columns = electron_flux_converter.parameters.late_dark_pixel_columns
     early_dark_pixel_columns = electron_flux_converter.parameters.early_dark_pixel_columns
     image_slices = electron_flux_converter.slices
-    assert electron_flux_converter.flags.smear_rows_present is False, "Smear rows must not be flagged as present"
     # noinspection PyProtectedMember
     return electron_flux_converter._replace(
         slices=tuple(introduce_smear_rows_to_slice(smear_ratio, early_dark_pixel_columns,
@@ -79,9 +79,9 @@ def add_shot_noise(electron_flux_converter):
     :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
+    assert electron_flux_converter.flags.shot_noise_present is False, "Shot noise must not be flagged as present"
     image_slices = electron_flux_converter.slices
     # noinspection PyProtectedMember
-    assert electron_flux_converter.flags.shot_noise_present is False, "Shot noise must not be flagged as present"
     return electron_flux_converter._replace(
         slices=tuple(add_shot_noise_to_slice(image_slice) for image_slice in image_slices),
         flags=electron_flux_converter.flags._replace(shot_noise_present=True))
@@ -102,11 +102,11 @@ def simulate_blooming(electron_flux_converter):
     :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
+    assert electron_flux_converter.flags.blooming_present is False, "Blooming must not be flagged as present"
     full_well = electron_flux_converter.parameters.full_well
     blooming_threshold = electron_flux_converter.parameters.blooming_threshold
     number_of_exposures = electron_flux_converter.parameters.number_of_exposures
     image_slices = electron_flux_converter.slices
-    assert electron_flux_converter.flags.blooming_present is False, "Blooming must not be flagged as present"
     # noinspection PyProtectedMember
     return electron_flux_converter._replace(
         slices=tuple(simulate_blooming_on_slice(full_well, blooming_threshold, number_of_exposures, image_slice)
@@ -130,6 +130,7 @@ def add_baseline(electron_flux_converter):
     :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
+    assert electron_flux_converter.flags.baseline_present is False, "Baseline must not be flagged as present"
     image_slices = electron_flux_converter.slices
     single_frame_baseline_adus = electron_flux_converter.parameters.single_frame_baseline_adus
     assert len(single_frame_baseline_adus) >= len(image_slices), \
@@ -138,7 +139,6 @@ def add_baseline(electron_flux_converter):
     number_of_exposures = electron_flux_converter.parameters.number_of_exposures
     video_scales = electron_flux_converter.parameters.video_scales
     assert len(video_scales) >= len(image_slices), "There should be at least as many video scales as slices"
-    assert electron_flux_converter.flags.baseline_present is False, "Baseline must not be flagged as present"
     # noinspection PyProtectedMember
     return electron_flux_converter._replace(
         slices=tuple(add_baseline_to_slice(single_frame_baseline_adu, single_frame_baseline_adu_drift_term,
@@ -163,10 +163,10 @@ def add_readout_noise(electron_flux_converter):
     :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
+    assert electron_flux_converter.flags.readout_noise_present is False, "Readout noise must not be flagged as present"
     readout_noise_parameters = electron_flux_converter.parameters.readout_noise_parameters
     image_slices = electron_flux_converter.slices
     number_of_exposures = electron_flux_converter.parameters.number_of_exposures
-    assert electron_flux_converter.flags.readout_noise_present is False, "Readout noise must not be flagged as present"
     # noinspection PyProtectedMember
     return electron_flux_converter._replace(
         slices=tuple(add_readout_noise_to_slice(readout_noise_parameter, number_of_exposures, image_slice)
@@ -189,9 +189,9 @@ def simulate_undershoot(electron_flux_converter):
     :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
+    assert electron_flux_converter.flags.undershoot_present is False, "Undershoot must not be flagged as present"
     undershoot_parameter = electron_flux_converter.parameters.undershoot_parameter
     image_slices = electron_flux_converter.slices
-    assert electron_flux_converter.flags.undershoot_present is False, "Undershoot must not be flagged as present"
     # noinspection PyProtectedMember
     return electron_flux_converter._replace(
         slices=tuple(simulate_undershoot_on_slice(undershoot_parameter, image_slice) for image_slice in image_slices),
@@ -213,11 +213,11 @@ def simulate_start_of_line_ringing(electron_flux_converter):
     :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
+    assert electron_flux_converter.flags.start_of_line_ringing_present is False, \
+        "Start of line ringing must not be flagged as present"
     start_of_line_ringing_patterns = load_npz_resource(electron_flux_converter.parameters.start_of_line_ringing,
                                                        'start_of_line_ringing')
     image_slices = electron_flux_converter.slices
-    assert electron_flux_converter.flags.start_of_line_ringing_present is False, \
-        "Start of line ringing must not be flagged as present"
     # noinspection PyProtectedMember
     return electron_flux_converter._replace(
         slices=tuple(simulate_start_of_line_ringing_to_slice(start_of_line_ringing, image_slice)
@@ -239,9 +239,9 @@ def add_pattern_noise(electron_flux_converter):
     :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
+    assert electron_flux_converter.flags.pattern_noise_present is False, "Pattern noise must not be flagged as present"
     pattern_noises = load_npz_resource(electron_flux_converter.parameters.pattern_noise, 'pattern_noise')
     image_slices = electron_flux_converter.slices
-    assert electron_flux_converter.flags.pattern_noise_present is False, "Pattern noise must not be flagged as present"
     # noinspection PyProtectedMember
     return electron_flux_converter._replace(
         slices=tuple(add_pattern_noise_to_slice(pattern_noise, image_slice)
@@ -263,6 +263,8 @@ def convert_electrons_to_adu(electron_flux_converter):
     :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
+    assert electron_flux_converter.flags.in_adu is False, \
+        "Image must not be in Analogue to Digital Converter Units (ADU)"
     video_scales = electron_flux_converter.parameters.video_scales
     image_slices = electron_flux_converter.slices
     number_of_exposures = electron_flux_converter.parameters.number_of_exposures
@@ -270,8 +272,6 @@ def convert_electrons_to_adu(electron_flux_converter):
     clip_level_adu = electron_flux_converter.parameters.clip_level_adu
     assert len(video_scales) >= len(image_slices), \
         "There should be at least as many video scales as there are slices"
-    assert electron_flux_converter.flags.in_adu is False, \
-        "Image must not be in Analogue to Digital Converter Units (ADU)"
     # noinspection PyProtectedMember
     return electron_flux_converter._replace(
         slices=tuple(convert_slice_electrons_to_adu(gain_loss, number_of_exposures, video_scale,
@@ -351,8 +351,8 @@ def transform_electron_flux_converter(single_ccd_electron_flux_converter,
     import numpy.random
     numpy.random.seed(single_ccd_electron_flux_converter.parameters.random_seed)
     return reduce(
-        lambda converter, transformation_function: transformation_function(
-            converter),
+        lambda converter, transformation_function:
+            transformation_function(converter),
         derive_transformation_function_list(
             transformation_settings,
             OrderedDict(
