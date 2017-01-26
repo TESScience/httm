@@ -12,9 +12,8 @@ python:
   - "3.5"
 
 install:
-  - pip3 install travis-sphinx sphinx-rtd-theme pyparsing six
-  - pip3 install -r test/requirements.txt
-  - make -C test install VIRTUAL_ENV_OPTS=--system-site-packages
+  - pip install travis-sphinx sphinx-rtd-theme
+  - make -C test install
 
 script:
   - make documentation
