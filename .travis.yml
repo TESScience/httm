@@ -9,10 +9,10 @@ addons:
 language: python
 
 python:
-  - "2.7"
+  - "3"
 
 install:
-  - pip install travis-sphinx sphinx-rtd-theme
+  - pip install travis-sphinx sphinx-rtd-theme pyparsing
   - pip install -r test/requirements.txt
   - make -C test install VIRTUAL_ENV_OPTS=--system-site-packages
 
