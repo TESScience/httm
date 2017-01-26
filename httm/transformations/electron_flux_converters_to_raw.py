@@ -349,16 +349,15 @@ def transform_electron_flux_converter(single_ccd_electron_flux_converter,
     """
     from functools import reduce
     import numpy.random
-    numpy.random.seed(single_ccd_electron_flux_converter.parameters.random_seed)
+    random_seed = single_ccd_electron_flux_converter.parameters.random_seed
+    numpy.random.seed(random_seed if random_seed is not -1 else None)
     return reduce(
         lambda converter, transformation_function:
-            transformation_function(converter),
+        transformation_function(converter),
         derive_transformation_function_list(
             transformation_settings,
-            OrderedDict(
-                (key, electron_flux_transformations[key]['default'])
-                for key in electron_flux_transformations.keys()
-            ),
+            OrderedDict((key, electron_flux_transformations[key]['default'])
+                        for key in electron_flux_transformations.keys()),
             {key: electron_flux_transformations[key]['function']
              for key in electron_flux_transformations.keys()}),
         single_ccd_electron_flux_converter)

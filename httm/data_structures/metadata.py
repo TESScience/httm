@@ -143,9 +143,9 @@ parameters = OrderedDict([
     ('random_seed', {
         'type': 'int',
         'documentation': 'The pseudo random number generator seed. '
-                         'The default value of ``None`` creates a seed from the system clock.',
+                         'The default value of ``-1`` creates a seed from the system clock.',
         'short_documentation': 'The pseudo random number generator seed',
-        'default': None,
+        'default': -1,
         'standard_fits_keyword': 'RNGSEED',
         'forbidden_fits_keywords': [],
         'alternate_fits_keywords': [],

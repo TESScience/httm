@@ -69,10 +69,11 @@ def flatten_dictionary(dictionary):
     """
     result = {}
     for k in dictionary:
-        if isinstance(dictionary[k], dict):
-            result.update(flatten_dictionary(dictionary[k]))
-        else:
-            result[k.replace("-", "_")] = dictionary[k]
+        value = dictionary[k]
+        if isinstance(value, dict):
+            result.update(flatten_dictionary(value))
+        elif value is not None:
+            result[k.replace("-", "_")] = value
     return result
 
 
