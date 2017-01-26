@@ -259,10 +259,10 @@ parameters = OrderedDict([
     }),
     ('pattern_noise', {
         'type': ':py:class:`str` or :py:class:`file`',
-        'documentation': 'A matrix to be read from an ``npz`` file, '
-                         'representing the repeatable change in the video baseline caused by the disturbance '
-                         'in the data acquisition rhythm between *frames*. '
-                         'Units of the matrix are electrons.',
+        'documentation': 'A matrix to be read from an ``npz`` file, representing '
+                         'the repeatable change in the video baseline caused by '
+                         'the disturbance in the data acquisition rhythm between '
+                         '*frames*. Units of the matrix are electrons.',
         'short_documentation': 'Pattern noise',
         'default': 'built-in default_pattern_noise.npz',
         'standard_fits_keyword': 'PATNOISE',
