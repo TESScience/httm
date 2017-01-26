@@ -30,7 +30,7 @@ import astropy
 import numpy
 from astropy.io.fits import HDUList, PrimaryHDU
 
-from .header_settings import get_header_setting, set_header_settings
+from .header_tools import get_header_setting, set_header_settings, add_command_to_header_history
 from ..data_structures.common import Slice, ConversionMetaData
 from ..data_structures.electron_flux_converter import \
     SingleCCDElectronFluxConverterFlags, SingleCCDElectronFluxConverterParameters, \
@@ -144,14 +144,19 @@ def electron_flux_converter_to_simulated_raw_hdulist(converter):
         for raw_slice in converter.slices]
     for i in range(1, len(slices), 2):
         slices[i] = numpy.fliplr(slices[i])
-    # TODO: Write history
-    header_with_parameters = set_header_settings(converter.parameters,
-                                                 electron_flux_converter_parameters,
-                                                 converter.conversion_metadata.header)
-    header_with_transformation_flags = set_header_settings(converter.flags,
-                                                           electron_flux_transformation_flags,
-                                                           header_with_parameters)
-    return HDUList(PrimaryHDU(header=header_with_transformation_flags,
+    header_with_parameters = set_header_settings(
+        converter.parameters,
+        electron_flux_converter_parameters,
+        converter.conversion_metadata.header)
+    header_with_transformation_flags = set_header_settings(
+        converter.flags,
+        electron_flux_transformation_flags,
+        header_with_parameters)
+    header_with_added_history = add_command_to_header_history(
+        converter.conversion_metadata.command,
+        header_with_transformation_flags) \
+        if isinstance(converter.conversion_metadata.command, str) else header_with_transformation_flags
+    return HDUList(PrimaryHDU(header=header_with_added_history,
                               data=numpy.hstack(slices)))
 
 

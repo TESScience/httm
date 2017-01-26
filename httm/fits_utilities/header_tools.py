@@ -16,11 +16,11 @@
 
 
 """
-``httm.fits_utilities.header_settings``
-=======================================
+``httm.fits_utilities.header_tools``
+====================================
 
-This module contains functions for parsing settings, such as parameter or flags,
-from a FITS file header.
+This module contains functions for reading and writing settings,
+such as parameters, flags, or history from a FITS file header.
 """
 
 import logging
@@ -28,6 +28,18 @@ import logging
 from astropy.io.fits import Header
 
 logger = logging.getLogger(__name__)
+
+
+# TODO: Documentation
+def add_command_to_header_history(command, fits_header):
+    # type: (str, Header) -> Header
+    history_data = fits_header['HISTORY'] if 'HISTORY' in fits_header else []
+    history = history_data if hasattr(history_data, '__iter__') else [history_data]  # type: list
+    assert all(isinstance(h, str) for h in history), "HISTORY must consist only of strings"
+    updated_header = Header(fits_header, copy=True)
+    # `+` here is used for list concatenation
+    updated_header['HISTORY'] = [command] + history
+    return updated_header
 
 
 # TODO: Documentation

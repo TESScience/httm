@@ -30,7 +30,7 @@ import astropy
 import numpy
 from astropy.io.fits import HDUList, PrimaryHDU
 
-from .header_settings import get_header_setting, set_header_settings
+from .header_tools import get_header_setting, set_header_settings, add_command_to_header_history
 from ..data_structures.common import Slice, ConversionMetaData
 from ..data_structures.raw_converter import SingleCCDRawConverterFlags, SingleCCDRawConverter, \
     raw_transformation_flags, SingleCCDRawConverterParameters, raw_converter_parameters
@@ -64,16 +64,18 @@ def raw_converter_to_calibrated_hdulist(converter):
     header_with_parameters = set_header_settings(
         converter.parameters,
         raw_converter_parameters,
-        converter.conversion_metadata.header,
-    )
+        converter.conversion_metadata.header)
     header_with_transformation_flags = set_header_settings(
         converter.flags,
         raw_transformation_flags,
-        header_with_parameters,
-    )
-    # TODO: Add History
+        header_with_parameters)
+    header_with_added_history = add_command_to_header_history(
+        converter.conversion_metadata.command,
+        header_with_transformation_flags) \
+        if isinstance(converter.conversion_metadata.command, str) else header_with_transformation_flags
+
     return HDUList(PrimaryHDU(
-        header=header_with_transformation_flags,
+        header=header_with_added_history,
         # `+` concatenates python lists
         data=numpy.hstack(left_dark_parts + image_parts + right_dark_parts),
     ))
