@@ -12,7 +12,7 @@ python:
   - "3.5"
 
 install:
-  - pip install astropy numpy travis-sphinx sphinx-rtd-theme
+  - pip install jupyter astropy numpy travis-sphinx sphinx-rtd-theme
   - make -C test install
 
 script:
