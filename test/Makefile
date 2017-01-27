@@ -1,7 +1,7 @@
 ###################### Virtual Environment ######################
 .PHONY: install test_images documentation clean test version-check
 
-PYTHON_VERSION=3
+PYTHON_VERSION=2
 VIRTUAL_ENV=$(CURDIR)/venv
 PYTHON=$(VIRTUAL_ENV)/bin/python$(PYTHON_VERSION)
 PIP=$(VIRTUAL_ENV)/bin/pip$(PYTHON_VERSION)
@@ -18,6 +18,7 @@ TESTS=version-check httm-check-code-references httm-check-doc-references numpy-c
 all: install
 
 install: $(VIRTUAL_ENV)
+	$(PIP) install six
 	$(PIP) install -r requirements.txt
 	make -C .. clean
 	(cd .. ; $(PYTHON) setup.py install)
