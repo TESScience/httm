@@ -16,5 +16,6 @@ install:
   - make -C test install
 
 script:
+  - make -C doc clean
   - make documentation
   - make test
