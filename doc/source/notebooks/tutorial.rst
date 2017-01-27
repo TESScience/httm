@@ -14,12 +14,12 @@ To start, we will import ``matplotlib`` and increase the figure size so
 we can reasonably see artifacts in various FITS images we are going to
 be looking at.
 
-.. code:: python
+.. code:: ipython3
 
     %matplotlib inline
     %config InlineBackend.figure_format = 'png'
 
-.. code:: python
+.. code:: ipython3
 
     import matplotlib
     matplotlib.rcParams['figure.figsize'] = (8, 8)
@@ -41,11 +41,11 @@ To get started, open this file and extract a
 This is done by calling
 ``httm.fits_utilities.raw_fits.raw_converter_from_fits``.
 
-.. code:: python
+.. code:: ipython3
 
     import httm
 
-.. code:: python
+.. code:: ipython3
 
     from httm.fits_utilities.raw_fits import raw_converter_from_fits
     
@@ -57,7 +57,7 @@ synthetically.
 
 Below, we visualize the first slice of the image.
 
-.. code:: python
+.. code:: ipython3
 
     matplotlib.pyplot.imshow(raw_data.slices[0].pixels)
     matplotlib.pyplot.gca().invert_yaxis()
@@ -70,13 +70,13 @@ Below, we visualize the first slice of the image.
 Viewing an Electron Flux FITS Image
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: python
+.. code:: ipython3
 
     from httm.fits_utilities.electron_flux_fits import electron_flux_converter_from_fits
     
     electron_flux_data = electron_flux_converter_from_fits('fits_data/electron_flux_fits/small_simulated_data.fits')
 
-.. code:: python
+.. code:: ipython3
 
     matplotlib.pyplot.imshow(electron_flux_data.slices[0].pixels)
     matplotlib.pyplot.gca().invert_yaxis()
