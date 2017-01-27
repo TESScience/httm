@@ -99,7 +99,7 @@ def remove_pattern_noise(raw_converter):
     :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
     assert raw_converter.flags.pattern_noise_present, "Pattern noise must be flagged as present"
-    pattern_noises = load_npz_resource(raw_converter.parameters.pattern_noise, 'pattern_noise')
+    pattern_noises = load_npz_resource(raw_converter.parameters.pattern_noise)
     image_slices = raw_converter.slices
     assert len(pattern_noises) >= len(image_slices), "There should be at least as many noise patterns as slices"
     # noinspection PyProtectedMember

@@ -215,8 +215,7 @@ def simulate_start_of_line_ringing(electron_flux_converter):
     """
     assert electron_flux_converter.flags.start_of_line_ringing_present is False, \
         "Start of line ringing must not be flagged as present"
-    start_of_line_ringing_patterns = load_npz_resource(electron_flux_converter.parameters.start_of_line_ringing,
-                                                       'start_of_line_ringing')
+    start_of_line_ringing_patterns = load_npz_resource(electron_flux_converter.parameters.start_of_line_ringing)
     image_slices = electron_flux_converter.slices
     # noinspection PyProtectedMember
     return electron_flux_converter._replace(
@@ -240,7 +239,7 @@ def add_pattern_noise(electron_flux_converter):
     :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
     assert electron_flux_converter.flags.pattern_noise_present is False, "Pattern noise must not be flagged as present"
-    pattern_noises = load_npz_resource(electron_flux_converter.parameters.pattern_noise, 'pattern_noise')
+    pattern_noises = load_npz_resource(electron_flux_converter.parameters.pattern_noise)
     image_slices = electron_flux_converter.slices
     # noinspection PyProtectedMember
     return electron_flux_converter._replace(

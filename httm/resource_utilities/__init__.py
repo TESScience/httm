@@ -28,9 +28,10 @@ import pkgutil
 import re
 
 import numpy
+import sys
 
 
-def load_npz_resource(file_name, resource_key):
+def load_npz_resource(file_name):
     """
     This function tries to load a numpy ``*.npz`` file.
 
@@ -39,17 +40,26 @@ def load_npz_resource(file_name, resource_key):
 
     Otherwise it tries to load the file as usual.
 
+    The NPZ file is expected to contain a single keyword.
+
     :param file_name: A file name or file object to read data from
     :type file_name: :py:class:`file` or :py:class:`str`
-    :param resource_key: The key name of the desired data resource contained in the ``*.npz`` file.
-    :type resource_key: :py:class:`str`
     :rtype: :py:class:`numpy.ndarray`
     """
 
-    if isinstance(file_name, str) or isinstance(file_name, unicode) and not os.path.isfile(file_name):
+    # noinspection PyUnresolvedReferences
+    if isinstance(file_name, str) or (sys.version_info <= (3, 0) and isinstance(file_name, unicode)) \
+            and not os.path.isfile(file_name):
         pattern_match = re.match(r'^built-in (.*)', file_name)
         if pattern_match:
-            return numpy.load(io.BytesIO(pkgutil.get_data(
-                'httm', os.path.join('/data', pattern_match.group(1)))))[resource_key]
+            data = numpy.load(io.BytesIO(pkgutil.get_data('httm', os.path.join('/data', pattern_match.group(1)))))
+            keys = tuple(data.keys())
+            assert len(keys) == 1, "Loaded NPZ data can only have one entry"
+            return data[keys[0]]
 
-    return numpy.load(file_name)[resource_key]
+    data = numpy.load(file_name)
+
+    keys = tuple(data.keys())
+    assert len(keys) == 1, "Loaded NPZ data can only have one entry"
+
+    return data[keys[0]]
