@@ -120,6 +120,7 @@ def parse_dict(dictionary, reference_dictionaries, convert=False, override=None)
                 flat_dictionary[k] = getattr(override, k)
             # Check the type in the dictionary, but be very liberal
             # Note: Unicode is deprecated in Python 3, but strings are sometimes parsed as unicode in Python 2.7
+            # noinspection PyUnresolvedReferences
             if not isinstance(flat_dictionary[k], type(reference[k]['default'])) and \
                     not reference[k]['default'] is None and \
                     not (sys.version_info <= (3, 0) and
