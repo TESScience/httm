@@ -26,21 +26,21 @@ import io
 import os
 import pkgutil
 import re
+import sys
 
 import numpy
-import sys
 
 
 def load_npz(file_name):
     """
     This function tries to load a numpy ``*.npz`` file.
 
-    If the file's name contains ``:httm:`` at the start, it will attempt to load the file
-    from `httm`'s ``package_data`` as specified in ``setup.py``.
+    If the file's name contains ``built-in `` at the start, it will attempt to load the file
+    from the ``package_data`` as specified in the ``setup.py`` install script for this module.
 
     Otherwise it tries to load the file as usual.
 
-    The NPZ file is expected to contain a single keyword.
+    The NPZ file is expected to contain a single keyword, the data associated with that keyword is returned.
 
     :param file_name: A file name or file object to read data from
     :type file_name: :py:class:`file` or :py:class:`str`
@@ -48,16 +48,13 @@ def load_npz(file_name):
     """
 
     # noinspection PyUnresolvedReferences
-    if isinstance(file_name, str) or (sys.version_info <= (3, 0) and isinstance(file_name, unicode)) \
-            and not os.path.isfile(file_name):
-        pattern_match = re.match(r'^built-in (.*)', file_name)
-        if pattern_match:
-            data = numpy.load(io.BytesIO(pkgutil.get_data('httm', os.path.join('/data', pattern_match.group(1)))))
-            keys = tuple(data.keys())
-            assert len(keys) == 1, "Loaded NPZ data can only have one entry"
-            return data[keys[0]]
+    loader_input = \
+        io.BytesIO(pkgutil.get_data('httm', os.path.join('/data', re.match(r'^built-in (.*)', file_name).group(1)))) \
+        if (isinstance(file_name, str) or (sys.version_info <= (3, 0) and isinstance(file_name, unicode))) and \
+           ((not os.path.isfile(file_name)) and re.match(r'^built-in (.*)', file_name)) \
+        else file_name
 
-    data = numpy.load(file_name)
+    data = numpy.load(loader_input)
 
     keys = tuple(data.keys())
     assert len(keys) == 1, "Loaded NPZ data can only have one entry"
