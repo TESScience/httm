@@ -18,6 +18,7 @@ TESTS=version-check httm-check-code-references httm-check-doc-references numpy-c
 all: install
 
 install: $(VIRTUAL_ENV)
+	$(PIP) install pyparsing
 	$(PIP) install six
 	$(PIP) install -r requirements.txt
 	make -C .. clean
