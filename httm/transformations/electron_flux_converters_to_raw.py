@@ -31,7 +31,7 @@ from .electron_flux_slices_to_raw import introduce_smear_rows_to_slice, add_shot
     simulate_blooming_on_slice, add_baseline_to_slice, add_readout_noise_to_slice, simulate_undershoot_on_slice, \
     simulate_start_of_line_ringing_to_slice, add_pattern_noise_to_slice, convert_slice_electrons_to_adu
 from ..data_structures.electron_flux_converter import SingleCCDElectronFluxConverter
-from ..resource_utilities import load_npz_resource
+from ..resource_utilities import load_npz
 
 
 def introduce_smear_rows(electron_flux_converter):
@@ -215,7 +215,7 @@ def simulate_start_of_line_ringing(electron_flux_converter):
     """
     assert electron_flux_converter.flags.start_of_line_ringing_present is False, \
         "Start of line ringing must not be flagged as present"
-    start_of_line_ringing_patterns = load_npz_resource(electron_flux_converter.parameters.start_of_line_ringing)
+    start_of_line_ringing_patterns = load_npz(electron_flux_converter.parameters.start_of_line_ringing)
     image_slices = electron_flux_converter.slices
     # noinspection PyProtectedMember
     return electron_flux_converter._replace(
@@ -239,7 +239,7 @@ def add_pattern_noise(electron_flux_converter):
     :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
     assert electron_flux_converter.flags.pattern_noise_present is False, "Pattern noise must not be flagged as present"
-    pattern_noises = load_npz_resource(electron_flux_converter.parameters.pattern_noise)
+    pattern_noises = load_npz(electron_flux_converter.parameters.pattern_noise)
     image_slices = electron_flux_converter.slices
     # noinspection PyProtectedMember
     return electron_flux_converter._replace(

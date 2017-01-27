@@ -31,7 +31,7 @@ import numpy
 import sys
 
 
-def load_npz_resource(file_name):
+def load_npz(file_name):
     """
     This function tries to load a numpy ``*.npz`` file.
 
