@@ -22,7 +22,7 @@ late-dark-pixel-columns 		11                                    -- Shouldn't hav
 number-of-exposures     		1
 number-of-slices        		4
 pattern-noise   			"built-in default_pattern_noise.npz"  // Don't change this unless you know what you are doing
-random-seed	    			20
+random-seed
 readout-noise-parameters        	[   9.5,   9.5, 	  9.5, 	  9.5   ]
 single-frame-baseline-adu-drift-term    0.0
 single-frame-baseline-adus      	[6000, 6000, 6000, 6000]

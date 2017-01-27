@@ -185,7 +185,11 @@ def parse_tsv_line(line, separator_regex):
 
 def parse_tsv(filename, reference_dictionaries, override=None):
     """
-    Parses a TSV file into a namedtuple; only uses the first two non-empty columns
+    Parses a TSV file into a namedtuple.
+
+    Only uses the first two non-empty columns.
+
+    Lines with zero or one columns are skipped.
 
     :param filename: File to parse
     :type filename: str
@@ -201,7 +205,7 @@ def parse_tsv(filename, reference_dictionaries, override=None):
         for l in f.readlines():
             try:
                 key_value = tuple(parse_tsv_line(l, separator))
-                if len(key_value) is 0:
+                if len(key_value) <= 1:
                     continue
                 value_dictionary[key_value[0].strip()] = key_value[1].strip()
             except:
