@@ -31,6 +31,7 @@ import sys
 import numpy
 
 
+# noinspection SpellCheckingInspection
 def load_npz(file_name):
     """
     This function tries to load a numpy ``*.npz`` file.
