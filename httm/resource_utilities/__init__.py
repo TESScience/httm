@@ -26,34 +26,50 @@ import io
 import os
 import pkgutil
 import re
-import sys
 
+import astropy.io.fits
 import numpy
+from numpy import ndarray
+
+
+# TODO: Documentation
+def load_fits_image_data(fits_file_name, checksum=True):
+    # type: (str) -> ndarray
+    """
+    This function tries to load data from a FITS image.
+
+    :param fits_file_name:
+    :type fits_file_name: :py:class:`str`
+    :param checksum:
+    :type checksum: bool
+    :rtype: :py:class:`numpy.ndarray`
+    """
+    return astropy.io.fits.open(fits_file_name, checksum=checksum)[0].data
 
 
 # noinspection SpellCheckingInspection
-def load_npz(file_name):
+def load_npz(npz_file_name):
+    # type: (str) -> ndarray
     """
     This function tries to load a numpy ``*.npz`` file.
 
-    If the file's name contains ``built-in `` at the start, it will attempt to load the file
-    from the ``package_data`` as specified in the ``setup.py`` install script for this module.
+    If the file's name contains the string ``"built-in "`` at the start, it will attempt to load the file
+    from the ``package_data`` directory as specified in the ``setup.py`` install script for this module.
 
     Otherwise it tries to load the file as usual.
 
     The NPZ file is expected to contain a single keyword, the data associated with that keyword is returned.
 
-    :param file_name: A file name or file object to read data from
-    :type file_name: :py:class:`file` or :py:class:`str`
+    :param npz_file_name: A file name or file object to read data from
+    :type npz_file_name: :py:class:`str`
     :rtype: :py:class:`numpy.ndarray`
     """
 
     # noinspection PyUnresolvedReferences
     loader_input = \
-        io.BytesIO(pkgutil.get_data('httm', os.path.join('/data', re.match(r'^built-in (.*)', file_name).group(1)))) \
-        if (isinstance(file_name, str) or (sys.version_info <= (3, 0) and isinstance(file_name, unicode))) and \
-           ((not os.path.isfile(file_name)) and re.match(r'^built-in (.*)', file_name)) \
-        else file_name
+        io.BytesIO(pkgutil.get_data('httm', os.path.join('/data',
+                                                         re.match(r'^built-in (.*)', npz_file_name).group(1)))) \
+        if ((not os.path.isfile(npz_file_name)) and re.match(r'^built-in (.*)', npz_file_name)) else npz_file_name
 
     data = numpy.load(loader_input)
 
@@ -61,3 +77,13 @@ def load_npz(file_name):
     assert len(keys) == 1, "Loaded NPZ data can only have one entry"
 
     return data[keys[0]]
+
+
+# TODO: Documentation
+def load_data(file_name):
+    if re.match(r'.*\.npz$', file_name):
+        return load_npz(file_name)
+    elif re.match(r'.*\.fits.*$', file_name):
+        return load_fits_image_data(file_name)
+    else:
+        raise Exception("File has unknown suffix: {}".format(file_name))

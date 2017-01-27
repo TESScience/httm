@@ -30,7 +30,7 @@ from .common import derive_transformation_function_list
 from .raw_slices_to_calibrated import convert_slice_adu_to_electrons, remove_pattern_noise_from_slice, \
     remove_undershoot_from_slice, remove_smear_from_slice, remove_baseline_from_slice
 from ..data_structures.raw_converter import SingleCCDRawConverter
-from ..resource_utilities import load_npz
+from ..resource_utilities import load_data
 
 
 def convert_adu_to_electrons(raw_converter):
@@ -99,7 +99,7 @@ def remove_pattern_noise(raw_converter):
     :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
     assert raw_converter.flags.pattern_noise_present, "Pattern noise must be flagged as present"
-    pattern_noises = load_npz(raw_converter.parameters.pattern_noise)
+    pattern_noises = load_data(raw_converter.parameters.pattern_noise)
     image_slices = raw_converter.slices
     assert len(pattern_noises) >= len(image_slices), "There should be at least as many noise patterns as slices"
     # noinspection PyProtectedMember
@@ -194,7 +194,7 @@ raw_transformations = OrderedDict([
     }),
     ('remove_baseline', {
         'default': True,
-        'documentation': 'Average the pixels in the dark columns and subtract ' +
+        'documentation': 'Average the pixels in the dark columns and subtract '
                          'the result from each pixel in the image.',
         'function': remove_baseline,
     }),

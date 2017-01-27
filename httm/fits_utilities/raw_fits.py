@@ -25,6 +25,7 @@ it contains to and from FITS files or :py:class:`astropy.io.fits.HDUList` object
 """
 
 import os
+from collections import namedtuple
 
 import astropy
 import numpy
@@ -117,16 +118,19 @@ def raw_converter_flags_from_fits_header(fits_header, flag_overrides=None):
     :param fits_header: FITS header to use for parsing parameters
     :type fits_header: :py:class:`astropy.io.fits.Header`
     :param flag_overrides:
-    :type flag_overrides: object
+    :type flag_overrides: :py:class:`object` or :py:class:`dict`
     :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverterFlags`
     """
+
+    flag_override_object = namedtuple('FlagOverrides', flag_overrides.keys())(**flag_overrides) \
+        if isinstance(flag_overrides, dict) else flag_overrides
 
     def get_flag(flag_name):
         return get_header_setting(
             flag_name,
             raw_transformation_flags,
             fits_header,
-            getattr(flag_overrides, flag_name) if hasattr(flag_overrides, flag_name) else None)
+            getattr(flag_override_object, flag_name) if hasattr(flag_override_object, flag_name) else None)
 
     return SingleCCDRawConverterFlags(**{k: get_flag(k) for k in raw_transformation_flags})
 
@@ -139,16 +143,20 @@ def raw_converter_parameters_from_fits_header(fits_header, parameter_overrides=N
     :param fits_header: FITS header to use for parsing parameters
     :type fits_header: :py:class:`astropy.io.fits.Header`
     :param parameter_overrides:
-    :type parameter_overrides: object
-    :return:
+    :type parameter_overrides: :py:class:`object` or :py:class:`dict`
+    :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverterParameters`
     """
+
+    parameter_overrides_object = namedtuple('ParameterOverrides', parameter_overrides.keys())(**parameter_overrides) \
+        if isinstance(parameter_overrides, dict) else parameter_overrides
 
     def get_parameter(parameter_name):
         return get_header_setting(
             parameter_name,
             raw_converter_parameters,
             fits_header,
-            getattr(parameter_overrides, parameter_name) if hasattr(parameter_overrides, parameter_name) else None)
+            getattr(parameter_overrides_object, parameter_name)
+            if hasattr(parameter_overrides_object, parameter_name) else None)
 
     return SingleCCDRawConverterParameters(**{k: get_parameter(k) for k in raw_converter_parameters})
 
@@ -183,7 +191,6 @@ def make_slice_from_raw_data(
 
 
 # TODO Documentation
-# noinspection PyUnresolvedReferences
 def raw_converter_from_hdulist(header_data_unit_list,
                                command=None,
                                origin_file_name=None,
@@ -196,7 +203,9 @@ def raw_converter_from_hdulist(header_data_unit_list,
     :param command:
     :param origin_file_name:
     :param flag_overrides:
+    :type flag_overrides: :py:class:`object` or :py:class:`dict`
     :param parameter_overrides:
+    :type parameter_overrides: :py:class:`object` or :py:class:`dict`
     :rtype: SingleCCDRawConverter
     """
     from numpy import hsplit, fliplr
@@ -258,7 +267,9 @@ def raw_converter_from_fits(
     :param command:
     :param checksum:
     :param flag_overrides:
+    :type flag_overrides: :py:class:`object` or :py:class:`dict`
     :param parameter_overrides:
+    :type parameter_overrides: :py:class:`object` or :py:class:`dict`
     :rtype:
     """
     return raw_converter_from_hdulist(
@@ -290,10 +301,12 @@ def raw_fits_to_calibrated(
     :type command: str
     :param checksum: Whether to use checksums for data validation in reading and writing
     :type checksum: bool
-    :param flag_overrides: An object specifying values transformation flags should take rather than their defaults
-    :type flag_overrides: object
-    :param parameter_overrides: An object specifying values parameters should take rather than their defaults
-    :type parameter_overrides: object
+    :param flag_overrides: An object or dictionary specifying values transformation flags should take \
+    rather than their defaults
+    :type flag_overrides: :py:class:`object` or :py:class:`dict`
+    :param parameter_overrides: An object or dictionary specifying values parameters should take \
+    rather than their defaults
+    :type parameter_overrides: :py:class:`object` or :py:class:`dict`
     :param transformation_settings: An object which specifies which transformations should run, rather than the defaults
     :type transformation_settings: object
     """

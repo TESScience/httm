@@ -82,6 +82,12 @@ def add_pattern_noise_to_slice(pattern_noise, image_slice):
     :rtype:  :py:class:`~httm.data_structures.common.Slice`
     """
     assert image_slice.units == "electrons", "units must be electrons"
+    assert image_slice.pixels.shape == pattern_noise.shape, \
+        "Image slice and pattern noise must be the same shape; " \
+        "image slice shape was {image_shape} and pattern noise shape was {pattern_noise_shape}".format(
+            image_shape=image_slice.pixels.shape,
+            pattern_noise_shape=pattern_noise.shape
+        )
     # noinspection PyProtectedMember
     return image_slice._replace(pixels=image_slice.pixels + pattern_noise)
 
