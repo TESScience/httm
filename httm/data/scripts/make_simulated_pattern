@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Make a pattern noise (or bias frame) image to match the spot50 test image.
+# Make a pattern noise (or bias frame) image to match a standard TESS single-CCD image.
 # This is a raw image in ADU with dark and smear pixels.
 # Puts ripples in all pixels, including dark pixels.
 
@@ -11,8 +11,8 @@ import numpy
 from astropy.io import fits
 
 if __name__ == "__main__":
-    height = 50 + 30
-    width = 4*(50 + 22)
+    height = 2048+30
+    width = 4*(512 + 22)
     image_data = 2.0*numpy.reshape(numpy.sin(range(height*width)), [height,width])
     header = fits.Header()
     header['CCDNUM'] = -1
