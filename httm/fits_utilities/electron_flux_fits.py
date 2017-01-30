@@ -150,15 +150,22 @@ def electron_flux_converter_to_simulated_raw_hdulist(converter):
     :type converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :rtype: :py:class:`astropy.io.fits.HDUList`
     """
-    early_dark_pixel_columns = converter.parameters.early_dark_pixel_columns
-    late_dark_pixel_columns = converter.parameters.late_dark_pixel_columns
-    final_dark_pixel_rows = converter.parameters.final_dark_pixel_rows
-    smear_rows = converter.parameters.smear_rows
-    slices = [
-        raw_slice.pixels[:-(final_dark_pixel_rows + smear_rows), early_dark_pixel_columns:-late_dark_pixel_columns]
-        for raw_slice in converter.slices]
-    for i in range(1, len(slices), 2):
-        slices[i] = numpy.fliplr(slices[i])
+    early_dark_pixel_columns = converter.parameters.early_dark_pixel_columns  # type: int
+    late_dark_pixel_columns = converter.parameters.late_dark_pixel_columns  # type: int
+    # noinspection PyUnresolvedReferences
+    left_dark_parts = [image_slice.pixels[:, :early_dark_pixel_columns]
+                       for image_slice in converter.slices]  # type: list
+    # noinspection PyUnresolvedReferences
+    right_dark_parts = [image_slice.pixels[:, -late_dark_pixel_columns:]
+                        for image_slice in converter.slices]  # type: list
+    # noinspection PyUnresolvedReferences
+    image_parts = [image_slice.pixels[:, early_dark_pixel_columns:-late_dark_pixel_columns]
+                   for image_slice in converter.slices]  # type: list
+
+    for i in range(1, len(converter.slices), 2):
+        left_dark_parts[i] = numpy.fliplr(left_dark_parts[i])
+        right_dark_parts[i] = numpy.fliplr(right_dark_parts[i])
+        image_parts[i] = numpy.fliplr(image_parts[i])
     header_with_parameters = set_header_settings(
         converter.parameters,
         electron_flux_converter_parameters,
@@ -172,7 +179,7 @@ def electron_flux_converter_to_simulated_raw_hdulist(converter):
         header_with_transformation_flags) \
         if isinstance(converter.conversion_metadata.command, str) else header_with_transformation_flags
     return HDUList(PrimaryHDU(header=header_with_added_history,
-                              data=numpy.hstack(slices)))
+                              data=numpy.hstack(left_dark_parts + image_parts + right_dark_parts)))
 
 
 # TODO: Documentation
