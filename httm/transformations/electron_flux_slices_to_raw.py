@@ -77,11 +77,11 @@ def add_pattern_noise_to_slice(pattern_noise, image_slice):
     :param pattern_noise: A two dimensional array of floats, representing a fixed pattern \
     disturbance in a slice.
     :type pattern_noise: :py:class:`numpy.ndarray`
-    :param image_slice: The input slice. Units: electrons
+    :param image_slice: The input slice. Units: ADU
     :type image_slice: :py:class:`~httm.data_structures.common.Slice`
     :rtype:  :py:class:`~httm.data_structures.common.Slice`
     """
-    assert image_slice.units == "electrons", "units must be electrons"
+    assert image_slice.units == "ADU", "pixel units must be in ADU"
     assert image_slice.pixels.shape == pattern_noise.shape, \
         "Image slice and pattern noise must be the same shape; " \
         "image slice shape was {image_shape} and pattern noise shape was {pattern_noise_shape}".format(

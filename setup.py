@@ -12,7 +12,7 @@ setup(
     author='Matthew Wampler-Doty, John Doty',
     author_email='matthew.wampler.doty@gmail.com, jpd@noqsi.com',
     packages=find_packages('.'),
-    package_data={'httm': ['data/*.npz']},
+    package_data={'httm': ['data/*.npz', 'data/*.fits']},
     install_requires=['numpy', 'astropy>=1.3', 'toml', 'pyyaml', 'xmltodict'],
     scripts=glob('scripts/*'),
 )

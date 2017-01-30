@@ -31,7 +31,6 @@ from .electron_flux_slices_to_raw import introduce_smear_rows_to_slice, add_shot
     simulate_blooming_on_slice, add_baseline_to_slice, add_readout_noise_to_slice, simulate_undershoot_on_slice, \
     simulate_start_of_line_ringing_to_slice, add_pattern_noise_to_slice, convert_slice_electrons_to_adu
 from ..data_structures.electron_flux_converter import SingleCCDElectronFluxConverter
-from ..resource_utilities import load_data
 
 
 def introduce_smear_rows(electron_flux_converter):
@@ -213,9 +212,12 @@ def simulate_start_of_line_ringing(electron_flux_converter):
     :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
+    from .. import resource_utilities
     assert electron_flux_converter.flags.start_of_line_ringing_present is False, \
         "Start of line ringing must not be flagged as present"
-    start_of_line_ringing_patterns = load_data(electron_flux_converter.parameters.start_of_line_ringing)
+    start_of_line_ringing_patterns = resource_utilities.load_npz(electron_flux_converter
+                                                                 .parameters
+                                                                 .start_of_line_ringing)
     image_slices = electron_flux_converter.slices
     # noinspection PyProtectedMember
     return electron_flux_converter._replace(
@@ -233,13 +235,14 @@ def add_pattern_noise(electron_flux_converter):
     Calls
     :py:func:`~httm.transformations.electron_flux_slices_to_raw.add_pattern_noise_to_slice` over each slice.
 
-    :param electron_flux_converter: Should have electrons for units for each of its slices
+    :param electron_flux_converter: Should have *Analogue to Digital Converter Units* (ADU) for each of its slices
     :type electron_flux_converter: \
     :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
     """
+    from .. import resource_utilities
     assert electron_flux_converter.flags.pattern_noise_present is False, "Pattern noise must not be flagged as present"
-    pattern_noises = load_data(electron_flux_converter.parameters.pattern_noise)
+    pattern_noises = resource_utilities.load_pattern_noise(electron_flux_converter.parameters.pattern_noise)
     image_slices = electron_flux_converter.slices
     # noinspection PyProtectedMember
     return electron_flux_converter._replace(
@@ -310,11 +313,6 @@ electron_flux_transformations = OrderedDict([
         'documentation': 'Simulate *start of line ringing* on each row of each slice in the image.',
         'function': simulate_start_of_line_ringing,
     }),
-    ('add_pattern_noise', {
-        'default': True,
-        'documentation': 'Add a fixed *pattern noise* to each slice in the image.',
-        'function': add_pattern_noise,
-    }),
     ('add_baseline', {
         'default': True,
         'documentation': 'Add a *baseline electron count* to each slice in the image.',
@@ -325,6 +323,11 @@ electron_flux_transformations = OrderedDict([
         'documentation': 'Convert the image from having pixel units in electron counts to '
                          '*Analogue to Digital Converter Units* (ADU).',
         'function': convert_electrons_to_adu,
+    }),
+    ('add_pattern_noise', {
+        'default': True,
+        'documentation': 'Add a fixed *pattern noise* to each slice in the image.',
+        'function': add_pattern_noise,
     }),
 ])
 

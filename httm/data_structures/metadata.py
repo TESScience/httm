@@ -258,13 +258,15 @@ parameters = OrderedDict([
         'required_keyword': False,
     }),
     ('pattern_noise', {
-        'type': ':py:class:`str` or :py:class:`file`',
-        'documentation': 'A matrix to be read from an ``npz`` file, representing '
-                         'the repeatable change in the video baseline caused by '
+        'type': ':py:class:`str`',
+        'documentation': 'A matrix to be read from a FITS file '
+                         '(either uncompressed or compressed with gzip, bzip2, or pkzip), '
+                         'representing the repeatable change in the video baseline caused by '
                          'the disturbance in the data acquisition rhythm between '
-                         '*frames*. Units of the matrix are electrons.',
+                         '*frames*. Organized as a RAW FFI (including dark pixels '
+                         'and smear rows), in *Analogue to Digital Converter Units* (ADU).',
         'short_documentation': 'Pattern noise',
-        'default': 'built-in default_pattern_noise.npz',
+        'default': 'built-in simulated_pattern_noise.fits',
         'standard_fits_keyword': 'PATNOISE',
         'forbidden_fits_keywords': [],
         'alternate_fits_keywords': [],

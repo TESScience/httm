@@ -28,9 +28,9 @@ from collections import OrderedDict
 
 from .common import derive_transformation_function_list
 from .raw_slices_to_calibrated import convert_slice_adu_to_electrons, remove_pattern_noise_from_slice, \
-    remove_undershoot_from_slice, remove_smear_from_slice, remove_baseline_from_slice
+    remove_undershoot_from_slice, remove_smear_from_slice, remove_baseline_from_slice, \
+    remove_start_of_line_ringing_from_slice
 from ..data_structures.raw_converter import SingleCCDRawConverter
-from ..resource_utilities import load_data
 
 
 def convert_adu_to_electrons(raw_converter):
@@ -94,12 +94,13 @@ def remove_pattern_noise(raw_converter):
     over each slice.
 
     :param raw_converter: A :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter` which should \
-    have electrons for units for each of its slices
+    have *Analogue to Digital Converter Units* (ADU) for each of its slices
     :type raw_converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
+    from .. import resource_utilities
     assert raw_converter.flags.pattern_noise_present, "Pattern noise must be flagged as present"
-    pattern_noises = load_data(raw_converter.parameters.pattern_noise)
+    pattern_noises = resource_utilities.load_pattern_noise(raw_converter.parameters.pattern_noise)
     image_slices = raw_converter.slices
     assert len(pattern_noises) >= len(image_slices), "There should be at least as many noise patterns as slices"
     # noinspection PyProtectedMember
@@ -123,11 +124,11 @@ def remove_start_of_line_ringing(raw_converter):
     :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
     assert raw_converter.flags.start_of_line_ringing_present, "Start of line ringing must be flagged as present"
-    final_dark_pixel_rows = raw_converter.parameters.final_dark_pixel_rows
+    final_dark_pixel_rows = raw_converter.parameters.final_dark_pixel_rows  # type: int
     image_slices = raw_converter.slices
     # noinspection PyProtectedMember
     return raw_converter._replace(
-        slices=tuple(remove_pattern_noise_from_slice(final_dark_pixel_rows, image_slice)
+        slices=tuple(remove_start_of_line_ringing_from_slice(final_dark_pixel_rows, image_slice)
                      for image_slice in image_slices),
         flags=raw_converter.flags._replace(start_of_line_ringing_present=False))
 
@@ -185,6 +186,11 @@ def remove_smear(raw_converter):
 
 
 raw_transformations = OrderedDict([
+    ('remove_pattern_noise', {
+        'default': True,
+        'documentation': 'Compensate for a fixed *pattern noise* on each slice of the image.',
+        'function': remove_pattern_noise,
+    }),
     ('convert_adu_to_electrons', {
         'default': True,
         'documentation': 'Convert the image from having units in '
@@ -197,11 +203,6 @@ raw_transformations = OrderedDict([
         'documentation': 'Average the pixels in the dark columns and subtract '
                          'the result from each pixel in the image.',
         'function': remove_baseline,
-    }),
-    ('remove_pattern_noise', {
-        'default': True,
-        'documentation': 'Compensate for a fixed *pattern noise* on each slice of the image.',
-        'function': remove_pattern_noise,
     }),
     ('remove_start_of_line_ringing', {
         'default': True,

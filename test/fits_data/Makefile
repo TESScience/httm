@@ -31,7 +31,7 @@ $(SPOT50_PATTERN_NOISE_FITS_GZIP): $(SPOT50_PATTERN_NOISE_FITS)
 	gzip $<
 
 $(SPOT50_RAW_FITS): $(SPOT50_FITS) $(SPOT50_PATTERN_NOISE_FITS_GZIP)
-	$(PYTHON) ../venv/bin/electron_flux_to_raw --pattern-noise $(SPOT50_PATTERN_NOISE_FITS_GZIP) $< $@
+	LOG=DEBUG $(PYTHON) ../venv/bin/electron_flux_to_raw --pattern-noise $(SPOT50_PATTERN_NOISE_FITS_GZIP) $< $@
 
 clean:
 	rm -f $(FILES)

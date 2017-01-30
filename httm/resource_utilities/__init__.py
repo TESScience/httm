@@ -27,24 +27,15 @@ import os
 import pkgutil
 import re
 
-import astropy.io.fits
 import numpy
 from numpy import ndarray
 
 
-# TODO: Documentation
-def load_fits_image_data(fits_file_name, checksum=True):
-    # type: (str) -> ndarray
-    """
-    This function tries to load data from a FITS image.
-
-    :param fits_file_name:
-    :type fits_file_name: :py:class:`str`
-    :param checksum:
-    :type checksum: bool
-    :rtype: :py:class:`numpy.ndarray`
-    """
-    return astropy.io.fits.open(fits_file_name, checksum=checksum)[0].data
+def get_file_resource(file_name):
+    match = re.match(r'^built-in (.*)', file_name)
+    # Note: This CANNOT handle GZIPed FITS files in package_data
+    return io.BytesIO(pkgutil.get_data('httm', os.path.join('/data', match.group(1)))) \
+        if ((not os.path.isfile(file_name)) and match) else file_name
 
 
 # noinspection SpellCheckingInspection
@@ -65,13 +56,7 @@ def load_npz(npz_file_name):
     :rtype: :py:class:`numpy.ndarray`
     """
 
-    # noinspection PyUnresolvedReferences
-    loader_input = \
-        io.BytesIO(pkgutil.get_data('httm', os.path.join('/data',
-                                                         re.match(r'^built-in (.*)', npz_file_name).group(1)))) \
-        if ((not os.path.isfile(npz_file_name)) and re.match(r'^built-in (.*)', npz_file_name)) else npz_file_name
-
-    data = numpy.load(loader_input)
+    data = numpy.load(get_file_resource(npz_file_name))
 
     keys = tuple(data.keys())
     assert len(keys) == 1, "Loaded NPZ data can only have one entry"
@@ -80,10 +65,7 @@ def load_npz(npz_file_name):
 
 
 # TODO: Documentation
-def load_data(file_name):
-    if re.match(r'.*\.npz$', file_name):
-        return load_npz(file_name)
-    elif re.match(r'.*\.fits.*$', file_name):
-        return load_fits_image_data(file_name)
-    else:
-        raise Exception("File has unknown suffix: {}".format(file_name))
+def load_pattern_noise(file_name):
+    from .. import fits_utilities
+    slices = fits_utilities.raw_converter_from_fits(get_file_resource(file_name)).slices
+    return tuple(s.pixels for s in slices)

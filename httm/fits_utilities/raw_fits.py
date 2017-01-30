@@ -214,10 +214,10 @@ def raw_converter_from_hdulist(header_data_unit_list,
         command=command,
         header=header_data_unit_list[0].header)  # type: ConversionMetaData
     flag_overrides = raw_converter_flags_from_fits_header(
-        conversion_metadata,
+        conversion_metadata.header,
         flag_overrides=flag_overrides)
     parameters = raw_converter_parameters_from_fits_header(
-        conversion_metadata,
+        conversion_metadata.header,
         parameter_overrides=parameter_overrides)
     assert len(header_data_unit_list) == 1, "Only a single image per FITS file is supported"
     assert header_data_unit_list[0].data.shape[1] % parameters.number_of_slices == 0, \
