@@ -14,7 +14,7 @@ Calibrated FITS images are converted from raw FITS images, or created synthetica
 
 To install `httm`, type at the command line:
 
-    pip install git+https://github.com/TESScience/httm.git
+    pip install httm
 
 ## Documentation
 
