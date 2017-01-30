@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 from glob import glob
 
-VERSION = '0.1.3'
+VERSION = '0.1.4'
 
 setup(
     name='httm',
