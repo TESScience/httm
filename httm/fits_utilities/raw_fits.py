@@ -47,7 +47,6 @@ def raw_converter_to_calibrated_hdulist(converter):
 
     :param converter:
     """
-    # noinspection PyTypeChecker
     early_dark_pixel_columns = converter.parameters.early_dark_pixel_columns  # type: int
     late_dark_pixel_columns = converter.parameters.late_dark_pixel_columns  # type: int
     left_dark_parts = [raw_slice.pixels[:, :early_dark_pixel_columns]

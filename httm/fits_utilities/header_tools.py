@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 def add_command_to_header_history(command, fits_header):
     # type: (str, Header) -> Header
     history_data = fits_header['HISTORY'] if 'HISTORY' in fits_header else []
-    history = history_data if hasattr(history_data, '__iter__') else [history_data]  # type: list
+    history = list(history_data) if hasattr(history_data, '__iter__') else [history_data]  # type: list
     assert all(isinstance(h, str) for h in history), "HISTORY must consist only of strings"
     updated_header = Header(fits_header, copy=True)
     # `+` here is used for list concatenation
