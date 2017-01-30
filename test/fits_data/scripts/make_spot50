@@ -20,18 +20,18 @@
 # Make a test image of four 50 x 50 slices for blooming and undershoot
 # This puts 1000000 (implicitly electrons) in pixel [25, 25]. The rest of the image is 100.
 
-import sys
 import os
+import sys
 
 import numpy
-from astropy.io import fits
+from astropy.io.fits import HDUList, PrimaryHDU, Header
 
 if __name__ == "__main__":
     image_data = numpy.zeros((50, 200)) + 100
     image_data[25, 25] = 1000000
-    header = fits.Header()
-    header['CCDNUM'] = -1
-    header['CAMNUM'] = -1
+    header = Header()
+    header['CCDNUM'] = -100
+    header['CAMNUM'] = -100
     header['N_FRAMES'] = 1
     output_file = sys.argv[1]
 
@@ -40,4 +40,4 @@ if __name__ == "__main__":
     except OSError:
         pass
 
-    fits.writeto(output_file, image_data, header)
+    HDUList(PrimaryHDU(image_data, header=header)).writeto(output_file)

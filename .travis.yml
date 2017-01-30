@@ -9,13 +9,13 @@ addons:
 language: python
 
 python:
-  - "2.7"
+  - "3.5"
 
 install:
-  - pip install travis-sphinx sphinx-rtd-theme
-  - pip install -r test/requirements.txt
-  - make -C test install VIRTUAL_ENV_OPTS=--system-site-packages
+  - pip install jupyter astropy numpy travis-sphinx sphinx-rtd-theme
+  - make -C test install
 
 script:
+  - make -C doc clean
   - make documentation
   - make test

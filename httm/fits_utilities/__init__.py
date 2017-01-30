@@ -19,6 +19,11 @@
 ``httm.fits_utilities``
 =======================
 
-This module contains functions for marshalling and de-marshalling various objects specified in :py:mod:`httm.data_structures`
- to and from FITS files or :py:class:`astropy.io.fits.HDUList`s.
+This module contains functions for marshalling and de-marshalling various objects specified in
+:py:mod:`httm.data_structures` to and from FITS files or :py:class:`astropy.io.fits.HDUList`s.
+
+It also has facilities for end to end transformations involving a series of simulation or calibration functions.
 """
+
+from .raw_fits import raw_converter_from_fits, raw_fits_to_calibrated
+from .electron_flux_fits import electron_flux_converter_from_fits, electron_flux_fits_to_raw

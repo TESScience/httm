@@ -25,9 +25,8 @@ Common data structures used in transformations of FITS images.
 from collections import namedtuple
 
 
-# noinspection PyUnresolvedReferences,PyClassHasNoInit
-class ConversionMetaData(
-    namedtuple('ConversionMetaData', ['origin_file_name', 'command', 'header'])):
+# noinspection PyUnresolvedReferences,PyClassHasNoInit,SpellCheckingInspection
+class ConversionMetaData(namedtuple('ConversionMetaData', ['origin_file_name', 'command', 'header'])):
     """
     Meta data associated with data taken from a FITS file.
 
@@ -39,9 +38,8 @@ class ConversionMetaData(
     __slots__ = ()
 
 
-# noinspection PyUnresolvedReferences,PyClassHasNoInit
-class Slice(
-    namedtuple('Slice', ['index', 'units', 'pixels'])):
+# noinspection PyUnresolvedReferences,PyClassHasNoInit,SpellCheckingInspection
+class Slice(namedtuple('Slice', ['index', 'units', 'pixels'])):
     """
     A slice from a CCD. Includes all data associated with the slice in question
     from various parts of the raw CCD image.

@@ -17,12 +17,12 @@
 
 """
 ``httm.data_structures.metadata``
-===================================
+=================================
 
 This module contains metadata for use in transformation functions.
 
-  - `parameters` is metadata describing various parameters that transformation functions might use.
-  - `transformation_flags` is metadata describing status flags so that transformations are not accidentally
+  - ``parameters`` is metadata describing various parameters that transformation functions might use.
+  - ``transformation_flags`` is metadata describing status flags so that transformations are not accidentally
     run more than once over the same data.
 """
 
@@ -58,7 +58,7 @@ parameters = OrderedDict([
         'documentation': 'The number of the CCD that took the image.',
         'standard_fits_keyword': 'CCDNUM',
         'forbidden_fits_keywords': [],
-        'alternate_fits_keywords': ['CCD','CROPID'],
+        'alternate_fits_keywords': ['CCD', 'CROPID'],
         'required_keyword': True,
     }),
     ('number_of_exposures', {
@@ -143,9 +143,9 @@ parameters = OrderedDict([
     ('random_seed', {
         'type': 'int',
         'documentation': 'The pseudo random number generator seed. '
-                         'The default value of ``None`` creates a seed from the system clock.',
+                         'The default value of ``-1`` creates a seed from the system clock.',
         'short_documentation': 'The pseudo random number generator seed',
-        'default': None,
+        'default': -1,
         'standard_fits_keyword': 'RNGSEED',
         'forbidden_fits_keywords': [],
         'alternate_fits_keywords': [],
@@ -203,7 +203,7 @@ parameters = OrderedDict([
                          'simulated frame exposure, per slice.',
         'short_documentation': 'Mean ADU for pixel for single frame.',
         'default': (6000.0, 6000.0, 6000.0, 6000.0,),
-        'standard_fits_keyword': ['BASEADU1', 'BASEADU2', 'BASEADU3', 'BASEADU4'],
+        'standard_fits_keyword': ['BASEADU1', 'BASEADU2', 'BASEADU3', 'BASEADU4', ],
         'forbidden_fits_keywords': [],
         'alternate_fits_keywords': [],
         'required_keyword': False,
@@ -224,8 +224,7 @@ parameters = OrderedDict([
         'documentation': 'The time that a charge packet spends in transit through '
                          'each imaging pixel that it does not nominally belong to, relative '
                          'to the time it spends in the pixel it does nominally belong to. '
-                         'Used for simulating smear rows. '
-                         'The default is derived from the sequencer program ``Hemiola.fpe``',
+                         'Used for simulating smear rows.',
         'short_documentation': 'Ratio used for simulating smear rows',
         'default': 4.84836e-06,
         'standard_fits_keyword': 'SMRRATIO',
@@ -259,13 +258,15 @@ parameters = OrderedDict([
         'required_keyword': False,
     }),
     ('pattern_noise', {
-        'type': ':py:class:`str` or :py:class:`file`',
-        'documentation': 'A matrix to be read from an ``npz`` file, '
-                         'representing the repeatable change in the video baseline caused by the disturbance '
-                         'in the data acquisition rhythm between *frames*. '
-                         'Units of the matrix are electrons.',
+        'type': ':py:class:`str`',
+        'documentation': 'A matrix to be read from a FITS file '
+                         '(either uncompressed or compressed with gzip, bzip2, or pkzip), '
+                         'representing the repeatable change in the video baseline caused by '
+                         'the disturbance in the data acquisition rhythm between '
+                         '*frames*. Organized as a RAW FFI (including dark pixels '
+                         'and smear rows), in *Analogue to Digital Converter Units* (ADU).',
         'short_documentation': 'Pattern noise',
-        'default': 'built-in default_pattern_noise.npz',
+        'default': 'built-in simulated_pattern_noise.fits',
         'standard_fits_keyword': 'PATNOISE',
         'forbidden_fits_keywords': [],
         'alternate_fits_keywords': [],

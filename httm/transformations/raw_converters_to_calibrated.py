@@ -26,9 +26,10 @@ they are suitable for writing to a calibrated FITS file.
 """
 from collections import OrderedDict
 
+from .common import derive_transformation_function_list
 from .raw_slices_to_calibrated import convert_slice_adu_to_electrons, remove_pattern_noise_from_slice, \
-    remove_undershoot_from_slice, remove_smear_from_slice, remove_baseline_from_slice
-from ..resource_utilities import load_npz_resource
+    remove_undershoot_from_slice, remove_smear_from_slice, remove_baseline_from_slice, \
+    remove_start_of_line_ringing_from_slice
 from ..data_structures.raw_converter import SingleCCDRawConverter
 
 
@@ -39,10 +40,10 @@ def convert_adu_to_electrons(raw_converter):
     having *Analogue to Digital Converter Units* (ADU) to estimated electron counts by calling
     :py:func:`~httm.transformations.raw_slices_to_calibrated.convert_slice_adu_to_electrons` over each slice.
 
-    :param raw_converter: Should have *Analogue to Digital Converter Units* (ADU) \
-    for units for each of its slices
-    :type raw_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
-    :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :param raw_converter: A :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter` which should \
+    have electrons for units for each of its slices
+    :type raw_converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
+    :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
     assert raw_converter.flags.in_adu, "Input should be in *Analogue to Digital Converter Units* (ADU)"
     image_slices = raw_converter.slices
@@ -54,33 +55,34 @@ def convert_adu_to_electrons(raw_converter):
     return raw_converter._replace(
         slices=tuple(convert_slice_adu_to_electrons(gain_loss, number_of_exposures, video_scale, image_slice)
                      for (video_scale, image_slice) in zip(video_scales, image_slices)),
-        flags=raw_converter.flags._replace(in_adu=True)
-    )
+        flags=raw_converter.flags._replace(in_adu=True))
 
 
 def remove_baseline(raw_converter):
     # type: (SingleCCDRawConverter) -> SingleCCDRawConverter
     """
     This function estimates *baseline* from the *dark pixels* for each slice in a
-    :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     and compensates for this effect. Calls
     :py:func:`~httm.transformations.raw_slices_to_calibrated.remove_baseline_from_slice` over each slice.
 
     Note that if you do not remove baseline using this routine prior to removing undershoot, then artifacts
     are introduced at the early edge of a row.
 
-    :param raw_converter: Should have *Analogue to Digital Converter Units* (ADU) \
-    for units for each of its slices
-    :type raw_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
-    :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :param raw_converter: A :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter` which should \
+    have *Analogue to Digital Converter Units* (ADU) for units for each of its slices
+    :type raw_converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
+    :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
+    assert raw_converter.flags.baseline_present, "Baseline must be flagged as present"
     image_slices = raw_converter.slices
     early_dark_pixel_columns = raw_converter.parameters.early_dark_pixel_columns
     late_dark_pixel_columns = raw_converter.parameters.late_dark_pixel_columns
     # noinspection PyProtectedMember
     return raw_converter._replace(
         slices=tuple(remove_baseline_from_slice(early_dark_pixel_columns, late_dark_pixel_columns, image_slice)
-                     for image_slice in image_slices), flags=raw_converter.flags._replace(baseline_present=False))
+                     for image_slice in image_slices),
+        flags=raw_converter.flags._replace(baseline_present=False))
 
 
 def remove_pattern_noise(raw_converter):
@@ -91,17 +93,21 @@ def remove_pattern_noise(raw_converter):
     by calling :py:func:`~httm.transformations.raw_slices_to_calibrated.remove_pattern_noise_from_slice`
     over each slice.
 
-    :param raw_converter: Should have electrons for units for each of its slices
-    :type raw_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
-    :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :param raw_converter: A :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter` which should \
+    have *Analogue to Digital Converter Units* (ADU) for each of its slices
+    :type raw_converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
+    :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
-    pattern_noises = load_npz_resource(raw_converter.parameters.pattern_noise, 'pattern_noise')
+    from .. import resource_utilities
+    assert raw_converter.flags.pattern_noise_present, "Pattern noise must be flagged as present"
+    pattern_noises = resource_utilities.load_pattern_noise(raw_converter.parameters.pattern_noise)
     image_slices = raw_converter.slices
     assert len(pattern_noises) >= len(image_slices), "There should be at least as many noise patterns as slices"
     # noinspection PyProtectedMember
     return raw_converter._replace(
         slices=tuple(remove_pattern_noise_from_slice(pattern_noise, image_slice)
-                     for (pattern_noise, image_slice) in zip(pattern_noises, image_slices)))
+                     for (pattern_noise, image_slice) in zip(pattern_noises, image_slices)),
+        flags=raw_converter.flags._replace(pattern_noise_present=False))
 
 
 def remove_start_of_line_ringing(raw_converter):
@@ -112,16 +118,19 @@ def remove_start_of_line_ringing(raw_converter):
     by calling :py:func:`~httm.transformations.raw_slices_to_calibrated.remove_start_of_line_ringing_from_slice`
     over each slice.
 
-    :param raw_converter: Should have electrons for units for each of its slices
-    :type raw_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
-    :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :param raw_converter: A :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter` which should \
+    have electrons for units for each of its slices
+    :type raw_converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
+    :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
-    final_dark_pixel_rows = raw_converter.parameters.final_dark_pixel_rows
+    assert raw_converter.flags.start_of_line_ringing_present, "Start of line ringing must be flagged as present"
+    final_dark_pixel_rows = raw_converter.parameters.final_dark_pixel_rows  # type: int
     image_slices = raw_converter.slices
     # noinspection PyProtectedMember
     return raw_converter._replace(
-        slices=tuple(remove_pattern_noise_from_slice(final_dark_pixel_rows, image_slice)
-                     for image_slice in image_slices))
+        slices=tuple(remove_start_of_line_ringing_from_slice(final_dark_pixel_rows, image_slice)
+                     for image_slice in image_slices),
+        flags=raw_converter.flags._replace(start_of_line_ringing_present=False))
 
 
 def remove_undershoot(raw_converter):
@@ -132,10 +141,12 @@ def remove_undershoot(raw_converter):
     by calling :py:func:`~httm.transformations.raw_slices_to_calibrated.remove_undershoot_from_slice`
     over each slice.
 
-    :param raw_converter: Should have electrons for units for each of its slices
-    :type raw_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
-    :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :param raw_converter: A :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter` which should \
+    have electrons for units for each of its slices
+    :type raw_converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
+    :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
+    assert raw_converter.flags.undershoot_present, "Undershoot must be flagged as present"
     assert raw_converter.flags.baseline_present is False, "Baseline should be removed before removing undershoot"
 
     undershoot_parameter = raw_converter.parameters.undershoot_parameter
@@ -143,7 +154,8 @@ def remove_undershoot(raw_converter):
     # noinspection PyProtectedMember
     return raw_converter._replace(
         slices=tuple(remove_undershoot_from_slice(undershoot_parameter, image_slice)
-                     for image_slice in image_slices))
+                     for image_slice in image_slices),
+        flags=raw_converter.flags._replace(undershoot_present=False))
 
 
 def remove_smear(raw_converter):
@@ -154,10 +166,12 @@ def remove_smear(raw_converter):
     by calling :py:func:`~httm.transformations.raw_slices_to_calibrated.remove_smear_from_slice`
     over each slice.
 
-    :param raw_converter: Should have electrons for units for each of its slices
-    :type raw_converter: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
-    :rtype: :py:class:`~httm.data_structures.electron_flux_converter.SingleCCDElectronFluxConverter`
+    :param raw_converter: A :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter` which should \
+    have electrons for units for each of its slices
+    :type raw_converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
+    :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
+    assert raw_converter.flags.smear_rows_present, "Smear rows must be flagged as present"
     final_dark_pixel_rows = raw_converter.parameters.final_dark_pixel_rows
     smear_rows = raw_converter.parameters.smear_rows
     late_dark_pixel_columns = raw_converter.parameters.late_dark_pixel_columns
@@ -167,10 +181,16 @@ def remove_smear(raw_converter):
     return raw_converter._replace(
         slices=tuple(remove_smear_from_slice(early_dark_pixel_columns, late_dark_pixel_columns,
                                              final_dark_pixel_rows, smear_rows, image_slice)
-                     for image_slice in image_slices))
+                     for image_slice in image_slices),
+        flags=raw_converter.flags._replace(smear_rows_present=False))
 
 
 raw_transformations = OrderedDict([
+    ('remove_pattern_noise', {
+        'default': True,
+        'documentation': 'Compensate for a fixed *pattern noise* on each slice of the image.',
+        'function': remove_pattern_noise,
+    }),
     ('convert_adu_to_electrons', {
         'default': True,
         'documentation': 'Convert the image from having units in '
@@ -180,14 +200,9 @@ raw_transformations = OrderedDict([
     }),
     ('remove_baseline', {
         'default': True,
-        'documentation': 'Average the pixels in the dark columns and subtract ' +
+        'documentation': 'Average the pixels in the dark columns and subtract '
                          'the result from each pixel in the image.',
         'function': remove_baseline,
-    }),
-    ('remove_pattern_noise', {
-        'default': True,
-        'documentation': 'Compensate for a fixed *pattern noise* on each slice of the image.',
-        'function': remove_pattern_noise,
     }),
     ('remove_start_of_line_ringing', {
         'default': True,
@@ -207,12 +222,28 @@ raw_transformations = OrderedDict([
     }),
 ])
 
-raw_transformation_default_settings = OrderedDict(
-    (key, raw_transformations[key]['default'])
-    for key in raw_transformations.keys()
-)
 
-raw_transformation_functions = OrderedDict(
-    (key, raw_transformations[key]['function'])
-    for key in raw_transformations.keys()
-)
+def transform_raw_converter(raw_converter, transformation_settings=None):
+    # type: (SingleCCDRawConverter, object) -> SingleCCDRawConverter
+    """
+    Take a :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter` and run specified transformations
+    over it.
+
+    :param raw_converter: A :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter` to run a series of \
+    transformations over
+    :type raw_converter: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
+    :param transformation_settings: An object specifying which transformations to run; if not specified defaults are \
+    used
+    :type transformation_settings: object
+    :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
+    """
+    from functools import reduce
+    return reduce(
+        lambda converter, transformation_function:
+        transformation_function(converter),
+        derive_transformation_function_list(transformation_settings,
+                                            OrderedDict((key, raw_transformations[key]['default'])
+                                                        for key in raw_transformations.keys()),
+                                            {key: raw_transformations[key]['function']
+                                             for key in raw_transformations.keys()}),
+        raw_converter)

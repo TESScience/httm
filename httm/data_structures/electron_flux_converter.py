@@ -33,7 +33,7 @@ electron_flux_transformation_flags = OrderedDict(
     (k, dict(default=False, **transformation_flags[k])) for k in transformation_flags.keys())
 
 
-# noinspection PyClassHasNoInit
+# noinspection PyClassHasNoInit,SpellCheckingInspection
 class SingleCCDElectronFluxConverterParameters(namedtuple('SingleCCDElectronFluxConverterParameters',
                                                           electron_flux_converter_parameters.keys())):
     __doc__ = """

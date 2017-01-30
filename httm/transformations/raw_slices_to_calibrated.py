@@ -122,13 +122,14 @@ def remove_pattern_noise_from_slice(pattern_noise, image_slice):
     # type: (numpy.ndarray, Slice) -> Slice
     """
     This transformation corrects for a fixed pattern of noise on a :py:class:`~httm.data_structures.common.Slice`.
-    
+
     :param pattern_noise: 2d array of dimensions matching the pixel array of a slice
     :type pattern_noise: :py:class:`numpy.ndarray`
-    :param image_slice: Input slice. Units: electrons
+    :param image_slice: Input slice. Units: ADU
     :type image_slice: :py:class:`~httm.data_structures.common.Slice`
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
+    assert image_slice.units == "ADU", "pixel units must be in ADU"
     # noinspection PyProtectedMember
     return image_slice._replace(pixels=image_slice.pixels - pattern_noise)
 

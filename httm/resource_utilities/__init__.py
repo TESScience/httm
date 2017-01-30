@@ -28,28 +28,44 @@ import pkgutil
 import re
 
 import numpy
+from numpy import ndarray
 
 
-def load_npz_resource(file_name, resource_key):
+def get_file_resource(file_name):
+    match = re.match(r'^built-in (.*)', file_name)
+    # Note: This CANNOT handle GZIPed FITS files in package_data
+    return io.BytesIO(pkgutil.get_data('httm', os.path.join('/data', match.group(1)))) \
+        if ((not os.path.isfile(file_name)) and match) else file_name
+
+
+# noinspection SpellCheckingInspection
+def load_npz(npz_file_name):
+    # type: (str) -> ndarray
     """
     This function tries to load a numpy ``*.npz`` file.
 
-    If the file's name contains ``:httm:`` at the start, it will attempt to load the file
-    from `httm`'s ``package_data`` as specified in ``setup.py``.
+    If the file's name contains the string ``"built-in "`` at the start, it will attempt to load the file
+    from the ``package_data`` directory as specified in the ``setup.py`` install script for this module.
 
     Otherwise it tries to load the file as usual.
 
-    :param file_name: A file name or file object to read data from
-    :type file_name: :py:class:`file` or :py:class:`str`
-    :param resource_key: The key name of the desired data resource contained in the ``*.npz`` file.
-    :type resource_key: :py:class:`str`
+    The NPZ file is expected to contain a single keyword, the data associated with that keyword is returned.
+
+    :param npz_file_name: A file name or file object to read data from
+    :type npz_file_name: :py:class:`str`
     :rtype: :py:class:`numpy.ndarray`
     """
 
-    if isinstance(file_name, str) or isinstance(file_name, unicode) and not os.path.isfile(file_name):
-        pattern_match = re.match(r'^built-in (.*)', file_name)
-        if pattern_match:
-            return numpy.load(io.BytesIO(pkgutil.get_data(
-                'httm', os.path.join('/data', pattern_match.group(1)))))[resource_key]
+    data = numpy.load(get_file_resource(npz_file_name))
 
-    return numpy.load(file_name)[resource_key]
+    keys = tuple(data.keys())
+    assert len(keys) == 1, "Loaded NPZ data can only have one entry"
+
+    return data[keys[0]]
+
+
+# TODO: Documentation
+def load_pattern_noise(file_name):
+    from .. import fits_utilities
+    slices = fits_utilities.raw_converter_from_fits(get_file_resource(file_name)).slices
+    return tuple(s.pixels for s in slices)

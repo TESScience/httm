@@ -69,16 +69,17 @@ def flatten_dictionary(dictionary):
     """
     result = {}
     for k in dictionary:
-        if isinstance(dictionary[k], dict):
-            result.update(flatten_dictionary(dictionary[k]))
-        else:
-            result[k.replace("-", "_")] = dictionary[k]
+        value = dictionary[k]
+        if isinstance(value, dict):
+            result.update(flatten_dictionary(value))
+        elif value is not None:
+            result[k.replace("-", "_")] = value
     return result
 
 
 def parse_dict(dictionary, reference_dictionaries, convert=False, override=None):
     """
-    Parse a dictionary into a namedtuple with specified attributes given by the reference dictionaries
+    Parse a dictionary into a ``namedtuple`` with specified attributes given by the reference dictionaries
 
     Recursively flattens a dictionary prior to parsing
 
@@ -119,6 +120,7 @@ def parse_dict(dictionary, reference_dictionaries, convert=False, override=None)
                 flat_dictionary[k] = getattr(override, k)
             # Check the type in the dictionary, but be very liberal
             # Note: Unicode is deprecated in Python 3, but strings are sometimes parsed as unicode in Python 2.7
+            # noinspection PyUnresolvedReferences
             if not isinstance(flat_dictionary[k], type(reference[k]['default'])) and \
                     not reference[k]['default'] is None and \
                     not (sys.version_info <= (3, 0) and
@@ -183,7 +185,11 @@ def parse_tsv_line(line, separator_regex):
 
 def parse_tsv(filename, reference_dictionaries, override=None):
     """
-    Parses a TSV file into a namedtuple; only uses the first two non-empty columns
+    Parses a TSV file into a namedtuple.
+
+    Only uses the first two non-empty columns.
+
+    Lines with zero or one columns are skipped.
 
     :param filename: File to parse
     :type filename: str
@@ -199,7 +205,7 @@ def parse_tsv(filename, reference_dictionaries, override=None):
         for l in f.readlines():
             try:
                 key_value = tuple(parse_tsv_line(l, separator))
-                if len(key_value) is 0:
+                if len(key_value) <= 1:
                     continue
                 value_dictionary[key_value[0].strip()] = key_value[1].strip()
             except:

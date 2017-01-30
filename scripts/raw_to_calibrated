@@ -20,8 +20,9 @@
 import argparse
 import logging
 import os
-
 import sys
+
+import pkg_resources
 
 from httm import raw_fits_to_calibrated
 from httm.data_structures.raw_converter import raw_converter_parameters, raw_transformation_flags
@@ -37,11 +38,12 @@ logging.basicConfig(
     level=getattr(logging, log_level))
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(description='Transform a RAW FITS file into a Calibrated FITS file')
 
     parser.add_argument('input', type=str, help="The name of the RAW FITS file to use as input")
     parser.add_argument('output', type=str, help="The name of the Calibrated FITS file to use as output")
+
+    parser.add_argument('--version', action='version', version=pkg_resources.get_distribution("httm").version)
 
     parser.add_argument('--config', default=None, type=str, dest='config',
                         help='Set an optional configuration file')
