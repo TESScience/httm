@@ -32,7 +32,7 @@ import astropy
 import numpy
 from astropy.io.fits import HDUList, PrimaryHDU, Header
 
-from .header_tools import get_header_setting, set_header_settings, add_command_to_header_history
+from .header_tools import get_header_setting, set_header_settings
 from ..data_structures.common import Slice, ConversionMetaData
 from ..data_structures.electron_flux_converter import \
     SingleCCDElectronFluxConverterFlags, SingleCCDElectronFluxConverterParameters, \
@@ -174,11 +174,9 @@ def electron_flux_converter_to_simulated_raw_hdulist(converter):
         converter.flags,
         electron_flux_transformation_flags,
         header_with_parameters)
-    header_with_added_history = add_command_to_header_history(
-        converter.conversion_metadata.command,
-        header_with_transformation_flags) \
-        if isinstance(converter.conversion_metadata.command, str) else header_with_transformation_flags
-    return HDUList(PrimaryHDU(header=header_with_added_history,
+    if converter.conversion_metadata.command is not None:
+        header_with_transformation_flags.add_history(converter.conversion_metadata.command)
+    return HDUList(PrimaryHDU(header=header_with_transformation_flags,
                               data=numpy.hstack(left_dark_parts + image_parts + right_dark_parts)))
 
 

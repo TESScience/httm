@@ -31,7 +31,7 @@ import astropy
 import numpy
 from astropy.io.fits import HDUList, PrimaryHDU
 
-from .header_tools import get_header_setting, set_header_settings, add_command_to_header_history
+from .header_tools import get_header_setting, set_header_settings
 from ..data_structures.common import Slice, ConversionMetaData
 from ..data_structures.raw_converter import SingleCCDRawConverterFlags, SingleCCDRawConverter, \
     raw_transformation_flags, SingleCCDRawConverterParameters, raw_converter_parameters
@@ -39,7 +39,7 @@ from ..transformations.raw_converters_to_calibrated import transform_raw_convert
 
 
 # TODO: Documentation
-# noinspection PyUnresolvedReferences
+
 def raw_converter_to_calibrated_hdulist(converter):
     # type: (SingleCCDRawConverter) -> HDUList
     """
@@ -49,10 +49,13 @@ def raw_converter_to_calibrated_hdulist(converter):
     """
     early_dark_pixel_columns = converter.parameters.early_dark_pixel_columns  # type: int
     late_dark_pixel_columns = converter.parameters.late_dark_pixel_columns  # type: int
+    # noinspection PyUnresolvedReferences
     left_dark_parts = [raw_slice.pixels[:, :early_dark_pixel_columns]
                        for raw_slice in converter.slices]  # type: list
+    # noinspection PyUnresolvedReferences
     right_dark_parts = [raw_slice.pixels[:, -late_dark_pixel_columns:]
                         for raw_slice in converter.slices]  # type: list
+    # noinspection PyUnresolvedReferences
     image_parts = [raw_slice.pixels[:, early_dark_pixel_columns:-late_dark_pixel_columns]
                    for raw_slice in converter.slices]  # type: list
 
@@ -69,16 +72,13 @@ def raw_converter_to_calibrated_hdulist(converter):
         converter.flags,
         raw_transformation_flags,
         header_with_parameters)
-    header_with_added_history = add_command_to_header_history(
-        converter.conversion_metadata.command,
-        header_with_transformation_flags) \
-        if isinstance(converter.conversion_metadata.command, str) else header_with_transformation_flags
+    if converter.conversion_metadata.command is not None:
+        header_with_transformation_flags.add_history(converter.conversion_metadata.command)
 
     return HDUList(PrimaryHDU(
-        header=header_with_added_history,
+        header=header_with_transformation_flags,
         # `+` concatenates python lists
-        data=numpy.hstack(left_dark_parts + image_parts + right_dark_parts),
-    ))
+        data=numpy.hstack(left_dark_parts + image_parts + right_dark_parts)))
 
 
 # TODO: Documentation
