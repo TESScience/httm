@@ -70,12 +70,17 @@ def make_slice_from_electron_flux_data(
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
     image_and_smear_and_final_dark_pixels = numpy.vstack(
-        [pixels, numpy.zeros((final_dark_pixel_rows + smear_rows, pixels.shape[1]))])
+        [pixels,
+         numpy.zeros((final_dark_pixel_rows + smear_rows, pixels.shape[1]))])
     row_count = image_and_smear_and_final_dark_pixels.shape[0]
     early_dark_pixels = numpy.zeros((row_count, early_dark_pixel_columns))
     late_dark_pixels = numpy.zeros((row_count, late_dark_pixel_columns))
+    pixel_data = numpy.hstack([early_dark_pixels, image_and_smear_and_final_dark_pixels, late_dark_pixels]) \
+        if index % 2 == 0 else numpy.fliplr(numpy.hstack([late_dark_pixels,
+                                                          image_and_smear_and_final_dark_pixels,
+                                                          early_dark_pixels]))
     return Slice(
-        pixels=numpy.hstack([early_dark_pixels, image_and_smear_and_final_dark_pixels, late_dark_pixels]),
+        pixels=pixel_data,
         index=index,
         units='electrons',
     )
