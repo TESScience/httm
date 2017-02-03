@@ -30,8 +30,6 @@ import sys
 from collections import namedtuple, Iterable
 
 import toml
-import xmltodict
-import yaml
 
 
 def convert_to_type(input_data, value_type):
@@ -230,38 +228,6 @@ def parse_toml(filename, reference_dictionaries, override=None):
     return parse_dict(toml.load(filename), reference_dictionaries, override=override)
 
 
-def parse_yaml(filename, reference_dictionaries, override=None):
-    """
-    Parse a YAML file into a namedtuple
-
-    :param filename: File to parse
-    :type filename: str
-    :param reference_dictionaries: List of dictionaries to use when creating a namedtuple
-    :type reference_dictionaries: list
-    :param override: Object with attributes that override values set by the dictionary
-    :type override: object
-    :rtype: namedtuple
-    """
-    with open(filename, 'r') as f:
-        return parse_dict(yaml.load(f), reference_dictionaries, override=override)
-
-
-def parse_xml(filename, reference_dictionaries, override=None):
-    """
-    Parse an XML file into a namedtuple
-
-    :param filename: File to parse
-    :type filename: str
-    :param reference_dictionaries: List of dictionaries to use when creating a namedtuple
-    :type reference_dictionaries: list
-    :param override: Object with attributes that override values set by the dictionary
-    :type override: object
-    :rtype: namedtuple
-    """
-    with open(filename, 'r') as f:
-        return parse_dict(xmltodict.parse(f.read()), reference_dictionaries, override=override, convert=True)
-
-
 def parse_json(filename, reference_dictionaries, override=None):
     """
     Parse a JSON file into a namedtuple
@@ -297,14 +263,10 @@ def parse_config(filename, reference_dictionaries, override=None):
 
     if suffix == '.tsv':
         return parse_tsv(filename, reference_dictionaries, override=override)
-    if suffix == '.yaml':
-        return parse_yaml(filename, reference_dictionaries, override=override)
     if suffix == '.toml':
         return parse_toml(filename, reference_dictionaries, override=override)
     if suffix == '.json':
         return parse_json(filename, reference_dictionaries, override=override)
-    if suffix == '.xml':
-        return parse_xml(filename, reference_dictionaries, override=override)
 
     raise Exception('Unsupported file format for {filename} (inferred suffix as "{suffix}")'.format(
         filename=filename,
