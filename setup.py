@@ -16,6 +16,6 @@ setup(
     download_url='https://github.com/TESScience/httm/tarball/{VERSION}'.format(VERSION=VERSION),
     packages=find_packages('.'),
     package_data={'httm': ['data/*.npz', 'data/*.fits']},
-    install_requires=['numpy', 'astropy>=1.3', 'toml', 'pyyaml', 'xmltodict'],
+    install_requires=['numpy', 'astropy>=1.3', 'toml'],
     scripts=glob('scripts/*'),
 )
