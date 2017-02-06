@@ -13,7 +13,7 @@ CONFIG_TEST_FITS=output/json_raw.fits output/toml_raw.fits output/tsv_raw.fits \
                  output/toml_calibrated.fits output/json_calibrated.fits output/tsv_calibrated.fits
 TESTS=version-check httm-check-code-references httm-check-doc-references numpy-check-code-references \
       astropy-check-code-references tutorial-test smoke-test command_line_utilities-test demo-test \
-      raw_demo-test order-test $(CONFIG_TEST_FITS)
+      raw_demo-test order-test electron_order-test $(CONFIG_TEST_FITS)
 
 all: install
 

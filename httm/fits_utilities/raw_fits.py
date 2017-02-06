@@ -163,8 +163,8 @@ def raw_converter_parameters_from_fits_header(fits_header, parameter_overrides=N
 def make_slice_from_raw_data(
         image_and_smear_pixels,
         index,
-        early_dark_pixel_columns,
-        late_dark_pixel_columns):
+        early_dark_pixels,
+        late_dark_pixels):
     # type: (numpy.ndarray, int, numpy.ndarray, numpy.ndarray) -> Slice
     """
     Construct a slice from raw pixel data given a specified index.
@@ -175,16 +175,21 @@ def make_slice_from_raw_data(
     :type image_and_smear_pixels: :py:class:`numpy.ndarray`
     :param index: The index of the slice to construct.
     :type index: int
-    :param early_dark_pixel_columns: The leftmost columns are dark pixels, to be placed on the \
+    :param early_dark_pixels: The leftmost columns are dark pixels, to be placed on the \
     left of the slice.
-    :type early_dark_pixel_columns: :py:class:`numpy.ndarray`
-    :param late_dark_pixel_columns: The rightmost columns are dark pixels, to be placed on the \
+    :type early_dark_pixels: :py:class:`numpy.ndarray`
+    :param late_dark_pixels: The rightmost columns are dark pixels, to be placed on the \
     right of the slice.
-    :type late_dark_pixel_columns: :py:class:`numpy.ndarray`
+    :type late_dark_pixels: :py:class:`numpy.ndarray`
     :rtype: :py:class:`~httm.data_structures.common.Slice`
     """
+    pixel_data = numpy.hstack([early_dark_pixels, image_and_smear_pixels, late_dark_pixels]) \
+        if index % 2 == 0 else numpy.fliplr(numpy.hstack([late_dark_pixels,
+                                                          image_and_smear_pixels,
+                                                          early_dark_pixels]))
+    # TODO: Document this in layout.rst
     return Slice(
-        pixels=numpy.hstack([early_dark_pixel_columns, image_and_smear_pixels, late_dark_pixel_columns]),
+        pixels=pixel_data,
         index=index,
         units='ADU')
 
@@ -207,7 +212,6 @@ def raw_converter_from_hdulist(header_data_unit_list,
     :type parameter_overrides: :py:class:`object` or :py:class:`dict`
     :rtype: SingleCCDRawConverter
     """
-    from numpy import hsplit, fliplr
     conversion_metadata = ConversionMetaData(
         origin_file_name=origin_file_name,
         command=command,
@@ -224,20 +228,13 @@ def raw_converter_from_hdulist(header_data_unit_list,
 
     early_dark_pixel_count = parameters.number_of_slices * parameters.early_dark_pixel_columns
     late_dark_pixel_count = parameters.number_of_slices * parameters.late_dark_pixel_columns
-    sliced_image_smear_and_dark_pixels = hsplit(
+    sliced_image_smear_and_dark_pixels = numpy.hsplit(
         header_data_unit_list[0].data[:, early_dark_pixel_count:-late_dark_pixel_count],
         parameters.number_of_slices)
-    sliced_early_dark_pixels = hsplit(header_data_unit_list[0].data[:, :early_dark_pixel_count],
-                                      parameters.number_of_slices)
-    sliced_late_dark_pixels = hsplit(header_data_unit_list[0].data[:, -late_dark_pixel_count:],
-                                     parameters.number_of_slices)
-
-    # TODO: Document this in layout.rst
-    # Rows in odd numbered slices have to be reversed
-    for i in range(1, parameters.number_of_slices, 2):
-        sliced_image_smear_and_dark_pixels[i] = fliplr(sliced_image_smear_and_dark_pixels[i])
-        sliced_early_dark_pixels[i] = fliplr(sliced_early_dark_pixels[i])
-        sliced_late_dark_pixels[i] = fliplr(sliced_late_dark_pixels[i])
+    sliced_early_dark_pixels = numpy.hsplit(header_data_unit_list[0].data[:, :early_dark_pixel_count],
+                                            parameters.number_of_slices)
+    sliced_late_dark_pixels = numpy.hsplit(header_data_unit_list[0].data[:, -late_dark_pixel_count:],
+                                           parameters.number_of_slices)
 
     return SingleCCDRawConverter(
         slices=tuple(map(make_slice_from_raw_data,
