@@ -185,44 +185,6 @@ def remove_smear(raw_converter):
         flags=raw_converter.flags._replace(smear_rows_present=False))
 
 
-raw_transformations = OrderedDict([
-    ('remove_pattern_noise', {
-        'default': True,
-        'documentation': 'Compensate for a fixed *pattern noise* on each slice of the image.',
-        'function': remove_pattern_noise,
-    }),
-    ('convert_adu_to_electrons', {
-        'default': True,
-        'documentation': 'Convert the image from having units in '
-                         '*Analogue to Digital Converter Units* (ADU) '
-                         'to electron counts.',
-        'function': convert_adu_to_electrons,
-    }),
-    ('remove_baseline', {
-        'default': True,
-        'documentation': 'Average the pixels in the dark columns and subtract '
-                         'the result from each pixel in the image.',
-        'function': remove_baseline,
-    }),
-    ('remove_start_of_line_ringing', {
-        'default': True,
-        'documentation': 'Compensate for *start of line ringing* on each row of each slice of the image.',
-        'function': remove_start_of_line_ringing,
-    }),
-    ('remove_undershoot', {
-        'default': True,
-        'documentation': 'Compensate for *undershoot* for each row of each slice of the image.',
-        'function': remove_undershoot,
-    }),
-    ('remove_smear', {
-        'default': True,
-        'documentation': 'Compensate for *smear* in the image by reading it from the '
-                         '*smear rows* each slice and removing it from the rest of the slice.',
-        'function': remove_smear,
-    }),
-])
-
-
 def transform_raw_converter(raw_converter, transformation_settings=None):
     # type: (SingleCCDRawConverter, object) -> SingleCCDRawConverter
     """
@@ -238,6 +200,7 @@ def transform_raw_converter(raw_converter, transformation_settings=None):
     :rtype: :py:class:`~httm.data_structures.raw_converter.SingleCCDRawConverter`
     """
     from functools import reduce
+    from .metadata import raw_transformations
     return reduce(
         lambda converter, transformation_function:
         transformation_function(converter),

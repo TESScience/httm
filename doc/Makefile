@@ -1,6 +1,6 @@
 # Makefile for Sphinx documentation
 
-GENERATED_SOURCES=source/notebooks/tutorial.rst source/notebooks/command_line_utilities.rst
+GENERATED_SOURCES=source/notebooks/command_line_utilities.rst
 
 # You can set these variables from the command line.
 SPHINXOPTS    =

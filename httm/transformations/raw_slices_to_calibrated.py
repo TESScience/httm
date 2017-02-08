@@ -56,7 +56,10 @@ def remove_start_of_line_ringing_from_slice(final_dark_pixel_rows, image_slice):
     return image_slice._replace(pixels=working_pixels)
 
 
-def remove_smear_from_slice(early_dark_pixel_columns, late_dark_pixel_columns, final_dark_pixel_rows, smear_rows,
+def remove_smear_from_slice(early_dark_pixel_columns,
+                            late_dark_pixel_columns,
+                            final_dark_pixel_rows,
+                            smear_rows,
                             image_slice):
     # type: (int, int, int, int, Slice) -> Slice
     """
@@ -167,8 +170,7 @@ def remove_undershoot_from_slice(undershoot_parameter, image_slice):
     return image_slice._replace(pixels=numpy.apply_along_axis(convolve_row, 1, image_slice.pixels))
 
 
-def convert_slice_adu_to_electrons(
-        gain_loss, number_of_exposures, video_scale, image_slice):
+def convert_slice_adu_to_electrons(gain_loss, number_of_exposures, video_scale, image_slice):
     # type: (float, int, float, Slice) -> Slice
     """
     Converts a slice from *Analogue to Digital Converter Units* (ADU) to electron counts.

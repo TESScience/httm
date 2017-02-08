@@ -27,31 +27,36 @@ import pkg_resources
 from httm import raw_fits_to_calibrated
 from httm.data_structures.raw_converter import raw_converter_parameters, raw_transformation_flags
 from httm.system.command_line import add_arguments_from_settings
+from httm.system.command_line.metadata import command_line_options
 from httm.system.config_file import parse_config
-from httm.transformations.raw_converters_to_calibrated import raw_transformations
+from httm.transformations.metadata import raw_transformations
 
-log_level = os.getenv('LOG', 'WARNING').upper()
-logging.basicConfig(
-    format="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s"
-    if log_level == "DEBUG" else "%(levelname)s %(message)s",
-    datefmt="%H:%M:%S",
-    level=getattr(logging, log_level))
+argument_parser = argparse.ArgumentParser(description='Transform a RAW FITS file into a calibrated FITS '
+                                                      'file with units in electron counts')
+
+argument_parser.add_argument('input', type=str, help="The name of the RAW FITS file to use as input")
+argument_parser.add_argument('output', type=str, help="The name of the Calibrated FITS file to use as output")
+
+argument_parser.add_argument('--version', action='version', version=pkg_resources.get_distribution("httm").version,
+                             help=command_line_options['version']['documentation'])
+
+argument_parser.add_argument('--config',
+                             default=None, type=str, dest='config',
+                             help=command_line_options['config']['documentation'])
+
+add_arguments_from_settings(argument_parser, raw_transformations)
+add_arguments_from_settings(argument_parser, raw_converter_parameters)
+add_arguments_from_settings(argument_parser, raw_transformation_flags)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Transform a RAW FITS file into a Calibrated FITS file')
+    log_level = os.getenv('LOG', 'WARNING').upper()
+    logging.basicConfig(
+        format="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s"
+        if log_level == "DEBUG" else "%(levelname)s %(message)s",
+        datefmt="%H:%M:%S",
+        level=getattr(logging, log_level))
 
-    parser.add_argument('input', type=str, help="The name of the RAW FITS file to use as input")
-    parser.add_argument('output', type=str, help="The name of the Calibrated FITS file to use as output")
-
-    parser.add_argument('--version', action='version', version=pkg_resources.get_distribution("httm").version)
-
-    parser.add_argument('--config', default=None, type=str, dest='config',
-                        help='Set an optional configuration file')
-    add_arguments_from_settings(parser, raw_transformation_flags)
-    add_arguments_from_settings(parser, raw_transformations)
-    add_arguments_from_settings(parser, raw_converter_parameters)
-
-    args = parser.parse_args()
+    args = argument_parser.parse_args()
     settings = parse_config(args.config, [raw_transformation_flags,
                                           raw_transformations,
                                           raw_converter_parameters],

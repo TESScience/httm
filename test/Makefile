@@ -8,7 +8,7 @@ PIP=$(VIRTUAL_ENV)/bin/pip$(PYTHON_VERSION)
 RUNIPY=$(VIRTUAL_ENV)/bin/runipy
 SITE_PACKAGES=$(VIRTUAL_ENV)/lib/python$(PYTHON_VERSION)/site-packages
 VERSION=$(shell python3.5 -c "$(shell grep '^VERSION' $(CURDIR)/../setup.py) ; print(VERSION)")
-INSTALL=$(VIRTUAL_ENV)/bin/raw_to_calibrated
+INSTALL=$(VIRTUAL_ENV)/bin/raw_single_ccd_ffi_to_calibrated_electron_flux
 CONFIG_TEST_FITS=output/json_raw.fits output/toml_raw.fits output/tsv_raw.fits \
                  output/toml_calibrated.fits output/json_calibrated.fits output/tsv_calibrated.fits
 TESTS=version-check httm-check-code-references httm-check-doc-references numpy-check-code-references \
@@ -34,8 +34,8 @@ documentation:
 	make -C ../doc latexpdf
 
 version-check: $(VIRTUAL_ENV)
-	./venv/bin/raw_to_calibrated --version
-	./venv/bin/electron_flux_to_raw --version
+	./venv/bin/raw_single_ccd_ffi_to_calibrated_electron_flux --version
+	./venv/bin/electron_flux_single_ccd_ffi_to_simulated_raw --version
 
 # This is a generic test to make sure that references to python objects in a particular module exist
 %-check-code-references: $(VIRTUAL_ENV)
@@ -71,22 +71,22 @@ output/:
 	mkdir -p $@
 
 output/json_raw.fits: output/ $(VIRTUAL_ENV)
-	$(PYTHON) ./venv/bin/electron_flux_to_raw fits_data/electron_flux_fits/spot50.fits $@ --config config/electron_flux_to_raw/config.json
+	$(PYTHON) ./venv/bin/electron_flux_single_ccd_ffi_to_simulated_raw fits_data/electron_flux_fits/spot50.fits $@ --config config/electron_flux_single_ccd_ffi_to_simulated_raw/config.json
 
 output/toml_raw.fits: output/ $(VIRTUAL_ENV)
-	$(PYTHON) ./venv/bin/electron_flux_to_raw fits_data/electron_flux_fits/spot50.fits $@ --config config/electron_flux_to_raw/config.toml
+	$(PYTHON) ./venv/bin/electron_flux_single_ccd_ffi_to_simulated_raw fits_data/electron_flux_fits/spot50.fits $@ --config config/electron_flux_single_ccd_ffi_to_simulated_raw/config.toml
 
 output/tsv_raw.fits: output/ $(VIRTUAL_ENV)
-	$(PYTHON) ./venv/bin/electron_flux_to_raw fits_data/electron_flux_fits/spot50.fits $@ --config config/electron_flux_to_raw/config.tsv
+	$(PYTHON) ./venv/bin/electron_flux_single_ccd_ffi_to_simulated_raw fits_data/electron_flux_fits/spot50.fits $@ --config config/electron_flux_single_ccd_ffi_to_simulated_raw/config.tsv
 
 output/toml_calibrated.fits: output/ $(VIRTUAL_ENV)
-	$(PYTHON) ./venv/bin/raw_to_calibrated fits_data/raw_fits/single_ccd.fits $@ --config config/raw_to_calibrated/config.toml
+	$(PYTHON) ./venv/bin/raw_single_ccd_ffi_to_calibrated_electron_flux fits_data/raw_fits/single_ccd.fits $@ --config config/raw_single_ccd_ffi_to_calibrated_electron_flux/config.toml
 
 output/json_calibrated.fits: output/ $(VIRTUAL_ENV)
-	$(PYTHON) ./venv/bin/raw_to_calibrated fits_data/raw_fits/single_ccd.fits $@ --config config/raw_to_calibrated/config.json
+	$(PYTHON) ./venv/bin/raw_single_ccd_ffi_to_calibrated_electron_flux fits_data/raw_fits/single_ccd.fits $@ --config config/raw_single_ccd_ffi_to_calibrated_electron_flux/config.json
 
 output/tsv_calibrated.fits: output/ $(VIRTUAL_ENV)
-	$(PYTHON) ./venv/bin/raw_to_calibrated fits_data/raw_fits/single_ccd.fits $@ --config config/raw_to_calibrated/config.tsv
+	$(PYTHON) ./venv/bin/raw_single_ccd_ffi_to_calibrated_electron_flux fits_data/raw_fits/single_ccd.fits $@ --config config/raw_single_ccd_ffi_to_calibrated_electron_flux/config.tsv
 
 %-test: notebooks/%.ipynb $(RUNIPY)
 	@echo -n Testing $<...

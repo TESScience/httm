@@ -21,40 +21,43 @@ import argparse
 import logging
 import os
 import sys
+
 import pkg_resources
 
 from httm import electron_flux_fits_to_raw
 from httm.data_structures.electron_flux_converter import electron_flux_converter_parameters, \
     electron_flux_transformation_flags
 from httm.system.command_line import add_arguments_from_settings
+from httm.system.command_line.metadata import command_line_options
 from httm.system.config_file import parse_config
-from httm.transformations.electron_flux_converters_to_raw import electron_flux_transformations
+from httm.transformations.metadata import electron_flux_transformations
 
-log_level = os.getenv('LOG', 'WARNING').upper()
-logging.basicConfig(
-    format="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s"
-    if log_level == "DEBUG" else "%(levelname)s %(message)s",
-    datefmt="%H:%M:%S",
-    level=getattr(logging, log_level))
+argument_parser = argparse.ArgumentParser(description='Utility for transforming a FITS with units in '
+                                                      'electron counts file into a simulated RAW FITS file')
+
+argument_parser.add_argument('input', type=str, help="The name of the RAW FITS file to use as input")
+argument_parser.add_argument('output', type=str, help="The name of the Calibrated FITS file to use as output")
+
+argument_parser.add_argument('--version', action='version', version=pkg_resources.get_distribution("httm").version,
+                             help=command_line_options['version']['documentation'])
+
+argument_parser.add_argument('--config',
+                             default=None, type=str, dest='config',
+                             help=command_line_options['config']['documentation'])
+
+add_arguments_from_settings(argument_parser, electron_flux_transformations)
+add_arguments_from_settings(argument_parser, electron_flux_converter_parameters)
+add_arguments_from_settings(argument_parser, electron_flux_transformation_flags)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Transform a Calibrated FITS file into a RAW FITS file')
+    log_level = os.getenv('LOG', 'WARNING').upper()
+    logging.basicConfig(
+        format="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s"
+        if log_level == "DEBUG" else "%(levelname)s %(message)s",
+        datefmt="%H:%M:%S",
+        level=getattr(logging, log_level))
 
-    parser.add_argument('input', type=str, help="The name of the RAW FITS file to use as input")
-    parser.add_argument('output', type=str, help="The name of the Calibrated FITS file to use as output")
-
-    parser.add_argument('--version', action='version', version=pkg_resources.get_distribution("httm").version)
-
-    parser.add_argument('--config',
-                        default=None, type=str, dest='config',
-                        help='Set an optional configuration file')
-
-
-    add_arguments_from_settings(parser, electron_flux_transformation_flags)
-    add_arguments_from_settings(parser, electron_flux_transformations)
-    add_arguments_from_settings(parser, electron_flux_converter_parameters)
-
-    args = parser.parse_args()
+    args = argument_parser.parse_args()
     settings = parse_config(args.config,
                             [electron_flux_transformation_flags,
                              electron_flux_transformations,

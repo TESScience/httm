@@ -1,6 +1,6 @@
 .PHONY: all clean
 PYTHON=$(CURDIR)/../venv/bin/python
-INSTALL=$(CURDIR)/../venv/bin/raw_to_calibrated
+INSTALL=$(CURDIR)/../venv/bin/raw_single_ccd_ffi_to_calibrated_electron_flux
 
 SPOT50_FITS=electron_flux_fits/spot50.fits
 SPOT50_CALIBRATED_FITS=electron_flux_fits/spot50_calibrated.fits
@@ -37,16 +37,16 @@ $(SPOT50_PATTERN_NOISE_FITS_GZIP): $(SPOT50_PATTERN_NOISE_FITS)
 	gzip $<
 
 $(SPOT50_RAW_FITS): $(SPOT50_FITS) $(SPOT50_PATTERN_NOISE_FITS_GZIP)
-	LOG=DEBUG $(PYTHON) ../venv/bin/electron_flux_to_raw --pattern-noise $(SPOT50_PATTERN_NOISE_FITS_GZIP) $< $@
+	LOG=DEBUG $(PYTHON) ../venv/bin/electron_flux_single_ccd_ffi_to_simulated_raw --pattern-noise $(SPOT50_PATTERN_NOISE_FITS_GZIP) $< $@
 
 $(SPOT50_CALIBRATED_FITS): $(SPOT50_RAW_FITS) $(SPOT50_PATTERN_NOISE_FITS_GZIP)
-	LOG=DEBUG $(PYTHON) ../venv/bin/raw_to_calibrated --pattern-noise $(SPOT50_PATTERN_NOISE_FITS_GZIP) $< $@
+	LOG=DEBUG $(PYTHON) ../venv/bin/raw_single_ccd_ffi_to_calibrated_electron_flux --pattern-noise $(SPOT50_PATTERN_NOISE_FITS_GZIP) $< $@
 
 $(SAMPLE_RAW_FITS): electron_flux_fits/sample_electrons.fits
-	LOG=DEBUG $(PYTHON) ../venv/bin/electron_flux_to_raw $< $@
+	LOG=DEBUG $(PYTHON) ../venv/bin/electron_flux_single_ccd_ffi_to_simulated_raw $< $@
 
 $(SAMPLE_CALIBRATED_FITS): $(SAMPLE_RAW_FITS)
-	LOG=DEBUG $(PYTHON) ../venv/bin/raw_to_calibrated $< $@
+	LOG=DEBUG $(PYTHON) ../venv/bin/raw_single_ccd_ffi_to_calibrated_electron_flux $< $@
 
 clean:
 	rm -f $(FILES)

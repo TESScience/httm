@@ -92,8 +92,12 @@ def add_pattern_noise_to_slice(pattern_noise, image_slice):
     return image_slice._replace(pixels=image_slice.pixels + pattern_noise)
 
 
-def introduce_smear_rows_to_slice(smear_ratio, early_dark_pixel_columns, late_dark_pixel_columns, final_dark_pixel_rows,
-                                  smear_rows, image_slice):
+def introduce_smear_rows_to_slice(smear_ratio,
+                                  early_dark_pixel_columns,
+                                  late_dark_pixel_columns,
+                                  final_dark_pixel_rows,
+                                  smear_rows,
+                                  image_slice):
     # type: (float, Slice) -> Slice
     """
     This function takes a slice with empty smear rows and populates them, and adds smear to every image pixel
@@ -295,8 +299,11 @@ def simulate_undershoot_on_slice(undershoot_parameter, image_slice):
         pixels=numpy.apply_along_axis(convolve_row, 1, image_slice.pixels))
 
 
-def add_baseline_to_slice(single_frame_baseline_adu, single_frame_baseline_adu_drift_term, number_of_exposures,
-                          video_scale, image_slice):
+def add_baseline_to_slice(single_frame_baseline_adu,
+                          single_frame_baseline_adu_drift_term,
+                          number_of_exposures,
+                          video_scale,
+                          image_slice):
     """
     This transformation adds a scalar random variate, the *baseline electron count*, to every pixel.
 
@@ -345,8 +352,11 @@ def add_baseline_to_slice(single_frame_baseline_adu, single_frame_baseline_adu_d
 
 
 # noinspection PyUnresolvedReferences
-def convert_slice_electrons_to_adu(gain_loss, number_of_exposures, video_scale,
-                                   clip_level_adu, image_slice):
+def convert_slice_electrons_to_adu(gain_loss,
+                                   number_of_exposures,
+                                   video_scale,
+                                   clip_level_adu,
+                                   image_slice):
     # type: (float, int, float, float, int, Slice) -> Slice
     """
     This functions simulate various nonlinear effects in the measurement of electrons, before finally yielding output

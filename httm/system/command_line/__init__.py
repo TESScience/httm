@@ -22,7 +22,6 @@
 This module contains utilities for parsing settings, such as parameter and flags, from the command line.
 """
 
-
 # TODO: Documentation
 def add_arguments_from_settings(argument_parser, setting_dictionary):
     for key in setting_dictionary:

@@ -243,8 +243,9 @@ parameters = OrderedDict([
         'alternate_fits_keywords': [],
         'required_keyword': False,
     }),
+    # TODO: change to start_of_line_ringing_file
     ('start_of_line_ringing', {
-        'type': ':py:class:`str` or :py:class:`file`',
+        'type': 'str',
         'documentation': 'A vector to be read from an ``npz`` file, to be added to '
                          'each row in of a slice, representing the repeatable '
                          'change in the video baseline caused by the disturbance '
@@ -257,8 +258,9 @@ parameters = OrderedDict([
         'alternate_fits_keywords': [],
         'required_keyword': False,
     }),
+    # TODO: change to pattern_noise_file
     ('pattern_noise', {
-        'type': ':py:class:`str`',
+        'type': 'str',
         'documentation': 'A matrix to be read from a FITS file '
                          '(either uncompressed or compressed with gzip, bzip2, or pkzip), '
                          'representing the repeatable change in the video baseline caused by '
