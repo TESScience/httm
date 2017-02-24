@@ -53,7 +53,7 @@ def get_keys_from_usage(option_parser):
 def format_option(option_key):
     # type: (str) -> str
     if 'default' in key_data[option_key] and isinstance(key_data[option_key]['default'], bool):
-        return "### `--{option}/--no-{option}`".format(option=option_key.replace("_", "-"))
+        return "### `--{option}` / `--no-{option}`".format(option=option_key.replace("_", "-"))
     else:
         return "### `--{}`".format(option_key.replace("_", "-"))
 

@@ -1,5 +1,0 @@
-This directory contains jupyter notebooks for generating documentation for HTTM.
-
-Generated documentation is to be in RST and used by sphinx.
-
-See https://httm.readthedocs.io/

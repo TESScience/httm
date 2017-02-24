@@ -7,5 +7,5 @@ HTTM: A Conversion Tool For TESS Full Frame Images
    layout
    software_architecture
    fits_format
-   notebooks/command_line_utilities
+   command_line/command_line.rst
    module

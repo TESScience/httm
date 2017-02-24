@@ -1,6 +1,6 @@
 # Makefile for Sphinx documentation
 
-GENERATED_SOURCES=source/notebooks/command_line_utilities.rst
+GENERATED_SOURCES=source/command_line/command_line.rst
 
 # You can set these variables from the command line.
 SPHINXOPTS    =
@@ -52,8 +52,9 @@ help:
 
 generated-sources: $(GENERATED_SOURCES)
 
-%.rst: %.ipynb
-	(cd $(dir $@); jupyter nbconvert --to rst $(notdir $<))
+source/command_line/command_line.rst:
+	make -C $(dir $@) clean
+	make -C $(dir $@) $(notdir $@)
 
 clean:
 	rm -rf $(BUILDDIR)/* $(GENERATED_SOURCES) source/notebooks/*_files/

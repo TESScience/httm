@@ -1,23 +1,25 @@
 .PHONY: all clean
 .PRECIOUS: %.md
 
-FILES=command_line.rst command_line.md venv
+FILES=command_line.rst command_line.md
 DIRECTORIES=scripts/
-PYTHON=venv/bin/python
+VENV=../../../test/venv/
+PYTHON=$(VENV)/bin/python
 
-all: command_line.rst
+all: index.rst
 
-../../../test/venv/:
+$(VENV):
 	make -C $(dir $@) install
 
-venv/: ../../../test/venv/
-	@rm -f $@
+$(PYTHON): $(VENV)
+
+index.rst: command_line.rst
 	ln -s $< $@
 
 %.rst: %.md
 	pandoc --from=markdown --to=rst --output=$@ $<
 
-%.md: create_%_doc.py venv/ scripts/
+%.md: create_%_doc.py scripts/ $(PYTHON)
 	$(PYTHON) $< > $@
 
 scripts/: ../../../scripts
