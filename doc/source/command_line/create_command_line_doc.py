@@ -63,18 +63,18 @@ if __name__ == "__main__":
     for script in scripts:
         # Print script name
         script_name = script.split('.')[0]
-        print("## `{}`".format(script_name))
+        print("## `{}`\n".format(script_name))
 
         # Get the command line argument parser from the script
         argument_parser = import_module("scripts.{}".format(script_name)).argument_parser
 
         # Print the description of the command line utility
-        print(argument_parser.description)
+        print(argument_parser.description + "\n")
 
         # Print the usage
-        print(format_usage(script_name, argument_parser))
+        print(format_usage(script_name, argument_parser) + "\n")
 
         # Print Help
         for key in get_keys_from_usage(argument_parser):
-            print(format_option(key))
-            print(key_data[key]['documentation'])
+            print(format_option(key) + "\n")
+            print(key_data[key]['documentation'] + "\n")
