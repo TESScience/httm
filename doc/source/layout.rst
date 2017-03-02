@@ -50,7 +50,7 @@ Each slice has its own measurement chain and ADC.
 
 The slice diagram below depicts the format of the data output by the ADC.
 
-.. figure:: figures/Slice.jpg
+.. figure:: figures/Slice.png
    :alt: Slice Diagram
 
    Slice Diagram
